@@ -1,0 +1,83 @@
+{
+  "brand": "Baró Construcciones",
+  "legalName": "Baró Construcciones S.R.L.",
+  "nav": [
+    { "href": "#inicio", "label": "Inicio" },
+    { "href": "#servicios", "label": "Servicios" },
+    { "href": "#nosotros", "label": "Nosotros" },
+    { "href": "#proyectos", "label": "Proyectos" },
+    { "href": "#clientes", "label": "Clientes" },
+    { "href": "#contacto", "label": "Contacto" }
+  ],
+  "hero": {
+    "title": "Estamos al servicio de tus proyectos",
+    "subtitle": "Arquitectura, levantamientos topográficos y obra civil con gestión integral y equipo profesional."
+  },
+  "services": {
+    "title": "Servicios",
+    "items": [
+      {
+        "title": "Proyectos de arquitectura",
+        "description": "Proyectos de arquitectura y diseño residencial, deportivo, salud, espacio público y más. Gestionamos el proyecto y su aprobación en la DPDU y reparticiones correspondientes."
+      },
+      {
+        "title": "Topografía y catastro",
+        "description": "Replanteos, divisiones parcelarias, loteos y urbanizaciones de índole pública o privada, con gestión en Catastro y documentación para aprobación."
+      },
+      {
+        "title": "Construcciones civiles e infraestructura",
+        "description": "Obras civiles e infraestructura: desde viviendas hasta redes de agua potable y proyectos urbanos. Equipamiento y personal capacitado."
+      }
+    ]
+  },
+  "about": {
+    "title": "Nosotros",
+    "lead": "Baró Construcciones S.R.L. es una empresa en crecimiento, dedicada a la construcción civil, con proyectos sólidos y fuerte capacidad de gestión.",
+    "bullets": [
+      "Emprendimientos inmobiliarios",
+      "Urbanizaciones",
+      "Construcción y mantenimiento de espacios verdes",
+      "Redes sanitarias",
+      "Subdivisiones parcelarias y PH",
+      "Elaboración de proyectos y aprobaciones",
+      "Construcciones civiles en general"
+    ],
+    "closing": "Solidez, profesionalismo y experiencia avalan nuestro trabajo. Construimos futuro y acompañamos cada proyecto.",
+    "milestone": {
+      "year": "2020",
+      "label": "Año de establecimiento"
+    }
+  },
+  "projects": {
+    "title": "Proyectos",
+    "items": [
+      { "title": "Sede APOPS" },
+      { "title": "Loteo Adicus" },
+      { "title": "Loteo Altos del Este" },
+      { "title": "Plaza Bolaños — Médano de Oro" },
+      { "title": "Plaza Alto de Sierra" },
+      { "title": "C.I.C. 9 de Julio" }
+    ]
+  },
+  "clients": {
+    "title": "Clientes",
+    "names": ["Adicus", "APOPS", "Rawson"]
+  },
+  "contact": {
+    "title": "Contacto",
+    "intro": "Para consultas, comentarios o presupuestos, escribinos o llamanos. También podés completar el formulario.",
+    "phones": ["264 4605099", "264 5117015"],
+    "email": "contacto@baroconstruccionessrl.com.ar",
+    "addressLines": ["España 793 Norte", "Capital, San Juan, Argentina"],
+    "mapHref": "https://www.google.com/maps/search/?api=1&query=España+793+Norte+San+Juan+Argentina",
+    "mapEmbedSrc": "https://maps.google.com/maps?q=España+793+Norte+San+Juan+Argentina&z=16&output=embed",
+    "jobsNote": "Para postularte, enviá CV y carta de recomendación a baroconstruccionessrl@gmail.com."
+  },
+  "footer": {
+    "social": [
+      { "label": "Facebook", "href": "https://facebook.com" },
+      { "label": "Instagram", "href": "https://instagram.com" },
+      { "label": "LinkedIn", "href": "https://linkedin.com" }
+    ]
+  }
+}

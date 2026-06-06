@@ -1,0 +1,44 @@
+import { site } from '@/locales/site'
+import { Reveal } from '@/components/reveal'
+import { SectionTitle } from '@/components/section-title'
+
+const PLACEHOLDER_GRADIENTS = [
+  'from-amber-100/90 via-stone-200/80 to-stone-300/90',
+  'from-stone-200/90 via-amber-50/80 to-amber-100/90',
+  'from-neutral-300/85 via-stone-200/80 to-amber-100/85',
+]
+
+export function ServicesSection() {
+  return (
+    <section
+      id="servicios"
+      className="scroll-mt-24 border-t border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-16 sm:px-6 sm:py-24"
+    >
+      <div className="mx-auto max-w-6xl">
+        <Reveal>
+          <SectionTitle>{site.services.title}</SectionTitle>
+        </Reveal>
+        <div className="mt-14 grid gap-8 md:grid-cols-3">
+          {site.services.items.map((item, i) => (
+            <Reveal key={item.title}>
+              <article className="card-lift flex h-full flex-col overflow-hidden rounded-[var(--radius-section)] border border-[var(--color-border)] bg-[var(--color-background)] shadow-[var(--shadow-soft)]">
+                <div
+                  className={`aspect-[4/3] w-full bg-gradient-to-br ${PLACEHOLDER_GRADIENTS[i % PLACEHOLDER_GRADIENTS.length]}`}
+                  aria-hidden
+                />
+                <div className="flex flex-1 flex-col p-6 sm:p-7">
+                  <h3 className="text-lg font-semibold text-[var(--color-heading)]">
+                    {item.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-relaxed text-[var(--color-muted)]">
+                    {item.description}
+                  </p>
+                </div>
+              </article>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}

@@ -75,6 +75,34 @@
       ],
       "outputs": [],
       "cache": false
+    },
+
+    "baro#build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**"
+      ],
+      "env": [
+        "DATABASE_URL",
+        "DIRECT_URL"
+      ]
+    },
+    "baro#dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "baro#typecheck": {
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "baro#lint": {
+      "dependsOn": [
+        "^build"
+      ]
     }
   }
 }

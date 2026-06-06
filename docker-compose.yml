@@ -1,4 +1,5 @@
 services:
+  # ── Shared Postgres (used by @multisystem/api and other shared services) ──
   postgres:
     image: postgres:16-alpine
     container_name: multisystem-db
@@ -11,6 +12,60 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - caddy_network
+
+  # ── Reverse Proxy ──
+  caddy:
+    image: caddy:2-alpine
+    container_name: multisystem-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    networks:
+      - caddy_network
+
+  # ── Baro (Next.js app) ──
+  baro:
+    build:
+      context: .
+      dockerfile: apps/baro/Dockerfile
+    container_name: baro
+    restart: unless-stopped
+    ports:
+      - "3000"
+    env_file: apps/baro/.env
+    networks:
+      - caddy_network
+    depends_on:
+      - baro-db
+
+  # ── Baro Database ──
+  baro-db:
+    image: postgres:16-alpine
+    container_name: baro-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: baro
+      POSTGRES_PASSWORD: baro
+      POSTGRES_DB: baro
+    ports:
+      - "5433:5432"
+    volumes:
+      - baro_pgdata:/var/lib/postgresql/data
+    networks:
+      - caddy_network
+
+networks:
+  caddy_network:
+    name: multisystem-caddy-network
+    driver: bridge
 
 volumes:
   postgres_data:
+  caddy_data:
+  baro_pgdata:

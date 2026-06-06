@@ -1,0 +1,285 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ProfessionalTitle {
+  AGRIMENSOR
+  INGENIERO_AGRIMENSOR
+}
+
+/// Género gramatical del tratamiento en textos (orden de trabajo, membrete): «el/la», «Ingeniero/Ingeniera».
+enum TitleGrammarGender {
+  MASCULINO
+  FEMENINO
+}
+
+enum ExpedienteStatus {
+  DRAFT
+}
+
+model User {
+  id                    String         @id @default(cuid())
+  email                 String         @unique
+  passwordHash          String
+  emailVerified         DateTime?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  refreshTokens         RefreshToken[]
+  expedientes           Expediente[]
+  /// Perfil profesional titular de la cuenta (mismo modelo que colaboradores).
+  titularProfessionalId String?        @unique
+  titularProfessional   Professional?  @relation("TitularForUser", fields: [titularProfessionalId], references: [id], onDelete: SetNull)
+  studioProfessionals   Professional[] @relation("StudioProfessionals")
+}
+
+/// Profesional del estudio (titular y colaboradores comparten el mismo esquema y matrículas).
+model Professional {
+  id                 String             @id @default(cuid())
+  accountOwnerId     String
+  accountOwner       User               @relation("StudioProfessionals", fields: [accountOwnerId], references: [id], onDelete: Cascade)
+  titularForUser     User?              @relation("TitularForUser")
+
+  displayName String
+  /// Título habilitante (un solo valor por profesional; no por matrícula).
+  professionalTitle ProfessionalTitle @default(AGRIMENSOR)
+  /// Documento nacional de identidad (texto libre; ej. formato DNI argentino).
+  dni        String   @default("")
+  sexo       String   @default("")
+  phone              String?
+  whatsapp           String?
+  professionalEmail  String?
+  addressLine1       String
+  addressLine2       String?
+  locality           String
+  province           String             @default("San Juan")
+  postalCode         String?
+  websiteUrl         String?
+  /// Dato fiscal; no incluir en respuestas públicas (`toPublicProfessionalProfile`).
+  cuit               String?
+  /// Si está inactivo, no aparece en select de expedientes ni puede ser principal
+  active             Boolean           @default(true)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  registrations      ProfessionalRegistration[]
+  expedientesAsPrincipal Expediente[]         @relation("ExpedientePrincipalProfessional")
+  expedientesAsSecond    Expediente[]         @relation("ExpedienteSecondProfessional")
+  expedienteActuantes    ExpedienteActuante[]
+
+  @@index([accountOwnerId])
+}
+
+/// Expediente del estudio (borrador y siguientes estados).
+model Expediente {
+  id                        String        @id @default(cuid())
+  accountOwnerId            String
+  accountOwner              User          @relation(fields: [accountOwnerId], references: [id], onDelete: Cascade)
+  principalProfessionalId  String
+  principalProfessional    Professional  @relation("ExpedientePrincipalProfessional", fields: [principalProfessionalId], references: [id], onDelete: Restrict)
+  secondProfessionalId     String?
+  secondProfessional       Professional? @relation("ExpedienteSecondProfessional", fields: [secondProfessionalId], references: [id], onDelete: Restrict)
+
+  status                    ExpedienteStatus @default(DRAFT)
+  objetoExpedienteId        String
+  nomenclaturaCatastral     String
+  /// Cuando la nomenclatura queda sin efecto ante DGC (UI / legajo).
+  nomenclaturaAnulada       Boolean       @default(false)
+  planoAntecedente          String?
+  loteFraccion              String?
+  domicilioParcela          String?
+  parcial                   Boolean       @default(false)
+  soloOrdenTrabajo          Boolean       @default(false)
+  propietario               String
+  domicilioPropietario      String?
+  inscripcionDominio        String?
+  naturalezaActo            String?
+  memoriaObservaciones      String?       @db.Text
+  motivoHidraulica          String?       @db.Text
+  motivoFiscalia            String?       @db.Text
+  municipio                 String?
+  requiereVisacionMunicipal Boolean       @default(false)
+
+  /// Solo aplica cuando `soloOrdenTrabajo = true`. Texto libre con la fecha de la orden de trabajo.
+  fechaOrdenTrabajo       String?
+  /// Lugar donde se realizó (o se realizará) la reunión del acta.
+  lugarReunion            String?
+  /// Tolerancia consignada en el acta. Texto libre (admite formato "30 min", "1 hora", etc.).
+  toleranciaActa          String?
+  /// Si el expediente lleva publicación de edictos. Cuando es `false`, los campos de edicto se ocultan en UI.
+  llevPublicacionEdictos  Boolean  @default(false)
+  /// Medio de publicación del edicto (sólo aplica si `llevPublicacionEdictos = true`).
+  medioPublicacion        String?
+
+  /// Publicación / edicto y acta (fechas y referencias en texto libre según práctica del estudio).
+  publicacionEdictoFecha       String?
+  publicacionEdictoNumero      String?
+  boletinOficialNota           String?
+  actaNotarialNumero           String?
+  actaNotarialFecha            String?
+  publicacionActaObservaciones String?     @db.Text
+
+  createdAt                 DateTime      @default(now())
+  updatedAt                 DateTime      @updatedAt
+
+  colindantes               ExpedienteColindante[]
+  tituloRelaciones          ExpedienteTituloRelacion[]
+  ordenantes                ExpedienteOrdenante[]
+  linderos                  ExpedienteLinderos?
+  actuantes                 ExpedienteActuante[]
+
+  @@index([accountOwnerId])
+  @@index([accountOwnerId, nomenclaturaCatastral])
+}
+
+/// Linderos / colindantes del expediente (lista ordenada por `orden`).
+model ExpedienteColindante {
+  id          String   @id @default(cuid())
+  expedienteId   String
+  expediente     Expediente  @relation(fields: [expedienteId], references: [id], onDelete: Cascade)
+  orden       Int
+  distancia   String
+  colindante  String
+  descripcion String?  @db.Text
+  /// "Particular" | "Fiscalía" | "Ente" (histórico: "Municipal" migrado a Ente).
+  notificaA   String   @default("Particular")
+  /// Domicilio de la parcela del colindante (comunicación de mensura).
+  domicilioParcelaColindante  String  @default("")
+  /// Domicilio del titular / colindante (comunicación de mensura).
+  domicilioTitularColindante  String  @default("")
+  /// Destinatario o texto "Dirigido a:" en la comunicación.
+  dirigidoA   String   @default("") @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  /// Una o más NC del mismo colindante en distintos puntos cardinales (mismo lote / titular).
+  nomenclaturas ExpedienteColindanteNomenclatura[]
+
+  @@index([expedienteId])
+}
+
+/// Nomenclatura catastral citada respecto del colindante y rumbo/cardinal asociado.
+model ExpedienteColindanteNomenclatura {
+  id           String   @id @default(cuid())
+  colindanteId String
+  colindante   ExpedienteColindante @relation(fields: [colindanteId], references: [id], onDelete: Cascade)
+  orden        Int
+  nomenclatura String   @default("")
+  rumbo        String   @default("")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([colindanteId])
+}
+
+/// Ordenantes del expediente (lista ordenada por `orden`).
+model ExpedienteOrdenante {
+   id         String   @id @default(cuid())
+   expedienteId  String
+   expediente    Expediente  @relation(fields: [expedienteId], references: [id], onDelete: Cascade)
+   orden      Int
+   nombre     String
+   documento  String   @default("")
+   sexo       String   @default("")
+   cuit       String   @default("")
+   domicilio  String   @default("")
+   caracter   String   @default("")
+   esPropietario  Boolean  @default(false)
+   createdAt  DateTime @default(now())
+   updatedAt  DateTime @updatedAt
+
+   @@index([expedienteId])
+}
+
+/// Definición de linderos (1:1 con Expediente). Agrupa los datos generales del título y los puntos.
+model ExpedienteLinderos {
+  id                     String                 @id @default(cuid())
+  expedienteId              String                 @unique
+  expediente                Expediente                @relation(fields: [expedienteId], references: [id], onDelete: Cascade)
+  superficieTotal        String                 @default("")
+  superficieSegun        String                 @default("")
+  fechaRelacionTitulos   String                 @default("")
+  observacionesGenerales String                 @default("")
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
+  puntos                 ExpedienteLinderoPunto[]
+}
+
+/// Punto de lindero — CARDINAL (N/S/E/O) o ESPECIAL (NE/NO/SE/SO). Lista ordenada por `orden`.
+model ExpedienteLinderoPunto {
+  id          String          @id @default(cuid())
+  linderosId  String
+  linderos    ExpedienteLinderos @relation(fields: [linderosId], references: [id], onDelete: Cascade)
+  orden       Int
+  /// "CARDINAL" | "ESPECIAL"
+  tipo        String
+  /// CARDINAL: Norte | Sur | Este | Oeste · ESPECIAL: Noreste | Noroeste | Sureste | Suroeste
+  direccion   String
+  descripcion String          @default("")
+  medida      String          @default("")
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([linderosId])
+}
+
+/// Profesionales que actúan en el expediente (lista ordenada). Los dos primeros se reflejan también en `principalProfessionalId` / `secondProfessionalId` para plantillas y consultas legadas.
+model ExpedienteActuante {
+  id             String       @id @default(cuid())
+  expedienteId   String
+  expediente     Expediente   @relation(fields: [expedienteId], references: [id], onDelete: Cascade)
+  professionalId String
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Restrict)
+  orden          Int
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([expedienteId, orden])
+  @@unique([expedienteId, professionalId])
+  @@index([expedienteId])
+}
+
+/// DEPRECATED — UI replaced by ExpedienteLinderos in change `mensura-tabs-redesign`.
+/// Data is kept in the database; the UI no longer reads or writes this model.
+/// Cleanup is deferred to follow-up change `expediente-titulo-relacion-cleanup`.
+model ExpedienteTituloRelacion {
+  id            String   @id @default(cuid())
+  expedienteId     String
+  expediente       Expediente  @relation(fields: [expedienteId], references: [id], onDelete: Cascade)
+  orden         Int
+  instrumento   String
+  matricula     String   @default("")
+  fechaTitulo   String   @default("")
+  observaciones String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([expedienteId])
+}
+
+model ProfessionalRegistration {
+  id              String       @id @default(cuid())
+  professionalId  String
+  professional    Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  licenseNumber   String
+  jurisdiction    String
+  bodyName        String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([professionalId])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  tokenHash String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([tokenHash])
+  @@index([userId])
+}

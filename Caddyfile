@@ -1,0 +1,30 @@
+# Caddy reverse proxy — multisystem.app domain routing
+#
+# Each app gets its own subdomain block proxying to the container on caddy_network.
+# TLS is automatic via Let's Encrypt (Caddy default).
+#
+# Usage: docker compose up -d
+
+baro.multisystem.app {
+    reverse_proxy baro:3000
+}
+
+hub.multisystem.app {
+    reverse_proxy hub:3001
+}
+
+shopflow.multisystem.app {
+    reverse_proxy shopflow:3002
+}
+
+workify.multisystem.app {
+    reverse_proxy workify:3003
+}
+
+techservices.multisystem.app {
+    reverse_proxy techservices:3004
+}
+
+balance.multisystem.app {
+    reverse_proxy balance:3005
+}

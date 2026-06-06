@@ -1,0 +1,59 @@
+# Generic multi-stage Dockerfile for Next.js apps in Turborepo.
+#
+# Usage from monorepo root:
+#   docker build -f apps/<app>/Dockerfile --build-arg APP=<app> .
+#
+# Stages:
+#   base     — Node 20 Alpine with pnpm
+#   deps     — Fetch dependencies (offline from pnpm fetch)
+#   builder  — Install and build the app
+#   runner   — Production image (default target)
+
+ARG NODE_VERSION=20-alpine
+
+# ---------------------------------------------------------------------------
+# Stage 1: base
+# ---------------------------------------------------------------------------
+FROM node:${NODE_VERSION} AS base
+RUN corepack enable && corepack prepare pnpm@latest --activate
+WORKDIR /app
+
+# ---------------------------------------------------------------------------
+# Stage 2: deps — resolve dependency graph and fetch to offline cache
+# ---------------------------------------------------------------------------
+FROM base AS deps
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY apps/*/package.json ./apps/
+COPY packages/*/package.json ./packages/
+RUN pnpm fetch
+
+# ---------------------------------------------------------------------------
+# Stage 3: builder — install from cache then build the target app
+# ---------------------------------------------------------------------------
+FROM deps AS builder
+ARG APP
+COPY . .
+RUN pnpm install --offline
+RUN pnpm --filter ${APP} build
+
+# ---------------------------------------------------------------------------
+# Stage 4: runner — production image with only what's needed to serve
+# ---------------------------------------------------------------------------
+FROM base AS runner
+ARG APP
+ARG PORT=3000
+
+RUN addgroup --system --gid 1001 nodejs \
+    && adduser --system --uid 1001 nextjs
+
+COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP}/.next ./.next
+COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP}/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP}/package.json ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP}/next.config.ts ./next.config.ts
+
+EXPOSE ${PORT}
+ENV PORT=${PORT}
+ENV NODE_ENV=production
+
+USER nextjs
+CMD ["next", "start"]
