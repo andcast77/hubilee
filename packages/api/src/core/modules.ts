@@ -4,7 +4,7 @@ import { cacheThrough, cacheDel } from '../common/cache/index.js'
 import { ForbiddenError } from '../common/errors/app-error.js'
 
 /** Keys de módulos conocidos (según seed) */
-export const MODULE_KEYS = ['workify', 'shopflow', 'techservices'] as const
+export const MODULE_KEYS = ['workify', 'shopflow', 'techservices', 'baro'] as const
 export type ModuleKeys = (typeof MODULE_KEYS)[number]
 
 /** Shape de módulos habilitados por empresa/miembro */
@@ -12,12 +12,14 @@ export type CompanyModulesShape = {
   workify: boolean
   shopflow: boolean
   techservices: boolean
+  baro: boolean
 }
 
 const DEFAULT_MODULES: CompanyModulesShape = {
   workify: false,
   shopflow: false,
   techservices: false,
+  baro: false,
 }
 
 const MODULE_CACHE_TTL = 300 // 5 minutes

@@ -87,6 +87,17 @@ async function main() {
   await clear('companyMemberModule', () => prisma.companyMemberModule.deleteMany())
   await clear('companyModule', () => prisma.companyModule.deleteMany())
   await clear('module', () => prisma.module.deleteMany())
+  // Baro (before company — FK to company)
+  await clear('baroExpedienteActuante', () => prisma.baroExpedienteActuante.deleteMany())
+  await clear('baroExpedienteTituloRelacion', () => prisma.baroExpedienteTituloRelacion.deleteMany())
+  await clear('baroExpedienteOrdenante', () => prisma.baroExpedienteOrdenante.deleteMany())
+  await clear('baroExpedienteLinderoPunto', () => prisma.baroExpedienteLinderoPunto.deleteMany())
+  await clear('baroExpedienteLinderos', () => prisma.baroExpedienteLinderos.deleteMany())
+  await clear('baroExpedienteColindanteNomenclatura', () => prisma.baroExpedienteColindanteNomenclatura.deleteMany())
+  await clear('baroExpedienteColindante', () => prisma.baroExpedienteColindante.deleteMany())
+  await clear('baroExpediente', () => prisma.baroExpediente.deleteMany())
+  await clear('baroProfessionalRegistration', () => prisma.baroProfessionalRegistration.deleteMany())
+  await clear('baroProfessional', () => prisma.baroProfessional.deleteMany())
   await clear('companyMember', () => prisma.companyMember.deleteMany())
   await clear('company', () => prisma.company.deleteMany())
   await clear('user', () => prisma.user.deleteMany())
@@ -121,6 +132,14 @@ async function main() {
       key: 'techservices',
       name: 'Tech Services',
       description: 'Módulo de servicios técnicos',
+    },
+  })
+
+  const moduleBaro = await prisma.module.create({
+    data: {
+      key: 'baro',
+      name: 'Baro',
+      description: 'Módulo de agrimensura y expedientes',
     },
   })
 
@@ -278,6 +297,19 @@ async function main() {
       action: 'close',
       description: 'Cerrar órdenes de servicio técnico',
     },
+    // Baro
+    {
+      name: 'baro.access',
+      resource: 'baro',
+      action: 'access',
+      description: 'Acceder al módulo Baro',
+    },
+    {
+      name: 'baro.expedientes.manage',
+      resource: 'baro.expedientes',
+      action: 'manage',
+      description: 'Gestionar expedientes en Baro',
+    },
     // Shopflow — ventas granulares
     {
       name: 'shopflow.sales.read',
@@ -354,6 +386,7 @@ async function main() {
       { companyId: company.id, moduleId: moduleWorkify.id, enabled: true },
       { companyId: company.id, moduleId: moduleShopflow.id, enabled: true },
       { companyId: company.id, moduleId: moduleTechservices.id, enabled: true },
+      { companyId: company.id, moduleId: moduleBaro.id, enabled: true },
     ],
   })
 
@@ -413,6 +446,7 @@ async function main() {
       { companyMemberId: acmeOwnerMember.id, moduleId: moduleWorkify.id, enabled: true },
       { companyMemberId: acmeOwnerMember.id, moduleId: moduleShopflow.id, enabled: true },
       { companyMemberId: acmeOwnerMember.id, moduleId: moduleTechservices.id, enabled: true },
+      { companyMemberId: acmeOwnerMember.id, moduleId: moduleBaro.id, enabled: true },
       // Usuario estándar: Workify + Shopflow por defecto
       { companyMemberId: acmeUserMember.id, moduleId: moduleWorkify.id, enabled: true },
       { companyMemberId: acmeUserMember.id, moduleId: moduleShopflow.id, enabled: true },
@@ -517,6 +551,8 @@ async function main() {
       'shopflow.inventory.write',
       'techservices.access',
       'techservices.visits.close',
+      'baro.access',
+      'baro.expedientes.manage',
     ].map((name) => ({
       roleId: ownerRole.id,
       permissionId: permissionsByName[name]!.id,
@@ -549,6 +585,8 @@ async function main() {
       'shopflow.inventory.write',
       'techservices.access',
       'techservices.visits.close',
+      'baro.access',
+      'baro.expedientes.manage',
     ].map((name) => ({
       roleId: adminRole.id,
       permissionId: permissionsByName[name]!.id,
@@ -587,6 +625,7 @@ async function main() {
       'workify.access',
       'shopflow.access',
       'techservices.access',
+      'baro.access',
     ].map((name) => ({
       roleId: basicUserRole.id,
       permissionId: permissionsByName[name]!.id,
@@ -1341,6 +1380,7 @@ async function main() {
       { companyId: company2.id, moduleId: moduleWorkify.id, enabled: true },
       { companyId: company2.id, moduleId: moduleShopflow.id, enabled: true },
       { companyId: company2.id, moduleId: moduleTechservices.id, enabled: true },
+      { companyId: company2.id, moduleId: moduleBaro.id, enabled: true },
     ],
   })
 
@@ -1389,6 +1429,7 @@ async function main() {
       { companyMemberId: betaOwnerMember.id, moduleId: moduleWorkify.id, enabled: true },
       { companyMemberId: betaOwnerMember.id, moduleId: moduleShopflow.id, enabled: true },
       { companyMemberId: betaOwnerMember.id, moduleId: moduleTechservices.id, enabled: true },
+      { companyMemberId: betaOwnerMember.id, moduleId: moduleBaro.id, enabled: true },
       { companyMemberId: betaUserMember.id, moduleId: moduleWorkify.id, enabled: true },
       { companyMemberId: betaUserMember.id, moduleId: moduleShopflow.id, enabled: true },
     ],
@@ -1544,6 +1585,7 @@ async function main() {
       'shopflow.users.read',
       'shopflow.users.manage',
       'techservices.access',
+      'baro.access',
     ].map((name) => ({
       roleId: betaOwnerRole.id,
       permissionId: permissionsByName[name]!.id,
@@ -1569,6 +1611,7 @@ async function main() {
       'shopflow.users.read',
       'shopflow.users.manage',
       'techservices.access',
+      'baro.access',
     ].map((name) => ({
       roleId: betaAdminRole.id,
       permissionId: permissionsByName[name]!.id,
@@ -1604,6 +1647,7 @@ async function main() {
       'workify.access',
       'shopflow.access',
       'techservices.access',
+      'baro.access',
     ].map((name) => ({
       roleId: betaBasicUserRole.id,
       permissionId: permissionsByName[name]!.id,

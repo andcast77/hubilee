@@ -264,6 +264,10 @@ model User {
   sessions         Session[]
   mfaBackupCodes   MfaBackupCode[]
 
+  // Baro
+  baroTitularProfile BaroProfessional? @relation("BaroTitularUser")
+  baroExpedientesCreated BaroExpediente[] @relation("BaroExpedienteCreatedBy")
+
   @@map("users")
 }
 
@@ -384,6 +388,10 @@ model Company {
   storeInventory    StoreInventory[]
   userPreferences   UserPreferences[]
   usersWithPreferredShopflow User[] @relation("ShopflowPreferredCompany")
+
+  // Baro
+  baroProfessionals   BaroProfessional[]
+  baroExpedientes     BaroExpediente[]
 
   @@map("companies")
 }
@@ -1443,4 +1451,241 @@ model PushSubscription {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("push_subscriptions")
+}
+
+// ========================================
+// MODELOS BARO
+// ========================================
+
+enum BaroProfessionalTitle {
+  AGRIMENSOR
+  INGENIERO_AGRIMENSOR
+}
+
+enum BaroTitleGrammarGender {
+  MASCULINO
+  FEMENINO
+}
+
+enum BaroExpedienteStatus {
+  DRAFT
+}
+
+model BaroProfessional {
+  id                 String                @id @default(uuid())
+  companyId          String
+  company            Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  /// Titular multisystem user when this professional is the account holder
+  userId             String?               @unique
+  user               User?                 @relation("BaroTitularUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  displayName        String
+  professionalTitle  BaroProfessionalTitle @default(AGRIMENSOR)
+  dni                String                @default("")
+  sexo               String                @default("")
+  phone              String?
+  whatsapp           String?
+  professionalEmail  String?
+  addressLine1       String
+  addressLine2       String?
+  locality           String
+  province           String                @default("San Juan")
+  postalCode         String?
+  websiteUrl         String?
+  cuit               String?
+  active             Boolean               @default(true)
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+
+  registrations            BaroProfessionalRegistration[]
+  expedientesAsPrincipal   BaroExpediente[]               @relation("BaroExpedientePrincipal")
+  expedientesAsSecond      BaroExpediente[]               @relation("BaroExpedienteSecond")
+  expedienteActuantes      BaroExpedienteActuante[]
+
+  @@index([companyId])
+  @@map("baro_professionals")
+}
+
+model BaroExpediente {
+  id                       String               @id @default(uuid())
+  companyId                String
+  company                  Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdById              String?
+  createdBy                User?                @relation("BaroExpedienteCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  principalProfessionalId  String
+  principalProfessional    BaroProfessional     @relation("BaroExpedientePrincipal", fields: [principalProfessionalId], references: [id], onDelete: Restrict)
+  secondProfessionalId     String?
+  secondProfessional       BaroProfessional?    @relation("BaroExpedienteSecond", fields: [secondProfessionalId], references: [id], onDelete: Restrict)
+
+  status                   BaroExpedienteStatus @default(DRAFT)
+  objetoExpedienteId       String
+  nomenclaturaCatastral    String
+  nomenclaturaAnulada      Boolean              @default(false)
+  planoAntecedente         String?
+  loteFraccion             String?
+  domicilioParcela         String?
+  parcial                  Boolean              @default(false)
+  soloOrdenTrabajo         Boolean              @default(false)
+  propietario              String
+  domicilioPropietario     String?
+  inscripcionDominio       String?
+  naturalezaActo           String?
+  memoriaObservaciones     String?              @db.Text
+  motivoHidraulica         String?              @db.Text
+  motivoFiscalia           String?              @db.Text
+  municipio                String?
+  requiereVisacionMunicipal Boolean             @default(false)
+  fechaOrdenTrabajo        String?
+  lugarReunion             String?
+  toleranciaActa           String?
+  llevPublicacionEdictos   Boolean              @default(false)
+  medioPublicacion         String?
+  publicacionEdictoFecha   String?
+  publicacionEdictoNumero  String?
+  boletinOficialNota       String?
+  actaNotarialNumero       String?
+  actaNotarialFecha        String?
+  publicacionActaObservaciones String?          @db.Text
+  createdAt                DateTime             @default(now())
+  updatedAt                DateTime             @updatedAt
+
+  colindantes      BaroExpedienteColindante[]
+  tituloRelaciones BaroExpedienteTituloRelacion[]
+  ordenantes       BaroExpedienteOrdenante[]
+  linderos         BaroExpedienteLinderos?
+  actuantes        BaroExpedienteActuante[]
+
+  @@index([companyId])
+  @@index([companyId, nomenclaturaCatastral])
+  @@map("baro_expedientes")
+}
+
+model BaroExpedienteColindante {
+  id                           String   @id @default(uuid())
+  expedienteId                 String
+  expediente                   BaroExpediente @relation(fields: [expedienteId], references: [id], onDelete: Cascade)
+  orden                        Int
+  distancia                    String
+  colindante                   String
+  descripcion                  String?  @db.Text
+  notificaA                    String   @default("Particular")
+  domicilioParcelaColindante   String   @default("")
+  domicilioTitularColindante   String   @default("")
+  dirigidoA                    String   @default("") @db.Text
+  createdAt                    DateTime @default(now())
+  updatedAt                    DateTime @updatedAt
+  nomenclaturas                BaroExpedienteColindanteNomenclatura[]
+
+  @@index([expedienteId])
+  @@map("baro_expediente_colindantes")
+}
+
+model BaroExpedienteColindanteNomenclatura {
+  id           String   @id @default(uuid())
+  colindanteId String
+  colindante   BaroExpedienteColindante @relation(fields: [colindanteId], references: [id], onDelete: Cascade)
+  orden        Int
+  nomenclatura String   @default("")
+  rumbo        String   @default("")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([colindanteId])
+  @@map("baro_expediente_colindante_nomenclaturas")
+}
+
+model BaroExpedienteOrdenante {
+  id            String   @id @default(uuid())
+  expedienteId  String
+  expediente    BaroExpediente @relation(fields: [expedienteId], references: [id], onDelete: Cascade)
+  orden         Int
+  nombre        String
+  documento     String   @default("")
+  sexo          String   @default("")
+  cuit          String   @default("")
+  domicilio     String   @default("")
+  caracter      String   @default("")
+  esPropietario Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([expedienteId])
+  @@map("baro_expediente_ordenantes")
+}
+
+model BaroExpedienteLinderos {
+  id                     String   @id @default(uuid())
+  expedienteId           String   @unique
+  expediente             BaroExpediente @relation(fields: [expedienteId], references: [id], onDelete: Cascade)
+  superficieTotal        String   @default("")
+  superficieSegun        String   @default("")
+  fechaRelacionTitulos   String   @default("")
+  observacionesGenerales String   @default("")
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  puntos                 BaroExpedienteLinderoPunto[]
+
+  @@map("baro_expediente_linderos")
+}
+
+model BaroExpedienteLinderoPunto {
+  id          String   @id @default(uuid())
+  linderosId  String
+  linderos    BaroExpedienteLinderos @relation(fields: [linderosId], references: [id], onDelete: Cascade)
+  orden       Int
+  tipo        String
+  direccion   String
+  descripcion String   @default("")
+  medida      String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([linderosId])
+  @@map("baro_expediente_lindero_puntos")
+}
+
+model BaroExpedienteActuante {
+  id             String   @id @default(uuid())
+  expedienteId   String
+  expediente     BaroExpediente @relation(fields: [expedienteId], references: [id], onDelete: Cascade)
+  professionalId String
+  professional   BaroProfessional @relation(fields: [professionalId], references: [id], onDelete: Restrict)
+  orden          Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([expedienteId, orden])
+  @@unique([expedienteId, professionalId])
+  @@index([expedienteId])
+  @@map("baro_expediente_actuantes")
+}
+
+model BaroExpedienteTituloRelacion {
+  id            String   @id @default(uuid())
+  expedienteId  String
+  expediente    BaroExpediente @relation(fields: [expedienteId], references: [id], onDelete: Cascade)
+  orden         Int
+  instrumento   String
+  matricula     String   @default("")
+  fechaTitulo   String   @default("")
+  observaciones String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([expedienteId])
+  @@map("baro_expediente_titulo_relaciones")
+}
+
+model BaroProfessionalRegistration {
+  id             String   @id @default(uuid())
+  professionalId String
+  professional   BaroProfessional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  licenseNumber  String
+  jurisdiction   String
+  bodyName       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([professionalId])
+  @@map("baro_professional_registrations")
 }
