@@ -71,7 +71,7 @@ Chain strategy: stacked-to-v2
 
 ## Phase 5: Verification
 
-- [ ] 5.1 `pnpm typecheck` + `pnpm test` (API baro tests)
+- [x] 5.1 `pnpm typecheck` + `pnpm test` (API baro tests)
 - [ ] 5.2 `docker compose config` passes; `docker compose up --build -d` — all services up; Caddy no 502 on 6 domains
 - [ ] 5.3 Manual: Hub register → enable baro → login on baro → expediente CRUD
-- [ ] 5.4 Run `sdd-verify` against spec scenarios; write `verify-report.md`
+- [x] 5.4 Run `sdd-verify` against spec scenarios; write `verify-report.md`
