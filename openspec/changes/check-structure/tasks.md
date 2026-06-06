@@ -44,12 +44,12 @@ Chain strategy: stacked-to-v2
 
 ## Phase 2: API Module (`/v1/baro/*`)
 
-- [ ] 2.1 **RED** — integration tests: module disabled 403, cross-company 403 (`packages/api/src/__tests__/integration/baro.*.test.ts`)
-- [ ] 2.2 Create `packages/contracts/src/baro.ts` + export from `index.ts`
-- [ ] 2.3 Create `packages/api/src/dto/baro.dto.ts` (Zod) from baro schemas
-- [ ] 2.4 Create `packages/api/src/services/baro.service.ts` — port logic from `apps/baro/lib/expediente/**` + professionals; all queries filter `companyId`
-- [ ] 2.5 Create `packages/api/src/controllers/v1/baro.controller.ts`; register in `controllers/v1/index.ts`
-- [ ] 2.6 **GREEN** — make integration tests pass; add unit tests for validation/tenant edge cases
+- [x] 2.1 **RED** — integration tests: module disabled 403, cross-company 403 (`packages/api/src/__tests__/integration/baro.*.test.ts`)
+- [x] 2.2 Create `packages/contracts/src/baro.ts` + export from `index.ts`
+- [x] 2.3 Create `packages/api/src/dto/baro.dto.ts` (Zod) from baro schemas
+- [x] 2.4 Create `packages/api/src/services/baro.service.ts` — port logic from `apps/baro/lib/expediente/**` + professionals; all queries filter `companyId`
+- [x] 2.5 Create `packages/api/src/controllers/v1/baro.controller.ts`; register in `controllers/v1/index.ts`
+- [x] 2.6 **GREEN** — make integration tests pass; add unit tests for validation/tenant edge cases
 
 ## Phase 3: Baro App Integration
 

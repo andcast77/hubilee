@@ -11,3 +11,9 @@ const envPath = join(__dirname, '..', '..', '.env')
 if (existsSync(envPath)) {
   loadDotenv({ path: envPath })
 }
+
+// Integration tests must not call Upstash; cache layer falls back to DB when unset.
+if (process.env.VITEST === 'true' || process.env.NODE_ENV === 'test') {
+  delete process.env.UPSTASH_REDIS_REST_URL
+  delete process.env.UPSTASH_REDIS_REST_TOKEN
+}

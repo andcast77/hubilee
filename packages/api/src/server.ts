@@ -6,7 +6,7 @@ import { config as loadDotenv } from 'dotenv'
 // Cargar .env de la API antes de cualquier import que use Prisma (p. ej. controllers)
 const __dirnameApi = dirname(fileURLToPath(import.meta.url))
 const envPath = join(__dirnameApi, '..', '.env')
-if (existsSync(envPath)) {
+if (!process.env.VITEST && existsSync(envPath)) {
   loadDotenv({ path: envPath })
 }
 

@@ -8,6 +8,7 @@ import * as memberRbac from './member-rbac.controller.js'
 import * as shopflow from './shopflow/index.js'
 import * as workify from './workify.controller.js'
 import * as techservices from './techservices.controller.js'
+import * as baro from './baro.controller.js'
 import * as events from './events.controller.js'
 import * as auditLog from './audit-log.controller.js'
 import * as jobs from './jobs.controller.js'
@@ -28,6 +29,7 @@ export async function registerV1(fastify: FastifyInstance) {
   await shopflow.registerRoutes(fastify)
   await workify.registerRoutes(fastify)
   await techservices.registerRoutes(fastify)
+  await baro.registerRoutes(fastify)
   await events.registerRoutes(fastify)
   await auditLog.registerRoutes(fastify)
   await jobs.registerRoutes(fastify)

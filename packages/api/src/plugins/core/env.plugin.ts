@@ -106,7 +106,8 @@ export const envPlugin: FastifyPluginAsync<EnvPluginOptions> = async (
   opts
 ) => {
   const envPath = join(opts.entryDir, '..', '.env')
-  const dotenvConfig = existsSync(envPath) ? { path: envPath } : false
+  const dotenvConfig =
+    process.env.VITEST !== 'true' && existsSync(envPath) ? { path: envPath } : false
 
   await fastify.register(env, {
     schema: envSchema,

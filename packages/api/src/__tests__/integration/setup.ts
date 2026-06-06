@@ -23,6 +23,10 @@ process.env.VERCEL = '1'
 // Deterministic JWT secret for generated test tokens.
 process.env.JWT_SECRET = process.env.JWT_SECRET ?? 'test-jwt-secret-for-users-auth-regression'
 
+// Avoid Upstash network calls in integration tests (cache falls back to DB when unset).
+delete process.env.UPSTASH_REDIS_REST_URL
+delete process.env.UPSTASH_REDIS_REST_TOKEN
+
 // Uncomment when testcontainers is installed:
 // import { PostgreSqlContainer } from '@testcontainers/postgresql'
 //
