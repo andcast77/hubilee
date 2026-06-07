@@ -46,15 +46,15 @@ Chain strategy: feature-branch-chain
 
 ## Phase 3: Slice C — Docker & Vercel
 
-- [ ] 3.1 Rewrite `docker/Dockerfile.nextjs`: `turbo prune`, builder ENV for `NEXT_PUBLIC_*`, standalone runner `node apps/${APP_DIR}/server.js`
-- [ ] 3.2 Rewrite `docker/Dockerfile.api`: `turbo prune @multisystem/api`; CMD `node apps/api/dist/server.js`
-- [ ] 3.3 Update `docker-compose.yml`: all Next services use `docker/Dockerfile.nextjs` + build-args (`PACKAGE`, `APP_DIR`, `PORT`, `NEXT_PUBLIC_*`)
-- [ ] 3.4 Delete `apps/{hub,shopflow,workify,techservices,balance,baro}/Dockerfile` and `apps/baro/docker-entrypoint.sh`
-- [ ] 3.5 Add `output: 'standalone'` + `outputFileTracingRoot` to hub, shopflow, workify, techservices, baro `next.config.ts`
-- [ ] 3.6 Update `apps/*/vercel.json` and `apps/api/vercel.json`: root install + `turbo run build --filter=…...`
-- [ ] 3.7 Update `.env.example` with Docker build-time `NEXT_PUBLIC_*` notes; clean stale `.dockerignore` entries
-- [ ] 3.8 `docker build -f docker/Dockerfile.nextjs` (hub args) — container starts without `next: not found`
-- [ ] 3.9 `docker build -f docker/Dockerfile.api` — migrations + API serve
+- [x] 3.1 Rewrite `docker/Dockerfile.nextjs`: `turbo prune`, builder ENV for `NEXT_PUBLIC_*`, standalone runner `node apps/${APP_DIR}/server.js`
+- [x] 3.2 Rewrite `docker/Dockerfile.api`: `turbo prune @multisystem/api`; CMD `node apps/api/dist/server.js`
+- [x] 3.3 Update `docker-compose.yml`: all Next services use `docker/Dockerfile.nextjs` + build-args (`PACKAGE`, `APP_DIR`, `PORT`, `NEXT_PUBLIC_*`)
+- [x] 3.4 Delete `apps/{hub,shopflow,workify,techservices,balance,baro}/Dockerfile` and `apps/baro/docker-entrypoint.sh`
+- [x] 3.5 Add `output: 'standalone'` + `outputFileTracingRoot` to hub, shopflow, workify, techservices, baro `next.config.ts`
+- [x] 3.6 Update `apps/*/vercel.json` and `apps/api/vercel.json`: root install + `turbo run build --filter=…...`
+- [x] 3.7 Update `.env.example` with Docker build-time `NEXT_PUBLIC_*` notes; clean stale `.dockerignore` entries
+- [x] 3.8 `docker build -f docker/Dockerfile.nextjs` (hub args) — container starts without `next: not found`
+- [x] 3.9 `docker build -f docker/Dockerfile.api` — migrations + API serve
 
 ## Phase 4: Verification (`sdd-verify`)
 

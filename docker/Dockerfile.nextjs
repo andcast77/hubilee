@@ -1,59 +1,66 @@
-# Generic multi-stage Dockerfile for Next.js apps in Turborepo.
+# Turborepo prune + Next.js standalone — build from monorepo root.
 #
-# Usage from monorepo root:
-#   docker build -f apps/<app>/Dockerfile --build-arg APP=<app> .
-#
-# Stages:
-#   base     — Node 20 Alpine with pnpm
-#   deps     — Fetch dependencies (offline from pnpm fetch)
-#   builder  — Install and build the app
-#   runner   — Production image (default target)
+# Example:
+#   docker build -f docker/Dockerfile.nextjs \
+#     --build-arg PACKAGE=@multisystem/hub \
+#     --build-arg APP_DIR=hub \
+#     --build-arg PORT=3001 \
+#     --build-arg NEXT_PUBLIC_API_URL=http://api:3000 \
+#     --build-arg NEXT_PUBLIC_HUB_URL=http://localhost:3001 \
+#     -t multisystem-hub .
 
-ARG NODE_VERSION=20-alpine
+ARG NODE_VERSION=22-alpine
 
-# ---------------------------------------------------------------------------
-# Stage 1: base
-# ---------------------------------------------------------------------------
 FROM node:${NODE_VERSION} AS base
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
+RUN corepack enable && corepack prepare pnpm@10.28.0 --activate
 
-# ---------------------------------------------------------------------------
-# Stage 2: deps — resolve dependency graph and fetch to offline cache
-# ---------------------------------------------------------------------------
-FROM base AS deps
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
-COPY apps/*/package.json ./apps/
-COPY packages/*/package.json ./packages/
-RUN pnpm fetch
-
-# ---------------------------------------------------------------------------
-# Stage 3: builder — install from cache then build the target app
-# ---------------------------------------------------------------------------
-FROM deps AS builder
-ARG APP
+FROM base AS prepare
+ARG PACKAGE
+RUN npm install -g turbo@2.9.5
 COPY . .
-RUN pnpm install --offline
-RUN pnpm --filter ${APP} build
+RUN turbo prune "${PACKAGE}" --docker
 
-# ---------------------------------------------------------------------------
-# Stage 4: runner — production image with only what's needed to serve
-# ---------------------------------------------------------------------------
+FROM base AS builder
+ARG PACKAGE
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_HUB_URL
+ARG NEXT_PUBLIC_SHOPFLOW_URL
+ARG NEXT_PUBLIC_WORKIFY_URL
+ARG NEXT_PUBLIC_TECHSERVICES_URL
+ARG NEXT_PUBLIC_BALANCE_URL
+ARG NEXT_PUBLIC_BARO_URL
+ENV NODE_ENV=production \
+    NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} \
+    NEXT_PUBLIC_HUB_URL=${NEXT_PUBLIC_HUB_URL} \
+    NEXT_PUBLIC_SHOPFLOW_URL=${NEXT_PUBLIC_SHOPFLOW_URL} \
+    NEXT_PUBLIC_WORKIFY_URL=${NEXT_PUBLIC_WORKIFY_URL} \
+    NEXT_PUBLIC_TECHSERVICES_URL=${NEXT_PUBLIC_TECHSERVICES_URL} \
+    NEXT_PUBLIC_BALANCE_URL=${NEXT_PUBLIC_BALANCE_URL} \
+    NEXT_PUBLIC_BARO_URL=${NEXT_PUBLIC_BARO_URL}
+
+COPY --from=prepare /app/out/json/ .
+RUN pnpm install --frozen-lockfile
+COPY --from=prepare /app/out/full/ .
+COPY --from=prepare /app/tsconfig.base.json ./tsconfig.base.json
+RUN pnpm turbo run build --filter="${PACKAGE}..."
+
 FROM base AS runner
-ARG APP
+ARG APP_DIR
 ARG PORT=3000
+ENV NODE_ENV=production \
+    PORT=${PORT} \
+    HOSTNAME=0.0.0.0 \
+    APP_DIR=${APP_DIR}
 
 RUN addgroup --system --gid 1001 nodejs \
     && adduser --system --uid 1001 nextjs
 
-COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP}/.next ./.next
-COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP}/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP}/package.json ./
-COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP}/next.config.ts ./next.config.ts
-
-EXPOSE ${PORT}
-ENV PORT=${PORT}
-ENV NODE_ENV=production
+COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_DIR}/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_DIR}/.next/static ./apps/${APP_DIR}/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_DIR}/public ./apps/${APP_DIR}/public
 
 USER nextjs
-CMD ["next", "start"]
+EXPOSE ${PORT}
+CMD ["sh", "-c", "exec node apps/$APP_DIR/server.js"]

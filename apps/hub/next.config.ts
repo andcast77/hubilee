@@ -1,9 +1,13 @@
 import path from "path";
 import type { NextConfig } from "next";
 
+const monorepoRoot = path.join(__dirname, "..", "..");
+
 const nextConfig: NextConfig = {
+  output: "standalone",
+  outputFileTracingRoot: monorepoRoot,
   turbopack: {
-    root: path.join(__dirname, "..", ".."),
+    root: monorepoRoot,
   },
 
   transpilePackages: ["@multisystem/ui"],

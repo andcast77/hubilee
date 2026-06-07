@@ -1,10 +1,14 @@
 import path from "path";
 import type { NextConfig } from "next";
 
+const monorepoRoot = path.join(__dirname, "..", "..");
+
 const nextConfig: NextConfig = {
+  output: "standalone",
+  outputFileTracingRoot: monorepoRoot,
   // Turbopack needs access to monorepo root for workspace packages
   turbopack: {
-    root: path.join(__dirname, "..", ".."),
+    root: monorepoRoot,
   },
   
   transpilePackages: ["@multisystem/ui"],

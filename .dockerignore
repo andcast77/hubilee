@@ -15,7 +15,7 @@ packages/*/node_modules
 packages/*/.next
 packages/*/.turbo
 docs
-scripts
+openspec
 .npmrc
 .gitignore
 *.log
@@ -23,7 +23,3 @@ scripts
 .env.local
 .env.production
 .DS_Store
-packages/api/src/controllers/v1/balance.controller.ts
-packages/api/src/services/balance.service.ts
-packages/api/src/dto/balance.dto.ts
-packages/contracts/src/balance.ts

@@ -7,6 +7,15 @@ x-app-env: &app-env
   API_INTERNAL_URL: ${API_INTERNAL_URL:-http://api:3000}
   NODE_ENV: ${NODE_ENV:-production}
 
+x-next-build-args: &next-build-args
+  NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://api:3000}
+  NEXT_PUBLIC_HUB_URL: ${HUB_URL:-http://localhost:3001}
+  NEXT_PUBLIC_SHOPFLOW_URL: ${SHOPFLOW_URL:-http://localhost:3002}
+  NEXT_PUBLIC_WORKIFY_URL: ${WORKIFY_URL:-http://localhost:3003}
+  NEXT_PUBLIC_TECHSERVICES_URL: ${TECHSERVICES_URL:-http://localhost:3004}
+  NEXT_PUBLIC_BALANCE_URL: ${BALANCE_URL:-http://localhost:3005}
+  NEXT_PUBLIC_BARO_URL: ${BARO_URL:-http://localhost:3006}
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -80,17 +89,23 @@ services:
   hub:
     build:
       context: .
-      dockerfile: apps/hub/Dockerfile
+      dockerfile: docker/Dockerfile.nextjs
+      args:
+        <<: *next-build-args
+        PACKAGE: '@multisystem/hub'
+        APP_DIR: hub
+        PORT: '3001'
+        NEXT_PUBLIC_HUB_URL: ${HUB_URL?HUB_URL is required}
+        NEXT_PUBLIC_SHOPFLOW_URL: ${SHOPFLOW_URL?SHOPFLOW_URL is required}
+        NEXT_PUBLIC_WORKIFY_URL: ${WORKIFY_URL?WORKIFY_URL is required}
+        NEXT_PUBLIC_TECHSERVICES_URL: ${TECHSERVICES_URL:-http://localhost:3004}
+        NEXT_PUBLIC_BALANCE_URL: ${BALANCE_URL:-http://localhost:3005}
+        NEXT_PUBLIC_BARO_URL: ${BARO_URL?BARO_URL is required}
     container_name: ${STACK_NAME:-multisystem}-hub
     restart: unless-stopped
     environment:
       <<: *app-env
-      NEXT_PUBLIC_HUB_URL: ${HUB_URL?HUB_URL is required}
-      NEXT_PUBLIC_SHOPFLOW_URL: ${SHOPFLOW_URL?SHOPFLOW_URL is required}
-      NEXT_PUBLIC_WORKIFY_URL: ${WORKIFY_URL?WORKIFY_URL is required}
-      NEXT_PUBLIC_TECHSERVICES_URL: ${TECHSERVICES_URL:-http://localhost:3004}
-      NEXT_PUBLIC_BALANCE_URL: ${BALANCE_URL:-http://localhost:3005}
-      NEXT_PUBLIC_BARO_URL: ${BARO_URL?BARO_URL is required}
+      PORT: '3001'
     networks:
       - caddy_network
     depends_on:
@@ -99,14 +114,20 @@ services:
   shopflow:
     build:
       context: .
-      dockerfile: apps/shopflow/Dockerfile
+      dockerfile: docker/Dockerfile.nextjs
+      args:
+        <<: *next-build-args
+        PACKAGE: '@multisystem/shopflow'
+        APP_DIR: shopflow
+        PORT: '3002'
+        NEXT_PUBLIC_SHOPFLOW_URL: ${SHOPFLOW_URL?SHOPFLOW_URL is required}
+        NEXT_PUBLIC_HUB_URL: ${HUB_URL?HUB_URL is required}
+        NEXT_PUBLIC_WORKIFY_URL: ${WORKIFY_URL?WORKIFY_URL is required}
     container_name: ${STACK_NAME:-multisystem}-shopflow
     restart: unless-stopped
     environment:
       <<: *app-env
-      NEXT_PUBLIC_SHOPFLOW_URL: ${SHOPFLOW_URL?SHOPFLOW_URL is required}
-      NEXT_PUBLIC_HUB_URL: ${HUB_URL?HUB_URL is required}
-      NEXT_PUBLIC_WORKIFY_URL: ${WORKIFY_URL?WORKIFY_URL is required}
+      PORT: '3002'
     networks:
       - caddy_network
     depends_on:
@@ -115,13 +136,19 @@ services:
   workify:
     build:
       context: .
-      dockerfile: apps/workify/Dockerfile
+      dockerfile: docker/Dockerfile.nextjs
+      args:
+        <<: *next-build-args
+        PACKAGE: '@multisystem/workify'
+        APP_DIR: workify
+        PORT: '3003'
+        NEXT_PUBLIC_WORKIFY_URL: ${WORKIFY_URL?WORKIFY_URL is required}
+        NEXT_PUBLIC_HUB_URL: ${HUB_URL?HUB_URL is required}
     container_name: ${STACK_NAME:-multisystem}-workify
     restart: unless-stopped
     environment:
       <<: *app-env
-      NEXT_PUBLIC_WORKIFY_URL: ${WORKIFY_URL?WORKIFY_URL is required}
-      NEXT_PUBLIC_HUB_URL: ${HUB_URL?HUB_URL is required}
+      PORT: '3003'
     networks:
       - caddy_network
     depends_on:
@@ -130,12 +157,18 @@ services:
   techservices:
     build:
       context: .
-      dockerfile: apps/techservices/Dockerfile
+      dockerfile: docker/Dockerfile.nextjs
+      args:
+        <<: *next-build-args
+        PACKAGE: '@multisystem/techservices'
+        APP_DIR: techservices
+        PORT: '3004'
+        NEXT_PUBLIC_TECHSERVICES_URL: ${TECHSERVICES_URL:-http://localhost:3004}
     container_name: ${STACK_NAME:-multisystem}-techservices
     restart: unless-stopped
     environment:
       <<: *app-env
-      NEXT_PUBLIC_TECHSERVICES_URL: ${TECHSERVICES_URL:-http://localhost:3004}
+      PORT: '3004'
     networks:
       - caddy_network
     depends_on:
@@ -144,13 +177,19 @@ services:
   balance:
     build:
       context: .
-      dockerfile: apps/balance/Dockerfile
+      dockerfile: docker/Dockerfile.nextjs
+      args:
+        <<: *next-build-args
+        PACKAGE: '@multisystem/balance'
+        APP_DIR: balance
+        PORT: '3005'
+        NEXT_PUBLIC_BALANCE_URL: ${BALANCE_URL:-http://localhost:3005}
+        NEXT_PUBLIC_HUB_URL: ${HUB_URL?HUB_URL is required}
     container_name: ${STACK_NAME:-multisystem}-balance
     restart: unless-stopped
     environment:
       <<: *app-env
-      NEXT_PUBLIC_BALANCE_URL: ${BALANCE_URL:-http://localhost:3005}
-      NEXT_PUBLIC_HUB_URL: ${HUB_URL?HUB_URL is required}
+      PORT: '3005'
     networks:
       - caddy_network
     depends_on:
@@ -159,13 +198,19 @@ services:
   baro:
     build:
       context: .
-      dockerfile: apps/baro/Dockerfile
+      dockerfile: docker/Dockerfile.nextjs
+      args:
+        <<: *next-build-args
+        PACKAGE: '@multisystem/baro'
+        APP_DIR: baro
+        PORT: '3006'
+        NEXT_PUBLIC_HUB_URL: ${HUB_URL?HUB_URL is required}
+        NEXT_PUBLIC_BARO_URL: ${BARO_URL?BARO_URL is required}
     container_name: ${STACK_NAME:-multisystem}-baro
     restart: unless-stopped
     environment:
       <<: *app-env
-      NEXT_PUBLIC_HUB_URL: ${HUB_URL?HUB_URL is required}
-      NEXT_PUBLIC_BARO_URL: ${BARO_URL?BARO_URL is required}
+      PORT: '3006'
     networks:
       - caddy_network
     depends_on:

@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd ../.. && pnpm run api:bundle",
-  "installCommand": "pnpm install",
+  "buildCommand": "cd ../.. && pnpm exec turbo run build --filter=@multisystem/api...",
+  "installCommand": "cd ../.. && pnpm install",
   "functions": {
     "api/index.ts": {
       "maxDuration": 60

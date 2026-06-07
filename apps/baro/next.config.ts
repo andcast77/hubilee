@@ -4,11 +4,14 @@ import type { NextConfig } from 'next'
 // Turbopack (`next dev`): turbopack.root + outputFileTracingRoot (bug pnpm en 16.2.4).
 // Producción (`pnpm build`): forzamos webpack en package.json — en Windows/IIS, el build
 // default con Turbopack + `next start` puede fallar con ChunkLoadError (chunk SSR ausente).
+const monorepoRoot = path.join(__dirname, "..", "..")
+
 const nextConfig: NextConfig = {
+  output: 'standalone',
   turbopack: {
-    root: path.join(__dirname, "..", ".."),
+    root: monorepoRoot,
   },
-  outputFileTracingRoot: path.join(__dirname, "..", ".."),
+  outputFileTracingRoot: monorepoRoot,
   distDir: '.next',
   experimental: {
     serverActions: {
