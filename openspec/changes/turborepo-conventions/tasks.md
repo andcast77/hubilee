@@ -80,20 +80,20 @@ Per-PR verify (run at end of each slice before merge to `v2`). Full cross-slice 
 
 ### PR3 — Slice C verify
 
-- [ ] 4C.1 Spec: `turbo prune` in Docker build logs (containerized-deployment)
-- [ ] 4C.2 Spec: hub image runs `node apps/hub/server.js` (standalone scenario)
-- [ ] 4C.3 Spec: API Vercel build via `turbo run build --filter=@multisystem/api...`
-- [ ] 4C.4 `docker build` hub + API images pass
-- [ ] 4C.5 Run `pnpm turbo run lint typecheck test build --affected` vs `v2`
-- [ ] 4C.6 Write `verify-report-pr3.md`; merge PR3 → `v2`
+- [x] 4C.1 Spec: `turbo prune` in Docker build logs (containerized-deployment)
+- [x] 4C.2 Spec: hub image runs `node apps/hub/server.js` (standalone scenario)
+- [x] 4C.3 Spec: API Vercel build via `turbo run build --filter=@multisystem/api...`
+- [x] 4C.4 `docker build` hub + API images pass
+- [x] 4C.5 Run `pnpm turbo run lint typecheck test build --affected` vs `v2`
+- [x] 4C.6 Write `verify-report-pr3.md`; merge PR3 → `v2`
 
 ### Final (before archive — user confirmation required)
 
-- [ ] 4F.1 Consolidate `verify-report.md` from PR1–PR3
+- [x] 4F.1 Consolidate `verify-report.md` from PR1–PR3
 - [ ] 4F.2 `sdd-archive` — **ask user before executing**
 
 ## Phase 5: Delivery
 
 - [x] 5.1 Create plan branch from `v2` per git-plan-workflow
-- [ ] 5.2 Each slice: verify → fix → merge to `v2` automatically; next slice branches from updated `v2`
+- [x] 5.2 Each slice: verify → fix → merge to `v2` automatically; next slice branches from updated `v2`
 - [ ] 5.3 `sdd-archive` after all slices + final verify — **notify user before archive**
