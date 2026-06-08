@@ -4,6 +4,7 @@ import { PrismaNeon } from '@prisma/adapter-neon'
 import { neonConfig } from '@neondatabase/serverless'
 import ws from 'ws'
 import { PrismaClient } from '../generated/prisma/client'
+import { usePgAdapter } from './adapter-selection'
 
 neonConfig.webSocketConstructor = ws
 
@@ -17,16 +18,15 @@ if (!connectionString) {
     'DATABASE_URL is not set. Set it in .env (e.g. apps/api/.env or packages/database/.env) or in the environment.'
   )
 }
-const isLocal =
-  connectionString.includes('localhost') || connectionString.includes('127.0.0.1')
+const pgAdapter = usePgAdapter(connectionString)
 
 const logLevel: ('query' | 'error' | 'warn')[] =
   process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error']
 
-// Prisma 7 requires an adapter. Use PrismaPg for local Postgres, PrismaNeon for Neon/cloud.
+// Prisma 7 requires an adapter. Use PrismaPg for standard Postgres; PrismaNeon for Neon cloud.
 export const prisma =
   globalForPrisma.prisma ??
-  (isLocal
+  (pgAdapter
     ? new PrismaClient({
         adapter: new PrismaPg({ connectionString }),
         log: logLevel,

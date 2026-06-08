@@ -90,9 +90,9 @@ async function start() {
     // Registrar CORS con orígenes desde .env
     await fastify.register(corsPlugin, { corsOrigin: config.CORS_ORIGIN })
     await fastify.register(securityHeadersPlugin)
+    await fastify.register(errorsPlugin)
     await fastify.register(rateLimitPlugin)
     await fastify.register(schemaSanitizerPlugin)
-    await fastify.register(errorsPlugin)
     await fastify.register(swaggerPlugin, { nodeEnv: config.NODE_ENV })
     await fastify.register(healthPlugin)
     await registerV1(fastify)

@@ -1,3 +1,4 @@
+import '../globals.css'
 import { AccountProvider } from '@/components/app/account-context'
 import { AppSessionGate } from '@/components/app/app-session-gate'
 import { AppShell } from '@/components/app/app-shell'

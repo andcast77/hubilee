@@ -2,6 +2,9 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 
+/* AuthLayout (@multisystem/ui): Tailwind v4 no escanea packages/ui por defecto */
+@source '../../../../packages/ui/src';
+
 @custom-variant dark (&:is(.dark *));
 
 /* Animaciones — under-construction */
@@ -494,3 +497,4 @@ body {
 .docx-modal-viewport .docx-preview-root-wrapper > section.docx-preview-root:last-child {
   margin-bottom: 0 !important;
 }
+

@@ -7,6 +7,7 @@ const monorepoRoot = path.join(/* turbopackIgnore: true */ __dirname, '..', '..'
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  transpilePackages: ['@multisystem/ui'],
   turbopack: {
     root: monorepoRoot,
   },

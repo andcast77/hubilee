@@ -6,16 +6,19 @@ import { neonConfig } from '@neondatabase/serverless'
 import ws from 'ws'
 import bcrypt from 'bcryptjs'
 import { resolveDbUrls } from '../scripts/db-target-env'
+import { usePgAdapter } from '../src/adapter-selection'
 
 // Resolve URL from DB_TARGET so commands never cross local/prod boundaries.
 const { databaseUrl: connectionString } = resolveDbUrls()
 process.env.DATABASE_URL = connectionString
-const isLocal = connectionString.includes('localhost') || connectionString.includes('127.0.0.1')
+const pgAdapter = usePgAdapter(connectionString)
 
-const adapter = isLocal ? new PrismaPg({ connectionString }) : new PrismaNeon({ connectionString })
+const adapter = pgAdapter
+  ? new PrismaPg({ connectionString })
+  : new PrismaNeon({ connectionString })
 
 // For Neon we require websocket support in Node.js.
-if (!isLocal) {
+if (!pgAdapter) {
   neonConfig.webSocketConstructor = ws
 }
 

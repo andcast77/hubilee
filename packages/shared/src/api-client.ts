@@ -3,6 +3,37 @@ export type ApiClientOptions = {
   refreshOn401?: boolean
 }
 
+const GENERIC_HTTP_ERROR_PHRASES = new Set([
+  'Bad Request',
+  'Unauthorized',
+  'Forbidden',
+  'Not Found',
+  'Conflict',
+  'Unprocessable Entity',
+  'Too Many Requests',
+  'Internal Server Error',
+  'Service Unavailable',
+])
+
+function resolveApiErrorMessage(errorData: Record<string, unknown>): string | undefined {
+  const errStr = typeof errorData.error === 'string' ? errorData.error.trim() : ''
+  const msgStr = typeof errorData.message === 'string' ? errorData.message.trim() : ''
+  const code = typeof errorData.code === 'string' ? errorData.code : undefined
+
+  if (msgStr && (genericHttpError(errStr) || (code && msgStr !== errStr))) {
+    return msgStr
+  }
+  if (code && msgStr) return msgStr
+  if (errStr && !genericHttpError(errStr)) return errStr
+  if (msgStr) return msgStr
+  if (errStr) return errStr
+  return undefined
+}
+
+function genericHttpError(value: string): boolean {
+  return GENERIC_HTTP_ERROR_PHRASES.has(value)
+}
+
 /**
  * Shared API client — sends httpOnly session cookie via credentials (API must set CORS origin).
  */
@@ -51,19 +82,10 @@ export class ApiClient {
       let retryAfterSeconds: number | undefined
       try {
         const errorData = (await response.json()) as Record<string, unknown>
-        const errStr = typeof errorData.error === 'string' ? errorData.error : ''
-        const msgStr = typeof errorData.message === 'string' ? errorData.message : ''
         if (typeof errorData.code === 'string') code = errorData.code
         if (typeof errorData.retryAfterSeconds === 'number') retryAfterSeconds = errorData.retryAfterSeconds
-        // Prefer `message` when `code` is set — some stacks put the HTTP reason in `error`
-        // (e.g. "Service Unavailable") and the real text in `message`.
-        if (code && msgStr) {
-          errorMessage = msgStr
-        } else if (errStr) {
-          errorMessage = errStr
-        } else if (msgStr) {
-          errorMessage = msgStr
-        }
+        const resolved = resolveApiErrorMessage(errorData)
+        if (resolved) errorMessage = resolved
       } catch {
         // Response body is not JSON
       }
