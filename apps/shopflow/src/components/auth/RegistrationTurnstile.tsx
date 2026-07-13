@@ -1,10 +1,10 @@
 "use client";
 
-import dynamic from "next/dynamic";
+import { lazy, Suspense } from "react";
 
-const Turnstile = dynamic(() => import("@marsidev/react-turnstile").then((m) => m.Turnstile), {
-  ssr: false,
-});
+const Turnstile = lazy(() =>
+  import("@marsidev/react-turnstile").then((m) => ({ default: m.Turnstile })),
+);
 
 const DEFAULT_SITE_KEY = "1x00000000000000000000AA";
 const MISTAKEN_SECRET_AS_SITEKEY = "1x0000000000000000000000000000000AA";
@@ -33,18 +33,20 @@ export function RegistrationTurnstile({ onToken, variant = "default" }: Props) {
         " [&_iframe]:block [&_iframe]:min-h-[65px] [&_iframe]:min-w-[300px] [&_iframe]:w-full [&_iframe]:max-w-none"
       }
     >
-      <Turnstile
-        siteKey={siteKey}
-        onSuccess={(t) => onToken(t)}
-        onExpire={() => onToken(null)}
-        onError={() => onToken(null)}
-        options={{
-          appearance: "interaction-only",
-          theme: "dark",
-          language: "es",
-          size: "flexible",
-        }}
-      />
+      <Suspense fallback={null}>
+        <Turnstile
+          siteKey={siteKey}
+          onSuccess={(t) => onToken(t)}
+          onExpire={() => onToken(null)}
+          onError={() => onToken(null)}
+          options={{
+            appearance: "interaction-only",
+            theme: "dark",
+            language: "es",
+            size: "flexible",
+          }}
+        />
+      </Suspense>
     </div>
   );
 }
