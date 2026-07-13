@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
+import { Link } from '@tanstack/react-router'
 import { useCustomers, useDeleteCustomer } from '@/hooks/useCustomers'
 import { Button } from '@multisystem/ui'
 import { Input } from '@multisystem/ui'
@@ -103,7 +103,7 @@ export function CustomerList({ onCustomerClick }: CustomerListProps) {
             className="pl-10"
           />
         </div>
-        <Link href="/customers/new">
+        <Link to="/customers/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Cliente
@@ -236,7 +236,7 @@ export function CustomerList({ onCustomerClick }: CustomerListProps) {
                   </TableCell>
                   <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-end gap-2">
-                      <Link href={`/customers/${customer.id}`}>
+                      <Link to="/customers/$id" params={{ id: customer.id }}>
                         <Button variant="ghost" size="sm" title="Editar">
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -308,7 +308,7 @@ export function CustomerList({ onCustomerClick }: CustomerListProps) {
               : 'Comienza agregando tu primer cliente.'}
           </p>
           {!search && (
-            <Link href="/customers/new" className="mt-4">
+            <Link to="/customers/new" className="mt-4">
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
                 Nuevo Cliente

@@ -1,18 +1,30 @@
 "use client";
 
-import { useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "@tanstack/react-router";
 import { useUser } from "@/hooks/useUser";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { data: user, isLoading } = useUser();
-  const router = useRouter();
-  const pathname = usePathname();
+  const navigate = useNavigate();
+  const pathname = useLocation({ select: (location) => location.pathname });
+  // Capture the pathname the user actually tried to visit, once. `pathname`
+  // is intentionally NOT a dependency below: `useLocation()` is reactive to
+  // the router's global location store, so once the redirect below fires
+  // and the location changes to `/login`, this same effect would otherwise
+  // re-run with the now-stale `pathname` (`/login`) during the brief render
+  // where this component is still mounted mid-transition, clobbering the
+  // `next` search param with the wrong value.
+  const initialPathnameRef = useRef(pathname);
 
   useEffect(() => {
     if (isLoading || user) return;
-    router.replace(`/login?next=${encodeURIComponent(pathname || "/dashboard")}`);
-  }, [isLoading, user, router, pathname]);
+    void navigate({
+      to: "/login",
+      search: { next: initialPathnameRef.current || "/dashboard" },
+      replace: true,
+    });
+  }, [isLoading, user, navigate]);
 
   if (isLoading) {
     return (

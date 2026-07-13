@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import { Link } from '@tanstack/react-router'
 import { useLowStockProducts } from '@/hooks/useInventory'
 import {
   Table,
@@ -109,7 +109,7 @@ export function LowStockAlert() {
                   <span className="text-gray-600">{product.minStock}</span>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Link href={`/products/${product.id}`}>
+                  <Link to="/products/$id" params={{ id: product.id }}>
                     <Button variant="ghost" size="sm">
                       Ver Producto
                     </Button>

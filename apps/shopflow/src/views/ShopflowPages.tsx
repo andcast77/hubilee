@@ -1,8 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label } from "@multisystem/ui";
 import { PageFrame } from "@/views/PageFrame";
 import { StatsCards } from "@/components/features/reports/StatsCards";
@@ -161,7 +160,7 @@ function CrudGuard({ children, loading, notFound }: { children: React.ReactNode;
 }
 
 export function ProductCreatePage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const mutation = useCreateProduct();
   return (
     <PageFrame
@@ -171,14 +170,14 @@ export function ProductCreatePage() {
         { label: "Nuevo" },
       ]}
     >
-      <ProductForm onSubmit={async (data) => { await mutation.mutateAsync(data as any); router.push("/products"); }} isLoading={mutation.isPending} />
+      <ProductForm onSubmit={async (data) => { await mutation.mutateAsync(data as any); void navigate({ to: "/products" }); }} isLoading={mutation.isPending} />
     </PageFrame>
   );
 }
 export function ProductEditPage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams({ strict: false }) as { id?: string };
   const id = params.id ?? "";
-  const router = useRouter();
+  const navigate = useNavigate();
   const { data, isLoading } = useProduct(id);
   const mutation = useUpdateProduct();
   const productName =
@@ -199,7 +198,7 @@ export function ProductEditPage() {
           initialData={data as any}
           onSubmit={async (form) => {
             await mutation.mutateAsync({ id, data: form as any });
-            router.push("/products");
+            void navigate({ to: "/products" });
           }}
           isLoading={mutation.isPending}
         />
@@ -208,7 +207,7 @@ export function ProductEditPage() {
   );
 }
 export function CustomerCreatePage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const mutation = useCreateCustomer();
   return (
     <PageFrame
@@ -218,14 +217,14 @@ export function CustomerCreatePage() {
         { label: "Nuevo" },
       ]}
     >
-      <CustomerForm onSubmit={async (data) => { await mutation.mutateAsync(data as any); router.push("/customers"); }} isLoading={mutation.isPending} />
+      <CustomerForm onSubmit={async (data) => { await mutation.mutateAsync(data as any); void navigate({ to: "/customers" }); }} isLoading={mutation.isPending} />
     </PageFrame>
   );
 }
 export function CustomerEditPage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams({ strict: false }) as { id?: string };
   const id = params.id ?? "";
-  const router = useRouter();
+  const navigate = useNavigate();
   const { data, isLoading } = useCustomer(id);
   const mutation = useUpdateCustomer();
   const customerName =
@@ -242,13 +241,13 @@ export function CustomerEditPage() {
           { label: "Editar" },
         ]}
       >
-        <CustomerForm initialData={data as any} onSubmit={async (form) => { await mutation.mutateAsync({ id, data: form as any }); router.push("/customers"); }} isLoading={mutation.isPending} />
+        <CustomerForm initialData={data as any} onSubmit={async (form) => { await mutation.mutateAsync({ id, data: form as any }); void navigate({ to: "/customers" }); }} isLoading={mutation.isPending} />
       </PageFrame>
     </CrudGuard>
   );
 }
 export function SupplierCreatePage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const mutation = useCreateSupplier();
   return (
     <PageFrame
@@ -258,14 +257,14 @@ export function SupplierCreatePage() {
         { label: "Nuevo" },
       ]}
     >
-      <SupplierForm onSubmit={async (data) => { await mutation.mutateAsync(data as any); router.push("/suppliers"); }} isLoading={mutation.isPending} />
+      <SupplierForm onSubmit={async (data) => { await mutation.mutateAsync(data as any); void navigate({ to: "/suppliers" }); }} isLoading={mutation.isPending} />
     </PageFrame>
   );
 }
 export function SupplierEditPage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams({ strict: false }) as { id?: string };
   const id = params.id ?? "";
-  const router = useRouter();
+  const navigate = useNavigate();
   const { data, isLoading } = useSupplier(id);
   const mutation = useUpdateSupplier();
   const supplierName =
@@ -282,13 +281,13 @@ export function SupplierEditPage() {
           { label: "Editar" },
         ]}
       >
-        <SupplierForm initialData={data as any} onSubmit={async (form) => { await mutation.mutateAsync({ id, data: form as any }); router.push("/suppliers"); }} isLoading={mutation.isPending} />
+        <SupplierForm initialData={data as any} onSubmit={async (form) => { await mutation.mutateAsync({ id, data: form as any }); void navigate({ to: "/suppliers" }); }} isLoading={mutation.isPending} />
       </PageFrame>
     </CrudGuard>
   );
 }
 export function UserCreatePage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const mutation = useCreateUser();
   return (
     <PageFrame
@@ -298,14 +297,14 @@ export function UserCreatePage() {
         { label: "Nuevo" },
       ]}
     >
-      <UserForm onSubmit={async (data) => { await mutation.mutateAsync(data as any); router.push("/admin/users"); }} isLoading={mutation.isPending} />
+      <UserForm onSubmit={async (data) => { await mutation.mutateAsync(data as any); void navigate({ to: "/admin/users" }); }} isLoading={mutation.isPending} />
     </PageFrame>
   );
 }
 export function UserEditPage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams({ strict: false }) as { id?: string };
   const id = params.id ?? "";
-  const router = useRouter();
+  const navigate = useNavigate();
   const { data, isLoading } = useUser(id);
   const mutation = useUpdateUser();
   const userName =
@@ -322,14 +321,14 @@ export function UserEditPage() {
           { label: "Editar" },
         ]}
       >
-        <UserForm isEdit initialData={data as any} onSubmit={async (form) => { await mutation.mutateAsync({ id, data: form as any }); router.push("/admin/users"); }} isLoading={mutation.isPending} />
+        <UserForm isEdit initialData={data as any} onSubmit={async (form) => { await mutation.mutateAsync({ id, data: form as any }); void navigate({ to: "/admin/users" }); }} isLoading={mutation.isPending} />
       </PageFrame>
     </CrudGuard>
   );
 }
 
 export function SaleDetailPage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams({ strict: false }) as { id?: string };
   const id = params.id ?? "";
   const { data: sale, isLoading } = useSale(id);
   const { data: storeConfig } = useStoreConfig();
@@ -433,8 +432,8 @@ export function ReportsPage() {
   return (
     <PageFrame title="Reportes">
       <div className="grid gap-4 md:grid-cols-2">
-        <Card><CardHeader><CardTitle>Ventas</CardTitle><CardDescription>Indicadores de ventas y top productos.</CardDescription></CardHeader><CardContent><Link href="/reports/sales"><Button variant="outline">Ver reporte de ventas</Button></Link></CardContent></Card>
-        <Card><CardHeader><CardTitle>Inventario</CardTitle><CardDescription>Vista de stock y productos criticos.</CardDescription></CardHeader><CardContent><Link href="/reports/inventory"><Button variant="outline">Ver reporte de inventario</Button></Link></CardContent></Card>
+        <Card><CardHeader><CardTitle>Ventas</CardTitle><CardDescription>Indicadores de ventas y top productos.</CardDescription></CardHeader><CardContent><Link to="/reports/sales"><Button variant="outline">Ver reporte de ventas</Button></Link></CardContent></Card>
+        <Card><CardHeader><CardTitle>Inventario</CardTitle><CardDescription>Vista de stock y productos criticos.</CardDescription></CardHeader><CardContent><Link to="/reports/inventory"><Button variant="outline">Ver reporte de inventario</Button></Link></CardContent></Card>
       </div>
     </PageFrame>
   );
@@ -476,7 +475,8 @@ export function ReportsSalesPage() {
                 {recentSales.map((sale: { id: string; invoiceNumber?: string | null; total: number; createdAt: string | Date; status: string }) => (
                   <li key={sale.id}>
                     <Link
-                      href={`/sales/${sale.id}`}
+                      to="/sales/$id"
+                      params={{ id: sale.id }}
                       className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm hover:bg-slate-50"
                     >
                       <span className="font-medium">{sale.invoiceNumber ?? sale.id.slice(0, 8)}</span>
@@ -604,10 +604,10 @@ export function LoyaltyPage() {
 }
 
 export function AccountPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const handleLogout = async () => {
     try { await authApi.post("/logout"); } catch {}
-    router.replace("/login");
+    void navigate({ to: "/login", replace: true });
   };
   return (
     <PageFrame title="Mi Cuenta" breadcrumbs={[{ label: "Panel", href: "/dashboard" }, { label: "Mi cuenta" }]}>

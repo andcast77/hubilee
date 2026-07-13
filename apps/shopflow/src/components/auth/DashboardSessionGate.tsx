@@ -1,16 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "@tanstack/react-router";
 import { authApi } from "@/lib/api/client";
 
 /**
  * Ensures user has API session before showing dashboard. httpOnly cookie is not visible to middleware.
  */
 export function DashboardSessionGate({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const pathname = usePathname();
+  const navigate = useNavigate();
+  const pathname = useLocation({ select: (location) => location.pathname });
   const [ready, setReady] = useState(false);
+  // Captured once: see `ProtectedRoute.tsx` for why `pathname` must not be a
+  // reactive effect dependency here (it would re-run this effect — and
+  // re-hit `/me` — after the redirect below changes the location, clobbering
+  // the `next` search param with the post-redirect pathname).
+  const initialPathnameRef = useRef(pathname);
 
   useEffect(() => {
     let cancelled = false;
@@ -20,13 +25,17 @@ export function DashboardSessionGate({ children }: { children: React.ReactNode }
         if (!cancelled) setReady(true);
       } catch {
         if (!cancelled)
-          router.replace(`/login?next=${encodeURIComponent(pathname || "/dashboard")}`);
+          void navigate({
+            to: "/login",
+            search: { next: initialPathnameRef.current || "/dashboard" },
+            replace: true,
+          });
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [router, pathname]);
+  }, [navigate]);
 
   if (!ready) {
     return (

@@ -35,21 +35,16 @@ import {
   SelectValue,
 } from '@multisystem/ui'
 import { useInAppNotifications } from '@/hooks/useInAppNotifications'
-import NextLink from 'next/link'
-import { usePathname } from 'next/navigation'
+import { Link, useLocation } from '@tanstack/react-router'
 
-/** Maps react-router `to` + Next `href` to a single `href` for `next/link`. */
-function SidebarLink({
-  to,
-  href,
-  ...rest
-}: React.ComponentProps<typeof NextLink> & { to?: string }) {
-  return <NextLink href={href ?? to ?? '/'} {...rest} />
-}
-
-/** Adapter for `@multisystem/ui` Sidebar (expects Next-like `usePathname`). */
+/**
+ * `@multisystem/ui`'s Sidebar already calls its injected `Link` with both
+ * `to` and `href` set to the same value (interop for either react-router or
+ * `next/link`-style components), so TanStack's `Link` can be passed through
+ * directly with no adapter.
+ */
 function useRouterPathname(): string {
-  return usePathname() || '/'
+  return useLocation({ select: (location) => location.pathname }) || '/'
 }
 
 // Navigation groups - Only add routes that actually exist!
@@ -310,7 +305,7 @@ export function Sidebar() {
         </div>
       ) : null}
       <SidebarComponent
-        navigation={{ Link: SidebarLink, usePathname: useRouterPathname }}
+        navigation={{ Link, usePathname: useRouterPathname }}
         navGroups={navGroups}
         user={sidebarUser}
         branding={{

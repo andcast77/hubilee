@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
+import { Link } from '@tanstack/react-router'
 import { useSuppliers, useDeleteSupplier } from '@/hooks/useSuppliers'
 import { Button } from '@multisystem/ui'
 import { Input } from '@multisystem/ui'
@@ -94,7 +94,7 @@ export function SupplierList() {
             className="pl-10"
           />
         </div>
-        <Link href="/suppliers/new">
+        <Link to="/suppliers/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Proveedor
@@ -212,7 +212,7 @@ export function SupplierList() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Link href={`/suppliers/${supplier.id}`}>
+                      <Link to="/suppliers/$id" params={{ id: supplier.id }}>
                         <Button variant="ghost" size="sm" title="Editar">
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -282,7 +282,7 @@ export function SupplierList() {
             {search ? 'No se encontraron proveedores.' : 'Comienza agregando tu primer proveedor.'}
           </p>
           {!search && (
-            <Link href="/suppliers/new" className="mt-4">
+            <Link to="/suppliers/new" className="mt-4">
               <Button><Plus className="mr-2 h-4 w-4" />Nuevo Proveedor</Button>
             </Link>
           )}

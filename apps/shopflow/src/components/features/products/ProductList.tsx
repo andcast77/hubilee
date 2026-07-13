@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
+import { Link } from '@tanstack/react-router'
 import { useProducts, useDeleteProduct } from '@/hooks/useProducts'
 import { Button } from '@multisystem/ui'
 import { Input } from '@multisystem/ui'
@@ -127,7 +127,7 @@ export function ProductList({ onProductClick }: ProductListProps) {
             </SelectContent>
           </Select>
         </div>
-        <Link href="/products/new">
+        <Link to="/products/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Producto
@@ -252,7 +252,7 @@ export function ProductList({ onProductClick }: ProductListProps) {
                     </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end gap-2">
-                        <Link href={`/products/${product.id}`}>
+                        <Link to="/products/$id" params={{ id: product.id }}>
                           <Button variant="ghost" size="sm" title="Editar">
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -328,7 +328,7 @@ export function ProductList({ onProductClick }: ProductListProps) {
               : 'Comienza agregando tu primer producto.'}
           </p>
           {!search && (
-            <Link href="/products/new" className="mt-4">
+            <Link to="/products/new" className="mt-4">
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
                 Nuevo Producto
