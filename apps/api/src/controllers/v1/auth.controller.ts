@@ -20,6 +20,7 @@ import {
   verifyEmailQuerySchema,
   resendVerificationBodySchema,
   changePasswordBodySchema,
+  refreshBodySchema,
 } from '../../dto/auth.dto.js'
 import { ok } from '../../common/api-response.js'
 import * as authService from '../../services/auth.service.js'
@@ -46,7 +47,7 @@ async function attachWebAuthCookies(
   userId: string,
   ctx: { companyId?: string; membershipRole?: string },
   meta: { ip: string; ua: string | null }
-) {
+): Promise<{ refreshPlain: string }> {
   const config = getConfig()
   const { refreshPlain } = await authService.createWebSessionPair(userId, accessToken, ctx, {
     ipAddress: meta.ip,
@@ -54,6 +55,16 @@ async function attachWebAuthCookies(
   })
   attachAuthSessionCookie(reply, accessToken, config)
   attachRefreshSessionCookie(reply, refreshPlain, config)
+  return { refreshPlain }
+}
+
+/**
+ * Gating signal for the desktop (Tauri) client — ADDITIVE, web-desktop-vite-tauri PR1.
+ * Web never sends this header, so its handler path is unaffected. Only an exact
+ * `x-client: desktop` header unlocks `data.tokens` in the response body.
+ */
+export function isDesktopClient(request: FastifyRequest): boolean {
+  return request.headers['x-client'] === 'desktop'
 }
 
 export async function login(request: FastifyRequest, reply: FastifyReply) {
@@ -87,10 +98,13 @@ export async function login(request: FastifyRequest, reply: FastifyReply) {
   }
 
   const { token, ...data } = result
-  await attachWebAuthCookies(reply, token, result.user.id, {
+  const { refreshPlain } = await attachWebAuthCookies(reply, token, result.user.id, {
     companyId: result.companyId,
     membershipRole: result.membershipRole,
   }, { ip, ua })
+  if (isDesktopClient(request)) {
+    ;(data as Record<string, unknown>).tokens = { accessToken: token, refreshToken: refreshPlain }
+  }
   return ok(data)
 }
 
@@ -140,10 +154,13 @@ export async function verifyMfaTotp(request: FastifyRequest, reply: FastifyReply
       })
     }
     const { token, ...data } = login
-    await attachWebAuthCookies(reply, token, login.user.id, {
+    const { refreshPlain } = await attachWebAuthCookies(reply, token, login.user.id, {
       companyId: login.companyId,
       membershipRole: login.membershipRole,
     }, { ip, ua })
+    if (isDesktopClient(request)) {
+      ;(data as Record<string, unknown>).tokens = { accessToken: token, refreshToken: refreshPlain }
+    }
     return ok(data)
   } catch (err) {
     if (err instanceof UnauthorizedError) {
@@ -186,10 +203,13 @@ export async function verifyMfaBackup(request: FastifyRequest, reply: FastifyRep
       })
     }
     const { token, ...data } = login
-    await attachWebAuthCookies(reply, token, login.user.id, {
+    const { refreshPlain } = await attachWebAuthCookies(reply, token, login.user.id, {
       companyId: login.companyId,
       membershipRole: login.membershipRole,
     }, { ip, ua })
+    if (isDesktopClient(request)) {
+      ;(data as Record<string, unknown>).tokens = { accessToken: token, refreshToken: refreshPlain }
+    }
     return ok(data)
   } catch (err) {
     if (err instanceof UnauthorizedError) {
@@ -205,10 +225,13 @@ export async function register(request: FastifyRequest, reply: FastifyReply) {
   const ua = (request.headers['user-agent'] as string | undefined) ?? null
   const result = await authService.register(body)
   const { token, ...data } = result
-  await attachWebAuthCookies(reply, token, result.user.id, {
+  const { refreshPlain } = await attachWebAuthCookies(reply, token, result.user.id, {
     companyId: result.user.companyId,
     membershipRole: result.user.companyId ? 'OWNER' : undefined,
   }, { ip, ua })
+  if (isDesktopClient(request)) {
+    ;(data as Record<string, unknown>).tokens = { accessToken: token, refreshToken: refreshPlain }
+  }
   return ok(data)
 }
 
@@ -303,10 +326,13 @@ export async function registerLinkVerify(request: FastifyRequest, reply: Fastify
   const ua = (request.headers['user-agent'] as string | undefined) ?? null
   const result = await registrationLinkService.completeRegistrationFromLink(body)
   const { token, ...data } = result
-  await attachWebAuthCookies(reply, token, result.user.id, {
+  const { refreshPlain } = await attachWebAuthCookies(reply, token, result.user.id, {
     companyId: result.user.companyId,
     membershipRole: result.user.companyId ? 'OWNER' : undefined,
   }, { ip, ua })
+  if (isDesktopClient(request)) {
+    ;(data as Record<string, unknown>).tokens = { accessToken: token, refreshToken: refreshPlain }
+  }
   return ok(data)
 }
 
@@ -378,7 +404,12 @@ export async function listSessions(request: FastifyRequest, reply: FastifyReply)
 }
 
 export async function refreshTokens(request: FastifyRequest, reply: FastifyReply) {
-  const refreshPlain = getRefreshTokenFromCookieHeader(request.headers.cookie)
+  const desktop = isDesktopClient(request)
+  // Cookie takes precedence — web clients are unaffected. Desktop clients have no
+  // cookie store, so they send the refresh token in the body instead (ADR-A1).
+  const cookieRefresh = getRefreshTokenFromCookieHeader(request.headers.cookie)
+  const refreshPlain =
+    cookieRefresh ?? (desktop ? validateBody(refreshBodySchema, request.body ?? {}).refreshToken : undefined)
   if (!refreshPlain) throw new UnauthorizedError('Sesión no encontrada')
   const config = getConfig()
   const { accessToken, refreshPlain: newRefresh } = await authService.refreshAccessTokenFromCookie(refreshPlain, {
@@ -387,6 +418,9 @@ export async function refreshTokens(request: FastifyRequest, reply: FastifyReply
   })
   attachAuthSessionCookie(reply, accessToken, config)
   attachRefreshSessionCookie(reply, newRefresh, config)
+  if (desktop) {
+    return ok({ tokens: { accessToken, refreshToken: newRefresh } })
+  }
   return ok({ refreshed: true })
 }
 

@@ -118,6 +118,18 @@ export const verifyTokenSchema = z.object({
   token: z.string().min(1),
 })
 
+/**
+ * Input DTO: refresh body — ADDITIVE for desktop clients (web-desktop-vite-tauri PR1).
+ * Web (cookie) clients never send a body; the refresh token still comes from the
+ * `ms_refresh` cookie for them. Desktop (`X-Client: desktop`) clients have no cookie
+ * store and send the refresh token here instead.
+ */
+export const refreshBodySchema = z.object({
+  refreshToken: z.string().min(1).optional(),
+})
+
+export type RefreshBody = z.infer<typeof refreshBodySchema>
+
 /** Input DTO: set context (switch company) */
 export const setContextSchema = z.object({
   companyId: z.string().uuid(),
