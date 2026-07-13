@@ -44,6 +44,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "catalog:",
+    "@testing-library/react": "^16.3.2",
     "@tailwindcss/postcss": "catalog:",
     "@tailwindcss/vite": "^4.3.2",
     "@tanstack/router-plugin": "^1.168.20",
