@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { clearDesktopSession, createAuthTransport, getTokenStorage, isDesktop } from '../platform'
+import { clearDesktopSession, createApiClientOptions, createAuthTransport, getTokenStorage, isDesktop } from '../platform'
 
 function setDesktop(on: boolean) {
   const w = window as unknown as { __TAURI_INTERNALS__?: unknown }
@@ -49,6 +49,26 @@ describe('platform.createAuthTransport (PR4 desktop Bearer wiring)', () => {
     await transport.onAuthCleared()
     expect(await transport.getAccessToken()).toBeNull()
     expect(await transport.getRefreshToken()).toBeNull()
+  })
+})
+
+describe('platform.createApiClientOptions (shopflow ApiClient wiring)', () => {
+  afterEach(async () => {
+    setDesktop(true)
+    await clearDesktopSession()
+    setDesktop(false)
+  })
+
+  it('returns an empty options object on web — ApiClient falls back to its cookie default, unchanged', () => {
+    setDesktop(false)
+    expect(createApiClientOptions()).toEqual({})
+  })
+
+  it('returns refreshOn401 + a bearer authTransport on desktop', () => {
+    setDesktop(true)
+    const options = createApiClientOptions()
+    expect(options.refreshOn401).toBe(true)
+    expect(options.authTransport?.mode).toBe('bearer')
   })
 })
 

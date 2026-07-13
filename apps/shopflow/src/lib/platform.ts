@@ -7,7 +7,7 @@
  * `sdd/web-desktop-vite-tauri/design`: a shared secure-token-storage
  * singleton and the `AuthTransport` `ApiClient` picks cookie-vs-Bearer from.
  */
-import type { AuthTransport } from '@multisystem/shared'
+import type { ApiClientOptions, AuthTransport } from '@multisystem/shared'
 import { createInMemoryTokenStorage, createTauriTokenStorage, type TokenStorage } from './secure-storage'
 
 export function isDesktop(): boolean {
@@ -56,4 +56,16 @@ export function createAuthTransport(): AuthTransport {
 export async function clearDesktopSession(): Promise<void> {
   if (!isDesktop()) return
   await desktopTokenStorage.clear()
+}
+
+/**
+ * `ApiClientOptions` for the current platform — the single call site
+ * `apps/shopflow/src/lib/api/client.ts` needs to pick cookie vs. Bearer.
+ * Web gets `{}` (identical to constructing `ApiClient` with no options at
+ * all, i.e. the exact pre-PR4 behavior); desktop gets `refreshOn401: true`
+ * plus the bearer `AuthTransport` above.
+ */
+export function createApiClientOptions(): ApiClientOptions {
+  if (!isDesktop()) return {}
+  return { refreshOn401: true, authTransport: createAuthTransport() }
 }

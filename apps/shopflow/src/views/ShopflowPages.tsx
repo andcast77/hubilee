@@ -38,6 +38,7 @@ import { formatCurrency, formatDate } from "@/lib/utils/format";
 import { useLoyaltyConfig, useUpdateLoyaltyConfig } from "@/hooks/useLoyalty";
 import { useStoreConfig as usePosStoreConfig } from "@/hooks/useStoreConfig";
 import { authApi } from "@/lib/api/client";
+import { clearDesktopSession } from "@/lib/platform";
 
 export function DashboardPage() {
   const [period, setPeriod] = useState<"today" | "week" | "month">("today");
@@ -607,6 +608,9 @@ export function AccountPage() {
   const navigate = useNavigate();
   const handleLogout = async () => {
     try { await authApi.post("/logout"); } catch {}
+    // Desktop has no session cookie for the API to clear server-side alone —
+    // wipe the locally stored Bearer tokens too (no-op on web).
+    await clearDesktopSession();
     void navigate({ to: "/login", replace: true });
   };
   return (

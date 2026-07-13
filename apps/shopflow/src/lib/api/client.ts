@@ -1,5 +1,6 @@
 import { ApiClient as SharedApiClient } from '@multisystem/shared'
 import type { MeResponse } from '@multisystem/contracts'
+import { createApiClientOptions } from '@/lib/platform'
 
 // API Client for ShopFlow Frontend
 // Points to unified API with module prefixes (all requests go to external API, not Next.js routes)
@@ -28,7 +29,11 @@ function withStoreIdHeader(options?: RequestInit): RequestInit {
   return { ...(options ?? {}), headers }
 }
 
-const sharedClient = new SharedApiClient(API_URL)
+// Cookie transport (web, default) or Bearer transport backed by Tauri secure
+// storage (desktop) — see `sdd/web-desktop-vite-tauri/design` ADR-A3 and
+// `platform.ts`. `createApiClientOptions()` returns `{}` on web, so this is
+// byte-identical to `new SharedApiClient(API_URL)` there.
+const sharedClient = new SharedApiClient(API_URL, createApiClientOptions())
 
 /** Auth headers for fetch to external API (e.g. FormData uploads). */
 export function getAuthHeaders(): HeadersInit {
