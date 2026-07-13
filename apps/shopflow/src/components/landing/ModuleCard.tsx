@@ -1,5 +1,5 @@
 import React from "react";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import { ArrowRight, Lock } from "lucide-react";
 
 type ModuleCardProps = {
@@ -95,7 +95,7 @@ export function ModuleCard({
   }
 
   return (
-    <Link href={href} className="block h-full">
+    <Link to={href} className="block h-full">
       {content}
     </Link>
   );

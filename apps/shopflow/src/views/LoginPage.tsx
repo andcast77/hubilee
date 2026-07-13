@@ -20,8 +20,7 @@ import {
   Input,
   Label,
 } from "@multisystem/ui";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import type { ApiResponse, LoginResponse } from "@multisystem/contracts";
 import { loginSchema } from "@/lib/validations/auth";
 import { authApi } from "@/lib/api/client";
@@ -39,11 +38,11 @@ function hubForgotPasswordUrl(): string {
 }
 
 export function LoginPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const navigate = useNavigate();
+  const search = useSearch({ strict: false }) as { next?: string };
   const nextPath = useMemo(
-    () => safeNextPath(searchParams.get("next")),
-    [searchParams],
+    () => safeNextPath(search.next ?? null),
+    [search.next],
   );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -103,7 +102,7 @@ export function LoginPage() {
         setMfaBackup(false);
         return;
       }
-      router.replace(nextPath ?? "/dashboard");
+      void navigate({ to: nextPath ?? "/dashboard", replace: true });
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "No se pudo iniciar sesión",
@@ -137,7 +136,7 @@ export function LoginPage() {
         setError(res.error || "Código inválido");
         return;
       }
-      router.replace(nextPath ?? "/dashboard");
+      void navigate({ to: nextPath ?? "/dashboard", replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo verificar");
     } finally {
@@ -165,7 +164,7 @@ export function LoginPage() {
                 <>
                   ¿No tienes cuenta?{" "}
                   <Link
-                    href="/register"
+                    to="/register"
                     className="text-indigo-300 hover:text-indigo-200 font-medium"
                   >
                     Registrarse
@@ -173,7 +172,7 @@ export function LoginPage() {
                 </>
               }
               homeLine={
-                <Link href="/" className={AUTH_BRAND_HOME_LINK_CLASS}>
+                <Link to="/" className={AUTH_BRAND_HOME_LINK_CLASS}>
                   Volver al inicio
                 </Link>
               }

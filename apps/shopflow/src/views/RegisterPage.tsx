@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import { ApiError } from "@multisystem/shared";
 import {
   AuthLayout,
@@ -129,7 +129,7 @@ export function RegisterPage() {
           <AuthBrandFooterCenter>
             <p className="text-sm text-white/50">
               ¿Ya tienes cuenta?{" "}
-              <Link href="/login" className="text-indigo-300 hover:text-indigo-200 font-medium">
+              <Link to="/login" className="text-indigo-300 hover:text-indigo-200 font-medium">
                 Inicia sesión
               </Link>
             </p>
@@ -231,7 +231,7 @@ export function RegisterPage() {
                 onChange={(e) => setForm((prev) => ({ ...prev, termsAccepted: e.target.checked }))}
               />
               Acepto los{" "}
-              <Link className="text-indigo-300 underline hover:text-indigo-200" href="/terms">
+              <Link className="text-indigo-300 underline hover:text-indigo-200" to="/terms">
                 términos
               </Link>
             </label>

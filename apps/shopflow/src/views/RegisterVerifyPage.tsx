@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { useCallback, useEffect, useState } from "react";
 import { ApiError, runRegisterVerifyDeduped } from "@multisystem/shared";
 import type { ApiResponse, RegisterResponse } from "@multisystem/contracts";
 import { accountApi, authApi } from "@/lib/api/client";
@@ -16,16 +15,19 @@ import {
 } from "@multisystem/ui";
 
 function RegisterVerifyInner() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const navigate = useNavigate();
+  const search = useSearch({ strict: false }) as {
+    token?: string;
+    email?: string;
+  };
   const [errorMessage, setErrorMessage] = useState("");
   const [busy, setBusy] = useState(true);
 
   const run = useCallback(async () => {
     setBusy(true);
     setErrorMessage("");
-    const token = searchParams.get("token")?.trim() ?? "";
-    const emailParam = searchParams.get("email")?.trim().toLowerCase() ?? "";
+    const token = search.token?.trim() ?? "";
+    const emailParam = search.email?.trim().toLowerCase() ?? "";
     if (!token || !emailParam) {
       setErrorMessage("Enlace incompleto. Vuelve a registrarte.");
       setBusy(false);
@@ -46,7 +48,7 @@ function RegisterVerifyInner() {
         } catch {
           // non-blocking
         }
-        router.push("/dashboard");
+        void navigate({ to: "/dashboard" });
       });
     } catch (err: unknown) {
       setErrorMessage(
@@ -59,7 +61,7 @@ function RegisterVerifyInner() {
     } finally {
       setBusy(false);
     }
-  }, [router, searchParams]);
+  }, [navigate, search.token, search.email]);
 
   useEffect(() => {
     void run();
@@ -97,7 +99,7 @@ function RegisterVerifyInner() {
           </AuthBrandErrorAlert>
         ) : null}
         {!busy && errorMessage ? (
-          <Link href="/register" className={AUTH_BRAND_PRIMARY_BUTTON_CLASS}>
+          <Link to="/register" className={AUTH_BRAND_PRIMARY_BUTTON_CLASS}>
             Volver al registro
           </Link>
         ) : null}
@@ -107,15 +109,5 @@ function RegisterVerifyInner() {
 }
 
 export function RegisterVerifyPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white/80">
-          Cargando…
-        </div>
-      }
-    >
-      <RegisterVerifyInner />
-    </Suspense>
-  );
+  return <RegisterVerifyInner />;
 }

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import type { LandingUrls } from "@/lib/landingUrls";
 
 type Props = {
@@ -39,8 +39,8 @@ export function LandingFooter({ urls, moduleName, moduleDescription }: Props) {
             <div>
               <h4 className="text-xs text-white/30 uppercase tracking-widest font-semibold mb-4">Cuenta</h4>
               <ul className="space-y-2.5 text-sm">
-                <li><Link href="/login" className="text-white/40 hover:text-white transition-colors duration-150">Iniciar sesión</Link></li>
-                <li><Link href="/register" className="text-white/40 hover:text-white transition-colors duration-150">Crear cuenta</Link></li>
+                <li><Link to="/login" className="text-white/40 hover:text-white transition-colors duration-150">Iniciar sesión</Link></li>
+                <li><Link to="/register" className="text-white/40 hover:text-white transition-colors duration-150">Crear cuenta</Link></li>
               </ul>
             </div>
           </div>
@@ -48,7 +48,7 @@ export function LandingFooter({ urls, moduleName, moduleDescription }: Props) {
         <div className="mt-10 pt-6 border-t border-white/[0.05] flex flex-col md:flex-row justify-between items-center gap-3">
           <p className="text-xs text-white/20">© {currentYear} {moduleName} · Multisystem</p>
           <div className="flex gap-5 text-xs text-white/20">
-            <Link href="/terms" className="hover:text-white/50 transition-colors">Términos</Link>
+            <Link to="/terms" className="hover:text-white/50 transition-colors">Términos</Link>
             <a href="#" className="hover:text-white/50 transition-colors">Privacidad</a>
           </div>
         </div>

@@ -12,7 +12,9 @@ describe('Vite + TanStack Router scaffold boot', () => {
     await router.load()
 
     const matchedRouteIds = router.state.matches.map((match) => match.routeId)
-    expect(matchedRouteIds).toContain('/')
+    // PR3 migrated the real landing page into the `(public)` route group,
+    // replacing the PR2 scaffold placeholder that lived at the bare `/` id.
+    expect(matchedRouteIds).toContain('/(public)/')
   })
 
   it('resolves an unknown path to the not-found route instead of crashing', async () => {

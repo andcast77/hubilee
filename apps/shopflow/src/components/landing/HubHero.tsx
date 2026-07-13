@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import { ArrowRight, Zap } from "lucide-react";
 
 export type HubHeroProps = {
@@ -51,14 +51,14 @@ export function HubHero({
         <p className="text-lg md:text-xl text-white/50 mb-10 max-w-2xl mx-auto leading-relaxed">{description}</p>
         <div className="flex items-center justify-center gap-4 flex-wrap mb-20">
           <Link
-            href={registerTo}
+            to={registerTo}
             className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-8 py-3.5 rounded-xl transition-all duration-200 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5"
           >
             Crear cuenta
             <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
-            href={loginTo}
+            to={loginTo}
             className="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/80 hover:text-white font-semibold px-8 py-3.5 rounded-xl transition-all duration-200"
           >
             Iniciar sesión

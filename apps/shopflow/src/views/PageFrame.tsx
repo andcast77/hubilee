@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import { AppBreadcrumb } from "@multisystem/ui";
 
 export type PageFrameBreadcrumb = { label: string; href?: string };

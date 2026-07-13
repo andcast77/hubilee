@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import { ShoppingCart, Users, Wrench, LayoutDashboard, ArrowRight } from "lucide-react";
 import { getLandingUrls } from "@/lib/landingUrls";
 import { HubHero } from "@/components/landing/HubHero";
@@ -52,7 +52,7 @@ export function LandingPage() {
     <div className="min-h-screen flex flex-col bg-[#0a0a0f]">
       <header className="sticky top-0 z-50 bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-white/[0.06]">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-xl font-black text-white tracking-tight">
+          <Link to="/" className="text-xl font-black text-white tracking-tight">
             ShopFlow POS
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm text-white/40">
@@ -67,7 +67,7 @@ export function LandingPage() {
             </a>
           </nav>
           <Link
-            href="/login"
+            to="/login"
             className="inline-flex items-center text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-xl transition-all duration-200 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30"
           >
             Iniciar sesión
@@ -146,7 +146,7 @@ export function LandingPage() {
               Crea tu cuenta en ShopFlow POS y empieza a registrar ventas con inventario alineado a tu operación.
             </p>
             <Link
-              href="/register"
+              to="/register"
               className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-10 py-4 rounded-xl transition-all duration-200 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 text-base"
             >
               Crear cuenta en ShopFlow

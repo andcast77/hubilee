@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import { Button, Card, CardContent } from "@multisystem/ui";
 
 export function TermsPage() {
@@ -12,8 +12,8 @@ export function TermsPage() {
           <p className="text-sm text-slate-600">Uso del servicio, seguridad de cuenta y tratamiento de datos de Shopflow.</p>
           <p className="text-sm text-slate-600">Esta pagina se restauro en la migracion para mantener el flujo de registro.</p>
           <div className="flex gap-2">
-            <Link href="/register"><Button>Volver al registro</Button></Link>
-            <Link href="/"><Button variant="outline">Inicio</Button></Link>
+            <Link to="/register"><Button>Volver al registro</Button></Link>
+            <Link to="/"><Button variant="outline">Inicio</Button></Link>
           </div>
         </CardContent>
       </Card>
