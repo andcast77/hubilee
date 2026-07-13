@@ -1,6 +1,43 @@
 export type ApiClientOptions = {
-  /** On 401, POST `/v1/auth/refresh` once then retry the request (cookie-based sessions). */
+  /** On 401, POST `/v1/auth/refresh` once then retry the request. */
   refreshOn401?: boolean
+  /**
+   * Auth transport strategy (design `sdd/web-desktop-vite-tauri/design` ADR-A3).
+   * Defaults to `{ mode: 'cookie' }` — today's exact web behavior (httpOnly
+   * session cookie, `credentials: 'include'`, no extra headers). Pass
+   * `{ mode: 'bearer', ... }` for desktop (Tauri) clients that have no cookie
+   * jar and must carry `Authorization: Bearer <token>` explicitly.
+   */
+  authTransport?: AuthTransport
+}
+
+/**
+ * Injectable auth transport (design ADR-A3). `cookie` is the default and is
+ * byte-identical to pre-PR4 behavior. `bearer` is used by desktop (Tauri)
+ * clients: the access token is attached to every request, and on a 401 the
+ * stored refresh token is sent explicitly to `/v1/auth/refresh` (there is no
+ * cookie jar to rely on).
+ */
+export type AuthTransport =
+  | { mode: 'cookie' }
+  | {
+      mode: 'bearer'
+      getAccessToken(): Promise<string | null>
+      getRefreshToken(): Promise<string | null>
+      onRotated(tokens: { accessToken: string; refreshToken: string }): Promise<void>
+      onAuthCleared(): Promise<void>
+    }
+
+type BearerAuthTransport = Extract<AuthTransport, { mode: 'bearer' }>
+
+type TokenPair = { accessToken: string; refreshToken: string }
+
+function extractTokens(body: unknown): TokenPair | undefined {
+  const tokens = (body as { data?: { tokens?: { accessToken?: string; refreshToken?: string } } })?.data?.tokens
+  if (tokens?.accessToken && tokens?.refreshToken) {
+    return { accessToken: tokens.accessToken, refreshToken: tokens.refreshToken }
+  }
+  return undefined
 }
 
 const GENERIC_HTTP_ERROR_PHRASES = new Set([
@@ -44,8 +81,13 @@ export class ApiClient {
   ) {}
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`
+    const transport = this.clientOptions?.authTransport
+    if (transport?.mode === 'bearer') {
+      return this.requestBearer<T>(endpoint, options, transport)
+    }
 
+    // --- Cookie mode (web, default) — UNCHANGED from pre-PR4 behavior. ---
+    const url = `${this.baseURL}${endpoint}`
     const headers = new Headers(options.headers)
     if (options.body !== undefined) {
       headers.set('Content-Type', 'application/json')
@@ -76,6 +118,93 @@ export class ApiClient {
       }
     }
 
+    return this.parseResponse<T>(response)
+  }
+
+  /** Bearer (desktop) request path — see design ADR-A3. */
+  private async requestBearer<T>(
+    endpoint: string,
+    options: RequestInit,
+    transport: BearerAuthTransport,
+  ): Promise<T> {
+    const url = `${this.baseURL}${endpoint}`
+
+    const buildHeaders = async () => {
+      const headers = new Headers(options.headers)
+      if (options.body !== undefined) {
+        headers.set('Content-Type', 'application/json')
+      }
+      const accessToken = await transport.getAccessToken()
+      if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`)
+      headers.set('X-Client', 'desktop')
+      return headers
+    }
+
+    const fetchOnce = async () =>
+      fetch(url, {
+        credentials: 'include',
+        ...options,
+        headers: await buildHeaders(),
+      })
+
+    let response = await fetchOnce()
+
+    if (
+      response.status === 401 &&
+      this.clientOptions?.refreshOn401 === true &&
+      !endpoint.startsWith('/v1/auth/refresh')
+    ) {
+      const refreshed = await this.refreshBearerSession(transport)
+      if (refreshed) {
+        response = await fetchOnce()
+      }
+    }
+
+    const result = await this.parseResponse<T>(response)
+    const tokens = extractTokens(result)
+    if (tokens) await transport.onRotated(tokens)
+    return result
+  }
+
+  /**
+   * Desktop has no cookie jar/refresh rotation, so the stored refresh token
+   * is sent explicitly in the request body (design ADR-A2). On any failure
+   * (missing token, non-OK response, or a response without `data.tokens`),
+   * clears the stored session — the caller's next auth-gated read (e.g. the
+   * app's `me` query) will surface as unauthenticated and route back to
+   * login, matching the spec's "invalid refresh forces re-login" scenario.
+   */
+  private async refreshBearerSession(transport: BearerAuthTransport): Promise<boolean> {
+    const refreshToken = await transport.getRefreshToken()
+    if (!refreshToken) {
+      await transport.onAuthCleared()
+      return false
+    }
+
+    const refreshRes = await fetch(`${this.baseURL}/v1/auth/refresh`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'X-Client': 'desktop' },
+      body: JSON.stringify({ refreshToken }),
+    })
+
+    if (!refreshRes.ok) {
+      await transport.onAuthCleared()
+      return false
+    }
+
+    const body = await refreshRes.json().catch(() => null)
+    const tokens = extractTokens(body)
+    if (!tokens) {
+      await transport.onAuthCleared()
+      return false
+    }
+
+    await transport.onRotated(tokens)
+    return true
+  }
+
+  private async parseResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
       let errorMessage = `API Error: ${response.status} ${response.statusText}`
       let code: string | undefined

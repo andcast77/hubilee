@@ -19,4 +19,5 @@ export {
   type ApiClientOptions,
   type ApiResponse,
   type PaginatedResponse,
+  type AuthTransport,
 } from './api-client'
