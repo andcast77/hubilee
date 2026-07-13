@@ -18,13 +18,14 @@
     "test:run": "vitest run"
   },
   "dependencies": {
-    "@marsidev/react-turnstile": "catalog:",
     "@hookform/resolvers": "catalog:",
+    "@marsidev/react-turnstile": "catalog:",
     "@multisystem/contracts": "workspace:*",
     "@multisystem/shared": "workspace:*",
     "@multisystem/ui": "workspace:*",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-router": "^1.170.18",
+    "@tauri-apps/plugin-store": "^2.4.3",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "date-fns": "catalog:",
@@ -44,10 +45,10 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "catalog:",
-    "@testing-library/react": "^16.3.2",
     "@tailwindcss/postcss": "catalog:",
     "@tailwindcss/vite": "^4.3.2",
     "@tanstack/router-plugin": "^1.168.20",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
