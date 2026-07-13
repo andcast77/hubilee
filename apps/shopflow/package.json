@@ -7,6 +7,9 @@
     "dev": "next dev -p 3002 --turbo",
     "build": "next build",
     "start": "next start -p 3002",
+    "dev:vite": "vite",
+    "build:vite": "vite build",
+    "preview:vite": "vite preview",
     "lint": "next lint",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
@@ -21,6 +24,7 @@
     "@multisystem/shared": "workspace:*",
     "@multisystem/ui": "workspace:*",
     "@tanstack/react-query": "catalog:",
+    "@tanstack/react-router": "^1.170.18",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "date-fns": "catalog:",
@@ -41,9 +45,12 @@
   "devDependencies": {
     "@eslint/eslintrc": "catalog:",
     "@tailwindcss/postcss": "catalog:",
+    "@tailwindcss/vite": "^4.3.2",
+    "@tanstack/router-plugin": "^1.168.20",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
     "@vitest/ui": "catalog:",
     "autoprefixer": "catalog:",
     "eslint": "catalog:",
@@ -56,6 +63,8 @@
     "tailwindcss": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-tsconfig-paths": "^6.1.1",
     "vitest": "catalog:"
   }
 }
