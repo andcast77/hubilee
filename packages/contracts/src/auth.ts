@@ -1,6 +1,16 @@
 import type { CompanyRow, CompanyModules } from './company.js'
 
-/** Session is httpOnly cookie on API host; no token in JSON. */
+/** Access + refresh pair, only present for desktop (`X-Client: desktop`) requests. */
+export type DesktopAuthTokens = {
+  accessToken: string
+  refreshToken: string
+}
+
+/**
+ * Session is an httpOnly cookie on web (no token in JSON there).
+ * `tokens` is additive and gated: only present when the request carried
+ * `X-Client: desktop` (design `sdd/web-desktop-vite-tauri/design` ADR-A1).
+ */
 export type LoginResponse = {
   user: {
     id: string
@@ -15,6 +25,7 @@ export type LoginResponse = {
   /** When true, password was OK but MFA is required — use tempToken with /v1/auth/mfa/verify. */
   mfaRequired?: boolean
   tempToken?: string
+  tokens?: DesktopAuthTokens
 }
 
 export type RegisterResponse = {
@@ -30,6 +41,7 @@ export type RegisterResponse = {
     name: string
     modules: CompanyModules
   }
+  tokens?: DesktopAuthTokens
 }
 
 export type MeResponse = {
