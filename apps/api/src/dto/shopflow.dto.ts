@@ -115,6 +115,26 @@ export const createSaleSchema = z.object({
 })
 export type CreateSaleBody = z.infer<typeof createSaleSchema>
 
+// --- Cash registers / cash sessions (caja) ---
+export const createCashRegisterSchema = z.object({
+  storeId: z.string().uuid(),
+  name: z.string().min(1),
+})
+export type CreateCashRegisterBody = z.infer<typeof createCashRegisterSchema>
+
+export const openCashSessionSchema = z.object({
+  cashRegisterId: z.string().uuid(),
+  openingFloat: z.number().nonnegative(),
+  notes: z.string().nullable().optional(),
+})
+export type OpenCashSessionBody = z.infer<typeof openCashSessionSchema>
+
+export const closeCashSessionSchema = z.object({
+  countedCash: z.number().nonnegative(),
+  notes: z.string().nullable().optional(),
+})
+export type CloseCashSessionBody = z.infer<typeof closeCashSessionSchema>
+
 // --- Store config ---
 export const updateStoreConfigSchema = z.object({
   name: z.string().min(1).optional(),

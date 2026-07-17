@@ -14,6 +14,8 @@ import { registerRoutes as exportRoutes } from './export.controller.js'
 import { registerRoutes as userPreferences } from './user-preferences.controller.js'
 import { registerRoutes as pushSubscriptions } from './push-subscriptions.controller.js'
 import { registerRoutes as inventoryTransfers } from './inventory-transfers.controller.js'
+import { registerRoutes as cashRegisters } from './cash-registers.controller.js'
+import { registerRoutes as cashSessions } from './cash-sessions.controller.js'
 
 export async function registerRoutes(fastify: FastifyInstance) {
   products(fastify)
@@ -31,4 +33,6 @@ export async function registerRoutes(fastify: FastifyInstance) {
   userPreferences(fastify)
   pushSubscriptions(fastify)
   inventoryTransfers(fastify)
+  cashRegisters(fastify)
+  cashSessions(fastify)
 }
