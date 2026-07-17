@@ -95,8 +95,12 @@ export async function createSale(userId: string, data: CreateSaleInput) {
 
   const sale = response.data
 
-  // Award loyalty points if customer exists and sale was successful
-  if (sale.customerId) {
+  // Award loyalty points only once the sale has actually settled money (COMPLETED).
+  // `createSale` can now return PENDING (moto/vendedor flow, PR4) — a PENDING sale
+  // has not been paid yet and may be abandoned/cancelled, so awarding here would grant
+  // points that are never reversed. The order->checkout flow awards instead at
+  // settlement time (see `settleSale` below), so a sale is awarded exactly once.
+  if (sale.customerId && sale.status === 'COMPLETED') {
     try {
       await awardPointsForPurchase(sale.customerId, sale.total, sale.id)
     } catch (error) {
@@ -125,7 +129,20 @@ export async function settleSale(id: string, data: SettleSaleInput) {
     throw new ApiError(400, response.error || 'Error al liquidar la venta', ErrorCodes.VALIDATION_ERROR)
   }
 
-  return response.data
+  const sale = response.data
+
+  // Order->checkout flow: the sale was created PENDING (no points awarded then, see
+  // `createSale`) and only completes money-wise here. Award points now so a sale is
+  // awarded exactly once — direct sales award at create, order sales award at settle.
+  if (sale.customerId && sale.status === 'COMPLETED') {
+    try {
+      await awardPointsForPurchase(sale.customerId, sale.total, sale.id)
+    } catch (error) {
+      console.error('Failed to award loyalty points:', error)
+    }
+  }
+
+  return sale
 }
 
 export async function cancelSale(id: string) {
