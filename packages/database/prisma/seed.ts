@@ -332,6 +332,12 @@ async function main() {
       action: 'cancel',
       description: 'Cancelar ventas en Shopflow',
     },
+    {
+      name: 'shopflow.sales.settle',
+      resource: 'shopflow.sales',
+      action: 'settle',
+      description: 'Liquidar (PENDING->COMPLETED) ventas en Shopflow, asignando sesión de caja y factura',
+    },
     // Shopflow — inventario granular
     {
       name: 'shopflow.inventory.read',
@@ -684,11 +690,12 @@ async function main() {
       roleId: gerenteRole.id,
       permissionId: permissionsByName[name]!.id,
     })),
-    // Cajero: crear/leer ventas + operar la caja (leer cajas, abrir/cerrar/leer sesiones)
+    // Cajero: crear/leer ventas + liquidar pendientes + operar la caja (leer cajas, abrir/cerrar/leer sesiones)
     ...[
       'shopflow.access',
       'shopflow.sales.read',
       'shopflow.sales.create',
+      'shopflow.sales.settle',
       'shopflow.cash-registers.read',
       'shopflow.cash-sessions.read',
       'shopflow.cash-sessions.open',
@@ -697,7 +704,7 @@ async function main() {
       roleId: cajeroRole.id,
       permissionId: permissionsByName[name]!.id,
     })),
-    // Vendedor: solo crear ventas (moto vendedor), sin permisos de caja
+    // Vendedor: solo crear ventas pendientes (moto vendedor), sin permisos de caja ni de liquidación
     ...[
       'shopflow.access',
       'shopflow.sales.create',
@@ -1722,11 +1729,12 @@ async function main() {
       roleId: betaBasicUserRole.id,
       permissionId: permissionsByName[name]!.id,
     })),
-    // Cajero: crear/leer ventas + operar la caja (leer cajas, abrir/cerrar/leer sesiones)
+    // Cajero: crear/leer ventas + liquidar pendientes + operar la caja (leer cajas, abrir/cerrar/leer sesiones)
     ...[
       'shopflow.access',
       'shopflow.sales.read',
       'shopflow.sales.create',
+      'shopflow.sales.settle',
       'shopflow.cash-registers.read',
       'shopflow.cash-sessions.read',
       'shopflow.cash-sessions.open',
@@ -1735,7 +1743,7 @@ async function main() {
       roleId: betaCajeroRole.id,
       permissionId: permissionsByName[name]!.id,
     })),
-    // Vendedor: solo crear ventas (moto vendedor), sin permisos de caja
+    // Vendedor: solo crear ventas pendientes (moto vendedor), sin permisos de caja ni de liquidación
     ...[
       'shopflow.access',
       'shopflow.sales.create',
