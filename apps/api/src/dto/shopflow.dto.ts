@@ -107,13 +107,27 @@ export const createSaleSchema = z.object({
     price: z.number().nonnegative(),
     discount: z.number().nonnegative().optional(),
   })).min(1),
-  paymentMethod: z.string().min(1),
-  paidAmount: z.number().nonnegative(),
+  // Direct/kiosco flow: present -> settles inline against this OPEN CashSession.
+  // Absent -> creates a PENDING sale (moto/vendedor flow); settle later via POST /sales/:id/settle.
+  cashSessionId: z.string().uuid().nullable().optional(),
+  // Vendedor attribution; defaults to `userId` when omitted.
+  sellerId: z.string().uuid().nullable().optional(),
+  // Required for the direct flow (validated at the service layer once cashSessionId is known);
+  // omit for a PENDING sale, since payment is collected later at settlement.
+  paymentMethod: z.string().min(1).optional(),
+  paidAmount: z.number().nonnegative().optional(),
   discount: z.number().nonnegative().optional(),
   taxRate: z.number().nonnegative().optional(),
   notes: z.string().nullable().optional(),
 })
 export type CreateSaleBody = z.infer<typeof createSaleSchema>
+
+export const settleSaleSchema = z.object({
+  cashSessionId: z.string().uuid(),
+  paymentMethod: z.string().min(1),
+  paidAmount: z.number().nonnegative(),
+})
+export type SettleSaleBody = z.infer<typeof settleSaleSchema>
 
 // --- Cash registers / cash sessions (caja) ---
 export const createCashRegisterSchema = z.object({

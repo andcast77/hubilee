@@ -1,6 +1,6 @@
 import type { FastifyRequest, FastifyReply, FastifyInstance } from 'fastify'
 import { validateBody } from '../../../core/validate.js'
-import { createSaleSchema } from '../../../dto/shopflow.dto.js'
+import { createSaleSchema, settleSaleSchema } from '../../../dto/shopflow.dto.js'
 import * as shopflowService from '../../../services/shopflow.service.js'
 import { sseManager } from '../../../services/sse.service.js'
 import { requirePermission } from '../../../core/permissions.js'
@@ -35,6 +35,26 @@ async function createSale(request: FastifyRequest, reply: FastifyReply) {
       entityType: 'sale',
       entityId: (result.data as { id?: string }).id,
       after: { total: (result.data as Record<string, unknown>).total, status: (result.data as Record<string, unknown>).status },
+      ipAddress: request.ip,
+      userAgent: (request.headers['user-agent'] as string | undefined) ?? null,
+    })
+  }
+  return result
+}
+
+async function settleSale(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
+  const body = validateBody(settleSaleSchema, request.body)
+  const ctx = getCtx(request, true)
+  const result = await shopflowService.settleSale(ctx, request.params.id, body)
+  sseManager.emit(ctx.companyId, 'sale:settled', { companyId: ctx.companyId, storeId: request.storeId ?? null })
+  if (result.success && result.data) {
+    writeAuditLog({
+      companyId: ctx.companyId,
+      userId: ctx.userId,
+      action: 'SALE_SETTLED',
+      entityType: 'sale',
+      entityId: request.params.id,
+      after: { status: (result.data as Record<string, unknown>).status, cashSessionId: (result.data as Record<string, unknown>).cashSessionId },
       ipAddress: request.ip,
       userAgent: (request.headers['user-agent'] as string | undefined) ?? null,
     })
@@ -77,5 +97,6 @@ export function registerRoutes(fastify: FastifyInstance) {
   fastify.get<{ Params: { id: string } }>('/v1/shopflow/sales/:id', { preHandler: pre }, handle(getSaleById))
   fastify.post('/v1/shopflow/sales', { preHandler: [...pre, requirePermission('shopflow.sales', 'create')] }, handle(createSale))
   fastify.post<{ Params: { id: string } }>('/v1/shopflow/sales/:id/cancel', { preHandler: [...pre, requirePermission('shopflow.sales', 'cancel')] }, handle(cancelSale))
+  fastify.post<{ Params: { id: string } }>('/v1/shopflow/sales/:id/settle', { preHandler: [...pre, requirePermission('shopflow.sales', 'settle')] }, handle(settleSale))
   fastify.post<{ Params: { id: string } }>('/v1/shopflow/sales/:id/refund', { preHandler: pre }, handle(refundSale))
 }
