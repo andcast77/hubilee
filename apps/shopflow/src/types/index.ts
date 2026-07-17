@@ -22,6 +22,11 @@ export enum SaleStatus {
   REFUNDED = 'REFUNDED',
 }
 
+export enum CashSessionStatus {
+  OPEN = 'OPEN',
+  CLOSED = 'CLOSED',
+}
+
 export enum TicketType {
   TICKET = 'TICKET',
   SHEET = 'SHEET',
@@ -155,8 +160,57 @@ export interface Sale {
   invoiceNumber: string | null
   paidAmount: number | null
   change: number | null
+  /** Direct/kiosco flow: the OPEN CashSession this sale settled against. Null for a PENDING sale awaiting settlement. */
+  cashSessionId?: string | null
+  /** Vendedor attribution, distinct from the settling cashier when applicable. */
+  sellerId?: string | null
   createdAt: Date
   updatedAt: Date
+}
+
+/** A physical/logical till (caja) belonging to a store. A store may have several. */
+export interface CashRegister {
+  id: string
+  storeId: string
+  name: string
+  active: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+/** A cashier's open/close cycle on a CashRegister, with the arqueo recorded at close. */
+export interface CashSession {
+  id: string
+  storeId: string
+  cashRegisterId: string
+  openedByUserId: string
+  closedByUserId: string | null
+  status: CashSessionStatus
+  openingFloat: number
+  expectedCash: number | null
+  countedCash: number | null
+  difference: number | null
+  notes: string | null
+  openedAt: string
+  closedAt: string | null
+}
+
+export interface CashSessionPaymentBreakdown {
+  paymentMethod: string
+  count: number
+  total: number
+}
+
+/** Arqueo preview (session OPEN) or persisted report (session CLOSED). */
+export interface CashSessionReport {
+  session: CashSession
+  salesCount: number
+  paymentBreakdown: CashSessionPaymentBreakdown[]
+  openingFloat: number
+  cashSalesTotal: number
+  expectedCash: number
+  countedCash: number | null
+  difference: number | null
 }
 
 export interface SaleItem {
