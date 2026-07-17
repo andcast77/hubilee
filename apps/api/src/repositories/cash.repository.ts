@@ -176,6 +176,14 @@ export class CashRepository extends TenantScopedRepository {
     }) as Promise<CashSessionRow[]>
   }
 
+  /**
+   * The only current caller (`closeCashSession`) transitions OPEN -> CLOSED. Guarding the
+   * `updateMany` where-clause on `status: 'OPEN'` closes a race where two concurrent close
+   * requests both read the session while it was still OPEN: without this guard, both writes
+   * would land and the second would silently overwrite the first's arqueo (expectedCash/
+   * countedCash/difference). With the guard, the loser's write matches 0 rows and throws
+   * ConflictError instead of corrupting the persisted arqueo.
+   */
   async updateSession(id: string, input: UpdateSessionInput): Promise<CashSessionRow | null> {
     const existing = await this.db.cashSession.findFirst({
       where: { ...this.tenantWhere, id },
@@ -183,10 +191,12 @@ export class CashRepository extends TenantScopedRepository {
     })
     if (!existing) return null
     const updated = await this.db.cashSession.updateMany({
-      where: { ...this.tenantWhere, id },
+      where: { ...this.tenantWhere, id, status: 'OPEN' },
       data: input,
     })
-    if (updated.count === 0) return null
+    if (updated.count === 0) {
+      throw new ConflictError('La sesión de caja ya fue cerrada')
+    }
     return this.db.cashSession.findFirst({ where: { ...this.tenantWhere, id } }) as Promise<CashSessionRow | null>
   }
 }

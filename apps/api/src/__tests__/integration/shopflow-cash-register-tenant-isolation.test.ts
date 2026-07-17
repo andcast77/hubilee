@@ -128,4 +128,43 @@ describe('Shopflow cash register: tenant isolation + one-open-session-per-regist
     })
     expect(reopened.status).toBe('OPEN')
   })
+
+  it('rejects a second close of an already-CLOSED session instead of silently overwriting the arqueo (double-close race guard)', async () => {
+    const register = await acmeRepo.createRegister({ storeId: acmeStoreId, name: `Caja DoubleClose ${Date.now()}` })
+    const session = await acmeRepo.openSession({
+      storeId: acmeStoreId,
+      cashRegisterId: register.id,
+      openedByUserId: acmeUserId,
+      openingFloat: 100,
+    })
+
+    // First close (e.g. cashier A's request) succeeds normally.
+    const firstClose = await acmeRepo.updateSession(session.id, {
+      status: 'CLOSED',
+      closedByUserId: acmeUserId,
+      countedCash: 100,
+      expectedCash: 100,
+      difference: 0,
+      closedAt: new Date(),
+    })
+    expect(firstClose?.status).toBe('CLOSED')
+
+    // Second close (e.g. a concurrent request that read the session while it was still
+    // OPEN, before cashier A's write landed) must be rejected — not silently applied —
+    // because it would overwrite cashier A's arqueo with different counted/expected/difference values.
+    await expect(
+      acmeRepo.updateSession(session.id, {
+        status: 'CLOSED',
+        closedByUserId: acmeUserId,
+        countedCash: 999,
+        expectedCash: 999,
+        difference: 0,
+        closedAt: new Date(),
+      }),
+    ).rejects.toBeInstanceOf(ConflictError)
+
+    // The arqueo from the first close must remain intact (not overwritten by the second attempt).
+    const persisted = await acmeRepo.findSessionById(session.id)
+    expect(Number(persisted?.countedCash)).toBe(100)
+  })
 })
