@@ -26,9 +26,16 @@ interface PaymentModalProps {
   open: boolean
   onClose: () => void
   onSuccess: (saleId: string) => void
+  /**
+   * The store's OPEN CashSession id (direct/kiosco flow, spec
+   * `pos-sale-settlement` scenario "Direct flow"). When present, the sale is
+   * created+settled in this single call (status COMPLETED). The POS screen
+   * only renders this modal once a session is open, so this is required here.
+   */
+  cashSessionId: string
 }
 
-export function PaymentModal({ open, onClose, onSuccess }: PaymentModalProps) {
+export function PaymentModal({ open, onClose, onSuccess, cashSessionId }: PaymentModalProps) {
   const items = useCartStore((state) => state.items)
   const customerId = useCartStore((state) => state.customerId)
   const clearCart = useCartStore((state) => state.clearCart)
@@ -110,6 +117,8 @@ export function PaymentModal({ open, onClose, onSuccess }: PaymentModalProps) {
           discount: getGlobalDiscountAmount() + pointsDiscount,
           taxRate,
           notes: notes || null,
+          // Direct/kiosco flow: settles inline against this OPEN session.
+          cashSessionId,
         },
       })
       clearCart()

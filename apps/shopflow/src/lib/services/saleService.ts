@@ -69,6 +69,9 @@ export async function createSale(userId: string, data: CreateSaleInput) {
   }
 
   // Backend is source of truth for stock, totals, tax and customer validation.
+  // `cashSessionId` present -> direct/kiosco flow, settled inline as COMPLETED.
+  // Absent -> PENDING sale (moto/vendedor flow, settled later via PR4's
+  // `POST /sales/:id/settle`). See design D6 / apply-progress PR4 note.
   const response = await shopflowApi.post<ApiResult<any>>(
     '/sales',
     {
@@ -81,6 +84,8 @@ export async function createSale(userId: string, data: CreateSaleInput) {
       discount: data.discount || 0,
       taxRate: data.taxRate,
       notes: data.notes ?? null,
+      cashSessionId: data.cashSessionId ?? null,
+      sellerId: data.sellerId ?? null,
     }
   )
 

@@ -11,9 +11,13 @@ import { formatCurrency } from '@/lib/utils/format'
 interface TotalsPanelProps {
   onCheckout: () => void
   taxRate?: number
+  /** Blocks checkout regardless of cart state — e.g. no OPEN cash session yet (direct POS gate). */
+  disabled?: boolean
+  /** Shown as the button's tooltip/help text when `disabled` is true. */
+  disabledReason?: string
 }
 
-export function TotalsPanel({ onCheckout, taxRate = 0 }: TotalsPanelProps) {
+export function TotalsPanel({ onCheckout, taxRate = 0, disabled = false, disabledReason }: TotalsPanelProps) {
   const { data: storeConfig } = useStoreConfig()
   const items = useCartStore((state) => state.items)
   const discountPercent = useCartStore((state) => state.discount)
@@ -33,7 +37,7 @@ export function TotalsPanel({ onCheckout, taxRate = 0 }: TotalsPanelProps) {
     setGlobalDiscount(Math.min(100, Math.max(0, numValue)))
   }
 
-  const canCheckout = items.length > 0 && total > 0
+  const canCheckout = items.length > 0 && total > 0 && !disabled
 
   return (
     <Card className="h-full flex flex-col">
@@ -90,16 +94,20 @@ export function TotalsPanel({ onCheckout, taxRate = 0 }: TotalsPanelProps) {
           onClick={onCheckout}
           disabled={!canCheckout}
           title={
-            !canCheckout && items.length > 0 && total <= 0
-              ? 'El total es 0 (por ejemplo por descuento del 100%). Ajusta el carrito o el descuento para poder cobrar.'
-              : items.length === 0
-                ? 'Agrega productos al carrito para cobrar.'
-                : undefined
+            disabled
+              ? disabledReason
+              : !canCheckout && items.length > 0 && total <= 0
+                ? 'El total es 0 (por ejemplo por descuento del 100%). Ajusta el carrito o el descuento para poder cobrar.'
+                : items.length === 0
+                  ? 'Agrega productos al carrito para cobrar.'
+                  : undefined
           }
         >
           Procesar Pago
         </Button>
-        {!canCheckout && items.length > 0 && total <= 0 ? (
+        {disabled && disabledReason ? (
+          <p className="mt-2 text-center text-xs text-amber-800">{disabledReason}</p>
+        ) : !canCheckout && items.length > 0 && total <= 0 ? (
           <p className="mt-2 text-center text-xs text-amber-800">
             El total es $0 (descuento total o carrito vacío de importe). Ajusta descuentos o agrega productos para habilitar el cobro.
           </p>

@@ -21,6 +21,14 @@ export const createSaleSchema = z.object({
   discount: z.number().nonnegative('Discount cannot be negative').default(0),
   taxRate: z.number().min(0).max(1).optional(), // Optional, stored as decimal (e.g., 0.1 = 10%), will use store config if not provided
   notes: z.string().optional().nullable(),
+  /**
+   * Direct/kiosco flow: an OPEN CashSession id settles the sale inline
+   * (status COMPLETED). Omitted -> the sale is created PENDING (moto/vendedor
+   * flow, settled later via `POST /sales/:id/settle`). See PR4/PR5 design D6.
+   */
+  cashSessionId: z.string().optional().nullable(),
+  /** Vendedor attribution, distinct from the settling cashier when applicable. */
+  sellerId: z.string().optional().nullable(),
 })
 
 export type CreateSaleInput = z.infer<typeof createSaleSchema>

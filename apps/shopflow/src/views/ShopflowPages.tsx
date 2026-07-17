@@ -15,6 +15,8 @@ import { PaymentModal } from "@/components/features/pos/PaymentModal";
 import { ReceiptModal } from "@/components/features/pos/ReceiptModal";
 import { CustomerSelector } from "@/components/features/pos/CustomerSelector";
 import { StoreSelector } from "@/components/features/pos/StoreSelector";
+import { CashSessionBar } from "@/components/features/pos/CashSessionBar";
+import { useOpenCashSession } from "@/hooks/useCashSession";
 import { ProductForm } from "@/components/features/products/ProductForm";
 import { CustomerForm } from "@/components/features/customers/CustomerForm";
 import { SupplierForm } from "@/components/features/suppliers/SupplierForm";
@@ -66,6 +68,12 @@ export function POSPage() {
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
   const [completedSaleId, setCompletedSaleId] = useState<string | null>(null);
   const { data: storeConfig } = usePosStoreConfig();
+  const storeContext = useStoreContextOptional();
+  // Direct/kiosco flow (spec `pos-sale-settlement`): checkout requires an
+  // OPEN CashSession for the current store — `CashSessionBar` renders the
+  // open/close-caja gate, this hook shares the same cached query so the
+  // checkout button and the payment modal gate on the exact same session.
+  const { session: cashSession } = useOpenCashSession(storeContext?.currentStoreId ?? null);
   return (
     <PageFrame title="Punto de Venta">
       <div className="h-[calc(100vh-12rem)] flex flex-col gap-4">
@@ -73,23 +81,32 @@ export function POSPage() {
           <h2 className="text-lg font-semibold">POS</h2>
           <StoreSelector />
         </div>
+        <CashSessionBar />
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 overflow-hidden">
           <div className="lg:col-span-5 overflow-hidden"><ProductPanel /></div>
           <div className="lg:col-span-7 flex flex-col gap-4 overflow-hidden">
             <CustomerSelector />
             <div className="flex-1 min-h-0"><ShoppingCart /></div>
-            <TotalsPanel onCheckout={() => setPaymentModalOpen(true)} taxRate={storeConfig?.taxRate || 0} />
+            <TotalsPanel
+              onCheckout={() => setPaymentModalOpen(true)}
+              taxRate={storeConfig?.taxRate || 0}
+              disabled={!cashSession}
+              disabledReason="Abre la caja antes de cobrar."
+            />
           </div>
         </div>
       </div>
-      <PaymentModal
-        open={paymentModalOpen}
-        onClose={() => setPaymentModalOpen(false)}
-        onSuccess={(saleId) => {
-          setCompletedSaleId(saleId);
-          setReceiptModalOpen(true);
-        }}
-      />
+      {cashSession && (
+        <PaymentModal
+          open={paymentModalOpen}
+          cashSessionId={cashSession.id}
+          onClose={() => setPaymentModalOpen(false)}
+          onSuccess={(saleId) => {
+            setCompletedSaleId(saleId);
+            setReceiptModalOpen(true);
+          }}
+        />
+      )}
       <ReceiptModal
         saleId={completedSaleId}
         open={receiptModalOpen}
