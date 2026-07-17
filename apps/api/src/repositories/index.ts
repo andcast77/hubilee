@@ -14,6 +14,7 @@ import { LoyaltyRepository } from './loyalty.repository.js'
 import { UserPreferencesRepository } from './user-preferences.repository.js'
 import { PushSubscriptionRepository } from './push-subscription.repository.js'
 import { InventoryTransferRepository } from './inventory-transfer.repository.js'
+import { CashRepository } from './cash.repository.js'
 
 export { ProductRepository, type ProductRow, type UnitRow, type ProductSearchQuery, type ProductCreateInput, type ProductUpdateInput } from './product.repository.js'
 export { StoreRepository, type StoreRow, type StoreCreateInput } from './store.repository.js'
@@ -28,6 +29,16 @@ export { LoyaltyRepository } from './loyalty.repository.js'
 export { UserPreferencesRepository } from './user-preferences.repository.js'
 export { PushSubscriptionRepository } from './push-subscription.repository.js'
 export { InventoryTransferRepository } from './inventory-transfer.repository.js'
+export {
+  CashRepository,
+  type CashRegisterRow,
+  type CashRegisterCreateInput,
+  type CashSessionRow,
+  type CashSessionStatusValue,
+  type OpenSessionInput,
+  type UpdateSessionInput,
+  type ListSessionsQuery,
+} from './cash.repository.js'
 
 export type Repositories = {
   products: ProductRepository
@@ -43,6 +54,7 @@ export type Repositories = {
   userPreferences: UserPreferencesRepository
   pushSubscriptions: PushSubscriptionRepository
   inventoryTransfers: InventoryTransferRepository
+  cash: CashRepository
 }
 
 /**
@@ -66,5 +78,6 @@ export function createRepositories(tenantId: string, db?: PrismaClient | Transac
     userPreferences: new UserPreferencesRepository(client, tenantId),
     pushSubscriptions: new PushSubscriptionRepository(client, tenantId),
     inventoryTransfers: new InventoryTransferRepository(client, tenantId),
+    cash: new CashRepository(client, tenantId),
   }
 }
