@@ -1,6 +1,6 @@
 import { shopflowApi, type ApiResult } from '@/lib/api/client'
 import { ApiError, ErrorCodes } from '@/lib/utils/errors'
-import type { CreateSaleInput, SaleQueryInput, SaleItemInput } from '@/lib/validations/sale'
+import type { CreateSaleInput, SaleQueryInput, SaleItemInput, SettleSaleInput } from '@/lib/validations/sale'
 import { awardPointsForPurchase } from './loyaltyService'
 import { SaleStatus } from '@/types'
 
@@ -106,6 +106,26 @@ export async function createSale(userId: string, data: CreateSaleInput) {
   }
 
   return sale
+}
+
+/**
+ * Order->checkout/vendedor flow settlement (caja-management screen, PR6):
+ * moves a PENDING sale to COMPLETED, attaching the cashier's OPEN
+ * CashSession and the payment taken. Backend is source of truth for the
+ * PENDING/OPEN-session/same-store validation (spec `pos-sale-settlement`).
+ */
+export async function settleSale(id: string, data: SettleSaleInput) {
+  const response = await shopflowApi.post<ApiResult<any>>(`/sales/${id}/settle`, {
+    cashSessionId: data.cashSessionId,
+    paymentMethod: data.paymentMethod,
+    paidAmount: data.paidAmount,
+  })
+
+  if (!response.success) {
+    throw new ApiError(400, response.error || 'Error al liquidar la venta', ErrorCodes.VALIDATION_ERROR)
+  }
+
+  return response.data
 }
 
 export async function cancelSale(id: string) {

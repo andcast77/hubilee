@@ -1,10 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import type { CreateSaleInput } from '@/lib/validations/sale'
+import type { CreateSaleInput, SettleSaleInput } from '@/lib/validations/sale'
 import type { SaleQueryInput } from '@/lib/validations/sale'
 import {
   getSales,
   getSaleById,
   createSale as createSaleApi,
+  settleSale as settleSaleApi,
   cancelSale as cancelSaleApi,
   refundSale as refundSaleApi,
 } from '@/lib/services/saleService'
@@ -12,6 +13,7 @@ import {
 export function useSales(params?: {
   page?: number
   limit?: number
+  storeId?: string | null
   customerId?: string
   status?: SaleQueryInput['status']
 }) {
@@ -21,9 +23,11 @@ export function useSales(params?: {
       getSales({
         page: params?.page ?? 1,
         limit: params?.limit ?? 20,
+        storeId: params?.storeId ?? undefined,
         customerId: params?.customerId,
         status: params?.status,
       }),
+    enabled: params?.storeId !== undefined ? !!params.storeId : true,
   })
 }
 
@@ -44,6 +48,19 @@ export function useCreateSale() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sales'] })
       queryClient.invalidateQueries({ queryKey: ['products'] })
+    },
+  })
+}
+
+/** Settles a PENDING sale against the cashier's OPEN CashSession (caja-management screen, PR6). */
+export function useSettleSale() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: SettleSaleInput }) => settleSaleApi(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sales'] })
+      queryClient.invalidateQueries({ queryKey: ['cash-session-report'] })
     },
   })
 }

@@ -53,3 +53,16 @@ export const saleQuerySchema = z.object({
 
 export type SaleQueryInput = z.infer<typeof saleQuerySchema>
 
+/**
+ * Settling a PENDING sale (caja-management screen, PR6): mirrors the
+ * backend's `settleSaleSchema` — attaches the settling cashier's OPEN
+ * CashSession, the payment taken, and moves the sale to COMPLETED.
+ */
+export const settleSaleSchema = z.object({
+  cashSessionId: z.string().min(1, 'Cash session is required'),
+  paymentMethod: z.nativeEnum(PaymentMethod),
+  paidAmount: z.number().nonnegative('Paid amount cannot be negative'),
+})
+
+export type SettleSaleInput = z.infer<typeof settleSaleSchema>
+
