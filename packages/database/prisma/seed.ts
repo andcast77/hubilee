@@ -345,6 +345,37 @@ async function main() {
       action: 'write',
       description: 'Crear y modificar transferencias de inventario en Shopflow',
     },
+    // Shopflow — caja (cash registers / cash sessions)
+    {
+      name: 'shopflow.cash-registers.read',
+      resource: 'shopflow.cash-registers',
+      action: 'read',
+      description: 'Ver cajas registradoras en Shopflow',
+    },
+    {
+      name: 'shopflow.cash-registers.create',
+      resource: 'shopflow.cash-registers',
+      action: 'create',
+      description: 'Crear cajas registradoras en Shopflow',
+    },
+    {
+      name: 'shopflow.cash-sessions.read',
+      resource: 'shopflow.cash-sessions',
+      action: 'read',
+      description: 'Ver sesiones de caja y arqueos en Shopflow',
+    },
+    {
+      name: 'shopflow.cash-sessions.open',
+      resource: 'shopflow.cash-sessions',
+      action: 'open',
+      description: 'Abrir sesiones de caja en Shopflow',
+    },
+    {
+      name: 'shopflow.cash-sessions.close',
+      resource: 'shopflow.cash-sessions',
+      action: 'close',
+      description: 'Cerrar sesiones de caja (arqueo) en Shopflow',
+    },
     // Workify — empleados
     {
       name: 'workify.employees.manage',
@@ -509,7 +540,15 @@ async function main() {
   const cajeroRole = await prisma.role.create({
     data: {
       name: 'Cajero',
-      description: 'Cajero con acceso a creación y lectura de ventas',
+      description: 'Cajero con acceso a creación y lectura de ventas, y a operar la caja (abrir/cerrar sesiones)',
+      companyId: company.id,
+    },
+  })
+
+  const vendedorRole = await prisma.role.create({
+    data: {
+      name: 'Vendedor',
+      description: 'Vendedor móvil: crea ventas pendientes sin operar la caja',
       companyId: company.id,
     },
   })
@@ -645,13 +684,25 @@ async function main() {
       roleId: gerenteRole.id,
       permissionId: permissionsByName[name]!.id,
     })),
-    // Cajero: solo crear y leer ventas
+    // Cajero: crear/leer ventas + operar la caja (leer cajas, abrir/cerrar/leer sesiones)
     ...[
       'shopflow.access',
       'shopflow.sales.read',
       'shopflow.sales.create',
+      'shopflow.cash-registers.read',
+      'shopflow.cash-sessions.read',
+      'shopflow.cash-sessions.open',
+      'shopflow.cash-sessions.close',
     ].map((name) => ({
       roleId: cajeroRole.id,
+      permissionId: permissionsByName[name]!.id,
+    })),
+    // Vendedor: solo crear ventas (moto vendedor), sin permisos de caja
+    ...[
+      'shopflow.access',
+      'shopflow.sales.create',
+    ].map((name) => ({
+      roleId: vendedorRole.id,
       permissionId: permissionsByName[name]!.id,
     })),
     // Supervisor: ventas e inventario (lectura + escritura inventario)
@@ -1564,6 +1615,22 @@ async function main() {
     },
   })
 
+  const betaCajeroRole = await prisma.role.create({
+    data: {
+      name: 'Cajero',
+      description: 'Cajero con acceso a creación y lectura de ventas, y a operar la caja (abrir/cerrar sesiones)',
+      companyId: company2.id,
+    },
+  })
+
+  const betaVendedorRole = await prisma.role.create({
+    data: {
+      name: 'Vendedor',
+      description: 'Vendedor móvil: crea ventas pendientes sin operar la caja',
+      companyId: company2.id,
+    },
+  })
+
   const betaRolePermissionsData = [
     // Owner
     ...[
@@ -1653,6 +1720,27 @@ async function main() {
       'baro.access',
     ].map((name) => ({
       roleId: betaBasicUserRole.id,
+      permissionId: permissionsByName[name]!.id,
+    })),
+    // Cajero: crear/leer ventas + operar la caja (leer cajas, abrir/cerrar/leer sesiones)
+    ...[
+      'shopflow.access',
+      'shopflow.sales.read',
+      'shopflow.sales.create',
+      'shopflow.cash-registers.read',
+      'shopflow.cash-sessions.read',
+      'shopflow.cash-sessions.open',
+      'shopflow.cash-sessions.close',
+    ].map((name) => ({
+      roleId: betaCajeroRole.id,
+      permissionId: permissionsByName[name]!.id,
+    })),
+    // Vendedor: solo crear ventas (moto vendedor), sin permisos de caja
+    ...[
+      'shopflow.access',
+      'shopflow.sales.create',
+    ].map((name) => ({
+      roleId: betaVendedorRole.id,
       permissionId: permissionsByName[name]!.id,
     })),
   ]
