@@ -15,9 +15,17 @@ interface TotalsPanelProps {
   disabled?: boolean
   /** Shown as the button's tooltip/help text when `disabled` is true. */
   disabledReason?: string
+  /** Overrides the checkout button's label (default "Procesar Pago") — e.g. "Crear Pedido" for the vendedor/no-payment flow. */
+  checkoutLabel?: string
 }
 
-export function TotalsPanel({ onCheckout, taxRate = 0, disabled = false, disabledReason }: TotalsPanelProps) {
+export function TotalsPanel({
+  onCheckout,
+  taxRate = 0,
+  disabled = false,
+  disabledReason,
+  checkoutLabel = 'Procesar Pago',
+}: TotalsPanelProps) {
   const { data: storeConfig } = useStoreConfig()
   const items = useCartStore((state) => state.items)
   const discountPercent = useCartStore((state) => state.discount)
@@ -103,7 +111,7 @@ export function TotalsPanel({ onCheckout, taxRate = 0, disabled = false, disable
                   : undefined
           }
         >
-          Procesar Pago
+          {checkoutLabel}
         </Button>
         {disabled && disabledReason ? (
           <p className="mt-2 text-center text-xs text-amber-800">{disabledReason}</p>

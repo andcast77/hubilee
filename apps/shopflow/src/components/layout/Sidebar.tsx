@@ -12,6 +12,8 @@ import { Module } from '@/lib/permissions'
 import {
   LayoutDashboard,
   ShoppingCart,
+  ClipboardList,
+  Wallet,
   Gift,
   Store,
   MapPin,
@@ -56,6 +58,8 @@ const navGroups: SidebarProps['navGroups'] = [
     items: [
       { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
       { title: 'Punto de Venta', href: '/pos', icon: ShoppingCart, module: Module.SALES },
+      { title: 'Pedidos (Vendedor)', href: '/pos-vendedor', icon: ClipboardList, module: Module.SALES },
+      { title: 'Caja', href: '/caja', icon: Wallet, module: Module.SALES },
     ],
   },
   {

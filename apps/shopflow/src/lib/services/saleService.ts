@@ -64,7 +64,7 @@ export async function createSale(userId: string, data: CreateSaleInput) {
     }
   }
 
-  if (data.paidAmount < 0) {
+  if (data.paidAmount != null && data.paidAmount < 0) {
     throw new ApiError(400, 'Paid amount cannot be negative', ErrorCodes.VALIDATION_ERROR)
   }
 

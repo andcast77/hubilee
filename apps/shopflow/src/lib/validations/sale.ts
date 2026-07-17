@@ -16,8 +16,13 @@ export const createSaleSchema = z.object({
   storeId: z.string().optional().nullable(),
   customerId: z.string().optional().nullable(),
   items: z.array(saleItemSchema).min(1, 'At least one item is required'),
-  paymentMethod: z.nativeEnum(PaymentMethod),
-  paidAmount: z.number().nonnegative('Paid amount cannot be negative'),
+  /**
+   * Required for the direct/kiosco flow (settles inline); omitted for the
+   * order->checkout/vendedor flow (PENDING sale, no payment taken yet — see
+   * PR6). Mirrors the backend `createSaleSchema`'s PR4 relaxation.
+   */
+  paymentMethod: z.nativeEnum(PaymentMethod).optional(),
+  paidAmount: z.number().nonnegative('Paid amount cannot be negative').optional(),
   discount: z.number().nonnegative('Discount cannot be negative').default(0),
   taxRate: z.number().min(0).max(1).optional(), // Optional, stored as decimal (e.g., 0.1 = 10%), will use store config if not provided
   notes: z.string().optional().nullable(),
