@@ -75,14 +75,27 @@ export type ListSessionsQuery = {
 export class CashRepository extends TenantScopedRepository {
   // ---- CashRegister ----
 
+  /**
+   * Rejects with ConflictError if a register with the same name already exists in the
+   * store (enforced by the `cash_registers_storeId_name_key` unique index) — closes a
+   * check-then-create race in `CashSessionBar` that could otherwise create duplicate
+   * "Caja Principal" registers, corrupting register-aware session selection (FIX 1).
+   */
   async createRegister(input: CashRegisterCreateInput): Promise<CashRegisterRow> {
-    return this.db.cashRegister.create({
-      data: {
-        companyId: this.tenantId,
-        storeId: input.storeId,
-        name: input.name,
-      },
-    }) as Promise<CashRegisterRow>
+    try {
+      return (await this.db.cashRegister.create({
+        data: {
+          companyId: this.tenantId,
+          storeId: input.storeId,
+          name: input.name,
+        },
+      })) as CashRegisterRow
+    } catch (err) {
+      if (isDuplicateRegisterNameViolation(err)) {
+        throw new ConflictError('Ya existe una caja con ese nombre en este local')
+      }
+      throw err
+    }
   }
 
   async findRegisterById(id: string): Promise<CashRegisterRow | null> {
@@ -206,4 +219,13 @@ function isOneOpenSessionViolation(err: unknown): boolean {
   if (err.code !== 'P2002') return false
   const metaStr = JSON.stringify(err.meta ?? {})
   return metaStr.includes(ONE_OPEN_SESSION_PER_REGISTER_INDEX) || metaStr.includes(ONE_OPEN_SESSION_PER_REGISTER_COLUMN)
+}
+
+const DUPLICATE_REGISTER_NAME_INDEX = 'cash_registers_storeId_name_key'
+
+function isDuplicateRegisterNameViolation(err: unknown): boolean {
+  if (!(err instanceof Prisma.PrismaClientKnownRequestError)) return false
+  if (err.code !== 'P2002') return false
+  const metaStr = JSON.stringify(err.meta ?? {})
+  return metaStr.includes(DUPLICATE_REGISTER_NAME_INDEX) || (metaStr.includes('storeId') && metaStr.includes('name'))
 }

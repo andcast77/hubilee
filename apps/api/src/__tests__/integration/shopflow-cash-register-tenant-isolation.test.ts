@@ -167,4 +167,23 @@ describe('Shopflow cash register: tenant isolation + one-open-session-per-regist
     const persisted = await acmeRepo.findSessionById(session.id)
     expect(Number(persisted?.countedCash)).toBe(100)
   })
+
+  it('rejects creating a second register with the same name in the same store (FIX 1 — duplicate-register guard)', async () => {
+    const name = `Caja Duplicada ${Date.now()}`
+    await acmeRepo.createRegister({ storeId: acmeStoreId, name })
+
+    await expect(acmeRepo.createRegister({ storeId: acmeStoreId, name })).rejects.toBeInstanceOf(ConflictError)
+  })
+
+  it('allows the same register name in different stores', async () => {
+    const acmeStoreB = await prisma.store.findFirst({
+      where: { companyId: acmeCompanyId, id: { not: acmeStoreId } },
+    })
+    if (!acmeStoreB) throw new Error('Missing a second seeded Acme store')
+
+    const name = `Caja Principal Shared Name ${Date.now()}`
+    const registerA = await acmeRepo.createRegister({ storeId: acmeStoreId, name })
+    const registerB = await acmeRepo.createRegister({ storeId: acmeStoreB.id, name })
+    expect(registerA.id).not.toBe(registerB.id)
+  })
 })

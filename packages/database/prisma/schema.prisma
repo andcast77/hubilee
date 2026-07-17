@@ -1272,6 +1272,10 @@ model CashRegister {
   sessions CashSession[]
 
   @@unique([id, companyId])
+  /// Prevents creating two registers with the same name in the same store (e.g. two
+  /// "Caja Principal" from a check-then-create race) — CashRepository.createRegister
+  /// translates the resulting P2002 into a ConflictError.
+  @@unique([storeId, name])
   @@index([companyId, storeId])
   @@map("cash_registers")
 }
