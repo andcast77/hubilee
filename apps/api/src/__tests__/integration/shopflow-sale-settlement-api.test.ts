@@ -234,6 +234,78 @@ describe('Shopflow sale settlement: HTTP API + RBAC', () => {
     expect(json.data.invoiceNumber).not.toBeNull()
   })
 
+  // FIX 2 (pos-cash-session): POST /sales only requires `shopflow.sales:create` at the
+  // route level. Sending a cashSessionId settles the sale inline as COMPLETED — a
+  // privileged settle — so a create-only role (Vendedor) must NOT be able to bypass
+  // `shopflow.sales:settle` by taking this path instead of POST /sales/:id/settle.
+  it('vendedor (no settle permission) gets 403 creating a sale directly with cashSessionId', async () => {
+    const sessionId = await openSession()
+
+    const { res } = await inject(app, {
+      method: 'POST',
+      url: '/v1/shopflow/sales',
+      headers: { Authorization: `Bearer ${vendedorToken}`, 'content-type': 'application/json', 'x-store-id': acmeStoreId },
+      payload: {
+        storeId: acmeStoreId,
+        userId: acmeOwnerUserId,
+        items: [{ productId: acmeProductId, quantity: 1, price: 100 }],
+        cashSessionId: sessionId,
+        paymentMethod: 'CASH',
+        paidAmount: 1_000_000,
+      },
+    })
+    expect(res.statusCode).toBe(403)
+  })
+
+  it('cajero (settle permission granted) can create a sale directly with cashSessionId (COMPLETED)', async () => {
+    const sessionId = await openSession()
+
+    const { res, json } = await inject(app, {
+      method: 'POST',
+      url: '/v1/shopflow/sales',
+      headers: { Authorization: `Bearer ${cajeroToken}`, 'content-type': 'application/json', 'x-store-id': acmeStoreId },
+      payload: {
+        storeId: acmeStoreId,
+        userId: acmeOwnerUserId,
+        items: [{ productId: acmeProductId, quantity: 1, price: 100 }],
+        cashSessionId: sessionId,
+        paymentMethod: 'CASH',
+        paidAmount: 1_000_000,
+      },
+    })
+    expect(res.statusCode).toBe(200)
+    expect(json.data.status).toBe('COMPLETED')
+    expect(json.data.cashSessionId).toBe(sessionId)
+  })
+
+  it('GET /sales/:id does not leak cashSessionId in the response payload', async () => {
+    const sessionId = await openSession()
+
+    const { json: created } = await inject(app, {
+      method: 'POST',
+      url: '/v1/shopflow/sales',
+      headers: { Authorization: `Bearer ${cajeroToken}`, 'content-type': 'application/json', 'x-store-id': acmeStoreId },
+      payload: {
+        storeId: acmeStoreId,
+        userId: acmeOwnerUserId,
+        items: [{ productId: acmeProductId, quantity: 1, price: 100 }],
+        cashSessionId: sessionId,
+        paymentMethod: 'CASH',
+        paidAmount: 1_000_000,
+      },
+    })
+    const saleId = created.data.id as string
+
+    const { res, json } = await inject(app, {
+      method: 'GET',
+      url: `/v1/shopflow/sales/${saleId}`,
+      headers: { Authorization: `Bearer ${cajeroToken}`, 'x-store-id': acmeStoreId },
+    })
+    expect(res.statusCode).toBe(200)
+    expect(json.data.id).toBe(saleId)
+    expect(json.data).not.toHaveProperty('cashSessionId')
+  })
+
   it('rejects re-settling an already-COMPLETED sale (400)', async () => {
     const saleId = await createPendingSale(cajeroToken)
     const sessionId = await openSession()

@@ -11,6 +11,7 @@ import {
 import { checkAndAlertLowStock } from '../jobs/inventory-alert.job.js'
 import { createRepositories } from '../repositories/index.js'
 import type { CashSessionRow } from '../repositories/cash.repository.js'
+import { assertPermission } from '../core/permissions.js'
 
 const num = toNumber
 
@@ -183,14 +184,27 @@ export async function getSaleById(
   if (!hasFullStoreAccess(ctx) && ctx.storeId != null && sale.storeId !== ctx.storeId) {
     throw new NotFoundError('Venta no encontrada')
   }
+  // Curated shape (mirrors `listSales`) instead of a raw `...sale` spread — do not leak
+  // internal fields like `cashSessionId` to callers who shouldn't see which till a sale
+  // was settled against.
   return {
     success: true,
     data: {
-      ...sale,
+      id: sale.id,
+      companyId: sale.companyId,
+      storeId: sale.storeId,
+      customerId: sale.customerId,
+      userId: sale.userId,
+      invoiceNumber: sale.invoiceNumber,
       total: num(sale.total),
       subtotal: num(sale.subtotal),
       tax: num(sale.tax),
       discount: sale.discount != null ? num(sale.discount) : null,
+      status: sale.status,
+      paymentMethod: sale.paymentMethod,
+      notes: sale.notes,
+      createdAt: sale.createdAt,
+      updatedAt: sale.updatedAt,
       customer: sale.customer,
       user: sale.user,
       items: sale.items.map((item) => ({
@@ -235,6 +249,17 @@ export async function createSale(
   }
   const isDirect = cashSession != null
   if (isDirect) {
+    // The route only requires `shopflow.sales:create`. Sending a cashSessionId settles the
+    // sale inline as COMPLETED (a privileged settle), so this path must ALSO require
+    // `shopflow.sales:settle` — otherwise a create-only role (Vendedor) could bypass the
+    // settle permission entirely by calling POST /sales with a cashSessionId instead of the
+    // dedicated POST /sales/:id/settle route.
+    await assertPermission(
+      ctx,
+      'shopflow.sales',
+      'settle',
+      'No tienes permiso para liquidar ventas directamente al crearlas',
+    )
     if (!paymentMethod) throw new BadRequestError('paymentMethod es obligatorio para liquidar la venta')
     if (paidAmount == null) throw new BadRequestError('paidAmount es obligatorio para liquidar la venta')
   }

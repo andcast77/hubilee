@@ -44,7 +44,7 @@ export function canManageMembers(decoded: { membershipRole?: string; isSuperuser
  *
  * Returns false (deny) if neither is found.
  */
-async function userHasPermission(
+export async function userHasPermission(
   userId: string,
   companyId: string,
   resource: string,
@@ -91,6 +91,37 @@ async function userHasPermission(
  *
  * Usage: `preHandler: [...pre, requirePermission('shopflow.sales', 'create')]`
  */
+/** Minimal shape needed to evaluate a permission outside of a Fastify request (e.g. from a service). */
+export type PermissionContext = {
+  userId: string
+  companyId: string
+  isSuperuser: boolean
+  membershipRole: string | null
+}
+
+/**
+ * Service-level equivalent of `requirePermission`'s bypass + deny-by-default logic, for call
+ * sites that need to enforce an ADDITIONAL permission mid-service (not just at the route's
+ * preHandler) — e.g. a route gated on `resource:create` that must also require `resource:settle`
+ * only when a specific condition in the body is met. Throws ForbiddenError when denied.
+ */
+export async function assertPermission(
+  ctx: PermissionContext,
+  resource: string,
+  action: string,
+  message?: string,
+): Promise<void> {
+  if (ctx.isSuperuser) return
+
+  const membershipRole = (ctx.membershipRole ?? '').toUpperCase()
+  if (membershipRole === 'OWNER' || membershipRole === 'ADMIN') return
+
+  const allowed = await userHasPermission(ctx.userId, ctx.companyId, resource, action)
+  if (!allowed) {
+    throw new ForbiddenError(message ?? `Permission denied: ${resource}:${action}`)
+  }
+}
+
 export function requirePermission(resource: string, action: string) {
   return async function checkPermission(request: FastifyRequest, _reply: FastifyReply): Promise<void> {
     const user = (request as any).user
