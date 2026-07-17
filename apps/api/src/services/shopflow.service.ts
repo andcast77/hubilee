@@ -362,8 +362,8 @@ export { createAction, listActions } from './shopflow-action-history.service.js'
 
 // --- Sales ---
 export {
-  listSales, getSaleById, createSale, cancelSale, refundSale,
-  type Sale, type SaleItem, type ListSalesQuery, type CreateSaleBody,
+  listSales, getSaleById, createSale, cancelSale, refundSale, settleSale,
+  type Sale, type SaleItem, type ListSalesQuery, type CreateSaleBody, type SettleSaleInput,
 } from './shopflow-sales.service.js'
 
 // --- Reports ---

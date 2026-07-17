@@ -9,6 +9,8 @@ import {
   resolveEffectiveStoreIdForScopedUser,
 } from '../policies/shopflow-authorization.policy.js'
 import { checkAndAlertLowStock } from '../jobs/inventory-alert.job.js'
+import { createRepositories } from '../repositories/index.js'
+import type { CashSessionRow } from '../repositories/cash.repository.js'
 
 const num = toNumber
 
@@ -17,6 +19,8 @@ export type Sale = {
   storeId: string | null
   customerId: string | null
   userId: string
+  cashSessionId: string | null
+  sellerId: string | null
   invoiceNumber: string | null
   total: number
   subtotal: number
@@ -63,11 +67,26 @@ export type CreateSaleBody = {
     price: number
     discount?: number
   }>
-  paymentMethod: string
-  paidAmount: number
+  /**
+   * When present, the sale is settled inline (direct/kiosco flow): status COMPLETED,
+   * invoice number assigned now, tied to this OPEN CashSession. When absent, the sale
+   * is created as PENDING (moto/vendedor flow): stock is still reserved now, but the
+   * invoice number and cash-session attachment are deferred to `settleSale`.
+   */
+  cashSessionId?: string | null
+  /** Vendedor attribution; defaults to `userId` when omitted. */
+  sellerId?: string | null
+  paymentMethod?: string
+  paidAmount?: number
   discount?: number
   taxRate?: number
   notes?: string | null
+}
+
+export type SettleSaleInput = {
+  cashSessionId: string
+  paymentMethod: string
+  paidAmount: number
 }
 
 export async function listSales(
@@ -191,13 +210,34 @@ export async function createSale(
   ctx: ShopflowContext,
   body: CreateSaleBody,
 ) {
-  const { storeId: bodyStoreId, customerId, userId, items, paymentMethod, paidAmount, discount = 0, taxRate, notes } = body
+  const {
+    storeId: bodyStoreId, customerId, userId, items, paymentMethod, paidAmount,
+    discount = 0, taxRate, notes, cashSessionId = null, sellerId,
+  } = body
   const effectiveStoreId = bodyStoreId ?? ctx.storeId ?? null
   if (effectiveStoreId == null) {
     throw new BadRequestError('Envía storeId en el body o el header X-Store-Id con el id del local de venta para registrar la venta')
   }
   assertStoreMatchForScopedUser(ctx, effectiveStoreId, 'Solo puedes registrar ventas en tu local de venta asignado')
   await assertStoreBelongsToCompany(ctx.companyId, effectiveStoreId)
+
+  // Direct/kiosco flow: creating with a cashSessionId settles the sale inline against
+  // that OPEN session. Without one, the sale is created PENDING (moto/vendedor flow) —
+  // stock is still reserved now (see D1), but invoice number + session attach defer to settleSale.
+  let cashSession: CashSessionRow | null = null
+  if (cashSessionId != null) {
+    const cash = createRepositories(ctx.companyId).cash
+    cashSession = await cash.findSessionById(cashSessionId)
+    if (!cashSession) throw new NotFoundError('Sesión de caja no encontrada')
+    if (cashSession.status !== 'OPEN') throw new BadRequestError('La sesión de caja no está abierta')
+    if (cashSession.storeId !== effectiveStoreId) throw new BadRequestError('La sesión de caja no corresponde al local de la venta')
+    assertStoreMatchForScopedUser(ctx, cashSession.storeId, 'Solo puedes liquidar ventas en tu local de venta asignado')
+  }
+  const isDirect = cashSession != null
+  if (isDirect) {
+    if (!paymentMethod) throw new BadRequestError('paymentMethod es obligatorio para liquidar la venta')
+    if (paidAmount == null) throw new BadRequestError('paidAmount es obligatorio para liquidar la venta')
+  }
 
   for (const item of items) {
     const product = await prisma.product.findFirst({
@@ -254,13 +294,13 @@ export async function createSale(
   const tax = subtotalAfterDiscount * finalTaxRate
   const total = subtotalAfterDiscount + tax
 
-  if (paidAmount < total) {
+  if (isDirect && paidAmount! < total) {
     throw new BadRequestError(`El monto pagado (${paidAmount}) es menor que el total (${total})`)
   }
 
   const created = await prisma.$transaction(async (tx) => {
     let invoiceNumber: string | null = null
-    if (storeConfig) {
+    if (isDirect && storeConfig) {
       const [result] = await tx.$queryRaw<[{ invoicePrefix: string; invoiceNumber: number }]>(
         Prisma.sql`UPDATE store_configs SET "invoiceNumber" = "invoiceNumber" + 1, "updatedAt" = NOW() WHERE id = ${storeConfig.id} RETURNING "invoicePrefix", "invoiceNumber"`
       )
@@ -273,13 +313,15 @@ export async function createSale(
         storeId: effectiveStoreId,
         customerId: customerId != null ? customerId : undefined,
         userId,
+        sellerId: sellerId ?? userId,
+        cashSessionId: cashSession?.id ?? null,
         invoiceNumber,
         total,
         subtotal,
         tax,
         discount: discount ?? null,
-        status: 'COMPLETED',
-        paymentMethod: paymentMethod as 'CASH' | 'CARD' | 'TRANSFER' | 'CHECK' | 'OTHER',
+        status: isDirect ? 'COMPLETED' : 'PENDING',
+        paymentMethod: isDirect ? (paymentMethod as 'CASH' | 'CARD' | 'TRANSFER' | 'CHECK' | 'OTHER') : null,
         notes: notes ?? null,
       },
     })
@@ -327,6 +369,106 @@ export async function createSale(
       customer: created.customer,
       user: created.user,
       items: created.items.map((item) => ({
+        id: item.id,
+        productId: item.productId,
+        quantity: item.quantity,
+        price: num(item.price),
+        discount: item.discount != null ? num(item.discount) : null,
+        subtotal: num(item.subtotal),
+        product: item.product,
+      })),
+    },
+  }
+}
+
+/**
+ * Settles a PENDING sale: PENDING -> COMPLETED, attaches the settling cashier's OPEN
+ * CashSession, and assigns the invoice number now (deferred numbering, D6). Moves NO
+ * stock — the sale already reserved it at creation (D1); this is purely financial +
+ * session attach.
+ */
+export async function settleSale(
+  ctx: ShopflowContext,
+  id: string,
+  input: SettleSaleInput,
+) {
+  const sale = await prisma.sale.findFirst({
+    where: { id, companyId: ctx.companyId },
+  })
+  if (!sale) throw new NotFoundError('Venta no encontrada')
+  if (sale.status !== 'PENDING') {
+    throw new BadRequestError(
+      `No se puede liquidar una venta con estado ${sale.status}. Solo las ventas pendientes pueden liquidarse.`,
+    )
+  }
+
+  const cash = createRepositories(ctx.companyId).cash
+  const session = await cash.findSessionById(input.cashSessionId)
+  if (!session) throw new NotFoundError('Sesión de caja no encontrada')
+  if (session.status !== 'OPEN') throw new BadRequestError('La sesión de caja no está abierta')
+  if (session.storeId !== sale.storeId) throw new BadRequestError('La sesión de caja no corresponde al local de la venta')
+  assertStoreMatchForScopedUser(ctx, session.storeId, 'Solo puedes liquidar ventas en tu local de venta asignado')
+
+  const total = num(sale.total)
+  if (input.paidAmount < total) {
+    throw new BadRequestError(`El monto pagado (${input.paidAmount}) es menor que el total (${total})`)
+  }
+
+  const needsInvoiceNumber = sale.invoiceNumber == null
+  const storeConfig = needsInvoiceNumber
+    ? await prisma.storeConfig.findFirst({
+        where: { companyId: ctx.companyId },
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, invoicePrefix: true },
+      })
+    : null
+
+  const updated = await prisma.$transaction(async (tx) => {
+    let invoiceNumber = sale.invoiceNumber
+    if (needsInvoiceNumber && storeConfig) {
+      const [result] = await tx.$queryRaw<[{ invoicePrefix: string; invoiceNumber: number }]>(
+        Prisma.sql`UPDATE store_configs SET "invoiceNumber" = "invoiceNumber" + 1, "updatedAt" = NOW() WHERE id = ${storeConfig.id} RETURNING "invoicePrefix", "invoiceNumber"`
+      )
+      invoiceNumber = `${result.invoicePrefix}${result.invoiceNumber.toString().padStart(6, '0')}`
+    }
+
+    // updateMany + WHERE status: 'PENDING' guards against a concurrent double-settle race.
+    const res = await tx.sale.updateMany({
+      where: { id, companyId: ctx.companyId, status: 'PENDING' },
+      data: {
+        status: 'COMPLETED',
+        cashSessionId: session.id,
+        invoiceNumber,
+        paymentMethod: input.paymentMethod as 'CASH' | 'CARD' | 'TRANSFER' | 'CHECK' | 'OTHER',
+      },
+    })
+    if (res.count === 0) {
+      throw new BadRequestError('La venta ya no está pendiente')
+    }
+
+    return tx.sale.findUnique({
+      where: { id },
+      include: {
+        customer: { select: { id: true, name: true, email: true, phone: true } },
+        user: { select: { id: true, email: true } },
+        items: { include: { product: { select: { id: true, name: true, sku: true } } } },
+      },
+    })
+  })
+
+  if (!updated) return { success: false, error: 'Error al liquidar venta' }
+
+  return {
+    success: true,
+    data: {
+      ...updated,
+      total: num(updated.total),
+      subtotal: num(updated.subtotal),
+      tax: num(updated.tax),
+      discount: updated.discount != null ? num(updated.discount) : null,
+      customer: updated.customer,
+      user: updated.user,
+      items: updated.items.map((item) => ({
         id: item.id,
         productId: item.productId,
         quantity: item.quantity,
