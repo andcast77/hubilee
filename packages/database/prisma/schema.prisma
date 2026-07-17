@@ -38,6 +38,11 @@ enum SaleStatus {
   REFUNDED
 }
 
+enum CashSessionStatus {
+  OPEN
+  CLOSED
+}
+
 enum InvoiceStatus {
   DRAFT
   SENT
@@ -254,6 +259,7 @@ model User {
 
   // Relaciones Shopflow
   sales             Sale[]
+  salesAsSeller     Sale[]        @relation("SaleSeller")
   actionHistory      ActionHistory[]
   notifications     Notification[]
   userPreferences   UserPreferences[]
@@ -263,6 +269,8 @@ model User {
   pushSubscriptions PushSubscription[]
   sessions         Session[]
   mfaBackupCodes   MfaBackupCode[]
+  cashSessionsOpened CashSession[] @relation("CashSessionOpenedBy")
+  cashSessionsClosed CashSession[] @relation("CashSessionClosedBy")
 
   // Baro
   baroTitularProfile BaroProfessional? @relation("BaroTitularUser")
@@ -388,6 +396,8 @@ model Company {
   storeInventory    StoreInventory[]
   userPreferences   UserPreferences[]
   usersWithPreferredShopflow User[] @relation("ShopflowPreferredCompany")
+  cashRegisters     CashRegister[]
+  cashSessions      CashSession[]
 
   // Baro
   baroProfessionals   BaroProfessional[]
@@ -1114,6 +1124,10 @@ model Sale {
   storeId      String
   customerId   String?
   userId       String
+  /// Cajero que liquida/cobra la venta (Cajero). Nullable: additive, ventas existentes sin caja.
+  cashSessionId String?
+  /// Vendedor que originó la venta cuando difiere del cajero que liquida (flujo pedido→caja).
+  sellerId     String?
   invoiceNumber String?
   total        Decimal       @db.Decimal(10, 2)
   subtotal     Decimal       @db.Decimal(10, 2)
@@ -1130,6 +1144,8 @@ model Sale {
   store        Store        @relation(fields: [storeId, companyId], references: [id, companyId], onDelete: Cascade)
   customer      Customer?    @relation(fields: [customerId, companyId], references: [id, companyId])
   user          User         @relation(fields: [userId], references: [id])
+  cashSession   CashSession? @relation(fields: [cashSessionId, companyId], references: [id, companyId])
+  seller        User?        @relation("SaleSeller", fields: [sellerId], references: [id])
   items         SaleItem[]
   loyaltyPoints LoyaltyPoint[]
 
@@ -1138,6 +1154,7 @@ model Sale {
   @@index([companyId, createdAt(sort: Desc)])
   @@index([companyId, storeId, createdAt(sort: Desc)])
   @@index([customerId])
+  @@index([companyId, cashSessionId])
   @@map("sales")
 }
 
@@ -1232,10 +1249,63 @@ model Store {
   inventoryTransfersFrom InventoryTransfer[] @relation("InventoryTransferFrom")
   inventoryTransfersTo   InventoryTransfer[] @relation("InventoryTransferTo")
   ticketConfigs TicketConfig[]
+  cashRegisters CashRegister[]
+  cashSessions  CashSession[]
 
   @@index([companyId])
   @@unique([id, companyId])
   @@map("stores")
+}
+
+/// Caja física/lógica de un local. Un Store puede tener varias (varios puestos de cobro).
+model CashRegister {
+  id        String   @id @default(uuid())
+  companyId String
+  storeId   String
+  name      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company  Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  store    Store        @relation(fields: [storeId, companyId], references: [id, companyId], onDelete: Cascade)
+  sessions CashSession[]
+
+  @@unique([id, companyId])
+  @@index([companyId, storeId])
+  @@map("cash_registers")
+}
+
+/// Turno de caja: abre con un fondo inicial, acumula ventas liquidadas, cierra con arqueo.
+/// Invariante (aplicado en migración vía índice único parcial, no expresable en el schema):
+/// a lo sumo UNA sesión OPEN por CashRegister.
+model CashSession {
+  id             String             @id @default(uuid())
+  companyId      String
+  storeId        String
+  cashRegisterId String
+  openedByUserId String
+  closedByUserId String?
+  status         CashSessionStatus  @default(OPEN)
+  openingFloat   Decimal            @db.Decimal(10, 2)
+  expectedCash   Decimal?           @db.Decimal(10, 2)
+  countedCash    Decimal?           @db.Decimal(10, 2)
+  difference     Decimal?           @db.Decimal(10, 2)
+  notes          String?
+  openedAt       DateTime           @default(now())
+  closedAt       DateTime?
+
+  company      Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  store        Store        @relation(fields: [storeId, companyId], references: [id, companyId], onDelete: Cascade)
+  cashRegister CashRegister @relation(fields: [cashRegisterId, companyId], references: [id, companyId], onDelete: Cascade)
+  openedByUser User         @relation("CashSessionOpenedBy", fields: [openedByUserId], references: [id])
+  closedByUser User?        @relation("CashSessionClosedBy", fields: [closedByUserId], references: [id])
+  sales        Sale[]
+
+  @@unique([id, companyId])
+  @@index([companyId, storeId, status])
+  @@index([cashRegisterId, status])
+  @@map("cash_sessions")
 }
 
 /// Per-store stock levels. Separates inventory tracking from product catalog
