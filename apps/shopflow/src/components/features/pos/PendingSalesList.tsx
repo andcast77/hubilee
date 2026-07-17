@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@multisystem/ui'
-import { useSales } from '@/hooks/useSales'
+import { toast } from 'sonner'
+import { useSales, useCancelSale } from '@/hooks/useSales'
 import { SettleSaleModal, type PendingSaleSummary } from '@/components/features/pos/SettleSaleModal'
 import { useStoreConfig } from '@/hooks/useStoreConfig'
 import { formatCurrency, formatDate } from '@/lib/utils/format'
@@ -23,7 +24,9 @@ interface PendingSalesListProps {
  * Caja-management screen (spec `pos-sale-settlement` scenario "Order->checkout
  * flow (moto), seller != cashier", PR6): lists PENDING sales for the store —
  * created by a vendedor, awaiting settlement — and lets an authorized cashier
- * take payment for one via `SettleSaleModal`.
+ * take payment for one via `SettleSaleModal`, or void/reject an abandoned one
+ * via `useCancelSale` (FIX 5 — releases the reserved stock, backend-enforced
+ * by `shopflow.sales:cancel`, granted to Cajero not Vendedor).
  */
 export function PendingSalesList({ storeId, cashSessionId }: PendingSalesListProps) {
   const { data: storeConfig } = useStoreConfig()
@@ -31,6 +34,16 @@ export function PendingSalesList({ storeId, cashSessionId }: PendingSalesListPro
   const { data, isLoading } = useSales({ storeId, status: SaleStatus.PENDING, limit: 50 })
   const pendingSales = (data?.sales ?? []) as PendingSale[]
   const [selectedSale, setSelectedSale] = useState<PendingSale | null>(null)
+  const cancelSaleMutation = useCancelSale()
+
+  const handleCancel = async (sale: PendingSale) => {
+    try {
+      await cancelSaleMutation.mutateAsync(sale.id)
+      toast.success('Pedido cancelado')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Error al cancelar el pedido')
+    }
+  }
 
   return (
     <Card>
@@ -53,14 +66,24 @@ export function PendingSalesList({ storeId, cashSessionId }: PendingSalesListPro
                 <Badge variant="outline" className="text-xs">
                   PENDIENTE
                 </Badge>
-                <Button
-                  size="sm"
-                  disabled={!cashSessionId}
-                  title={!cashSessionId ? 'Abre la caja antes de cobrar.' : undefined}
-                  onClick={() => setSelectedSale(sale)}
-                >
-                  Cobrar
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    disabled={!cashSessionId}
+                    title={!cashSessionId ? 'Abre la caja antes de cobrar.' : undefined}
+                    onClick={() => setSelectedSale(sale)}
+                  >
+                    Cobrar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={cancelSaleMutation.isPending}
+                    onClick={() => handleCancel(sale)}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
               </li>
             ))}
           </ul>

@@ -11,6 +11,7 @@ import { describe, it, expect, beforeAll } from 'vitest'
 import type { FastifyInstance } from 'fastify'
 import { prisma } from '@multisystem/database'
 import { Buffer } from 'node:buffer'
+import bcrypt from 'bcryptjs'
 
 import './setup'
 
@@ -175,11 +176,48 @@ describe('PLAN-18: RBAC Regression', () => {
 
   // ---------------------------------------------------------------------------
   // 3. requirePermission deny-by-default
-  //    acmeVentas has Cajero role (shopflow.sales.read + create) but NOT shopflow.sales.cancel
-  //    So canceling a sale should be 403.
+  //    A USER with only Vendedor-shaped permissions (shopflow.sales.create, no
+  //    cancel — FIX 5 grants shopflow.sales.cancel to Cajero only, NOT Vendedor)
+  //    gets 403 canceling a sale. acmeVentas itself is no longer usable here:
+  //    it holds the real seeded Cajero role, which (as of FIX 5) DOES include
+  //    shopflow.sales.cancel, so it would incorrectly pass this deny-by-default check.
   // ---------------------------------------------------------------------------
 
   it('USER without cancel permission gets 403 on sale cancel (deny-by-default)', async () => {
+    const vendedorEmail = `vendedor-deny-cancel-${Date.now()}@authz.test`
+    const vendedorUser = await prisma.user.create({
+      data: {
+        email: vendedorEmail,
+        password: await bcrypt.hash('password123', 10),
+        firstName: 'Vendedor',
+        lastName: 'DenyCancelTest',
+        role: 'USER',
+        isActive: true,
+        isSuperuser: false,
+      },
+    })
+    await prisma.companyMember.create({
+      data: { userId: vendedorUser.id, companyId: acmeCompanyId, membershipRole: 'USER' },
+    })
+    const createPerm = await prisma.permission.upsert({
+      where: { name: 'shopflow.sales.create' },
+      create: { name: 'shopflow.sales.create', resource: 'shopflow.sales', action: 'create' },
+      update: { resource: 'shopflow.sales', action: 'create' },
+    })
+    const vendedorRole = await prisma.role.create({
+      data: { name: `Vendedor Deny Cancel Test ${Date.now()}`, companyId: acmeCompanyId },
+    })
+    await prisma.rolePermission.create({ data: { roleId: vendedorRole.id, permissionId: createPerm.id } })
+    await prisma.userRoleAssignment.create({
+      data: { userId: vendedorUser.id, roleId: vendedorRole.id, companyId: acmeCompanyId },
+    })
+    const vendedorToken = generateToken({
+      id: vendedorUser.id,
+      email: vendedorUser.email,
+      role: vendedorUser.role,
+      isSuperuser: vendedorUser.isSuperuser,
+    })
+
     // Use a fake sale UUID — we expect 403 from the permission check before business logic
     const fakeSaleId = '00000000-0000-0000-0000-000000000001'
     const acmeStore = await prisma.store.findFirst({
@@ -191,7 +229,7 @@ describe('PLAN-18: RBAC Regression', () => {
       method: 'POST',
       url: `/v1/shopflow/sales/${fakeSaleId}/cancel`,
       headers: {
-        Authorization: `Bearer ${acmeUserToken}`,
+        Authorization: `Bearer ${vendedorToken}`,
         'content-type': 'application/json',
         ...(acmeStore ? { 'x-store-id': acmeStore.id } : {}),
       },

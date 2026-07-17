@@ -8,6 +8,7 @@ import { PendingSalesList } from '@/components/features/pos/PendingSalesList'
 // CashSession via `POST /sales/:id/settle`.
 
 const settleSaleMutateAsyncMock = vi.fn()
+const cancelSaleMutateAsyncMock = vi.fn()
 
 let salesQueryState: { data: { sales: unknown[] } | undefined; isLoading: boolean } = {
   data: { sales: [] },
@@ -17,6 +18,7 @@ let salesQueryState: { data: { sales: unknown[] } | undefined; isLoading: boolea
 vi.mock('@/hooks/useSales', () => ({
   useSales: () => salesQueryState,
   useSettleSale: () => ({ mutateAsync: settleSaleMutateAsyncMock, isPending: false }),
+  useCancelSale: () => ({ mutateAsync: cancelSaleMutateAsyncMock, isPending: false }),
 }))
 
 vi.mock('@/hooks/useStoreConfig', () => ({
@@ -32,6 +34,9 @@ afterEach(() => {
   vi.clearAllMocks()
   salesQueryState = { data: { sales: [] }, isLoading: false }
 })
+
+// FIX 5 (pos-cash-session): Cajero can void an abandoned PENDING sale to release
+// its reserved stock — the caja screens previously had no cancel/reject action.
 
 describe('PendingSalesList (caja-management screen)', () => {
   it('lists PENDING sales for the store and settles one against the OPEN cash session', async () => {
@@ -91,5 +96,32 @@ describe('PendingSalesList (caja-management screen)', () => {
 
     const cobrarButton = screen.getByRole('button', { name: /cobrar/i })
     expect(cobrarButton).toHaveProperty('disabled', true)
+  })
+
+  it('cancels a PENDING sale via the "Cancelar" action, restoring its reserved stock', async () => {
+    salesQueryState = {
+      data: {
+        sales: [
+          {
+            id: 'pending-sale-3',
+            total: 100,
+            invoiceNumber: null,
+            sellerId: 'vendedor-1',
+            createdAt: new Date().toISOString(),
+            customer: null,
+          },
+        ],
+      },
+      isLoading: false,
+    }
+    cancelSaleMutateAsyncMock.mockResolvedValue({ id: 'pending-sale-3', status: 'CANCELLED' })
+
+    render(<PendingSalesList storeId="store-1" cashSessionId="session-1" />)
+
+    fireEvent.click(screen.getByRole('button', { name: /cancelar/i }))
+
+    await waitFor(() => {
+      expect(cancelSaleMutateAsyncMock).toHaveBeenCalledWith('pending-sale-3')
+    })
   })
 })

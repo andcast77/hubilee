@@ -690,12 +690,13 @@ async function main() {
       roleId: gerenteRole.id,
       permissionId: permissionsByName[name]!.id,
     })),
-    // Cajero: crear/leer ventas + liquidar pendientes + operar la caja (leer cajas, abrir/cerrar/leer sesiones)
+    // Cajero: crear/leer ventas + liquidar pendientes + cancelar pendientes abandonadas + operar la caja (leer cajas, abrir/cerrar/leer sesiones)
     ...[
       'shopflow.access',
       'shopflow.sales.read',
       'shopflow.sales.create',
       'shopflow.sales.settle',
+      'shopflow.sales.cancel',
       'shopflow.cash-registers.read',
       'shopflow.cash-sessions.read',
       'shopflow.cash-sessions.open',
@@ -1729,12 +1730,13 @@ async function main() {
       roleId: betaBasicUserRole.id,
       permissionId: permissionsByName[name]!.id,
     })),
-    // Cajero: crear/leer ventas + liquidar pendientes + operar la caja (leer cajas, abrir/cerrar/leer sesiones)
+    // Cajero: crear/leer ventas + liquidar pendientes + cancelar pendientes abandonadas + operar la caja (leer cajas, abrir/cerrar/leer sesiones)
     ...[
       'shopflow.access',
       'shopflow.sales.read',
       'shopflow.sales.create',
       'shopflow.sales.settle',
+      'shopflow.sales.cancel',
       'shopflow.cash-registers.read',
       'shopflow.cash-sessions.read',
       'shopflow.cash-sessions.open',
