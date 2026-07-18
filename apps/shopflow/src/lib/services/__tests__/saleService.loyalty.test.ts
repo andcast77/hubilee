@@ -11,14 +11,15 @@ import type { CreateSaleInput, SettleSaleInput } from '@/lib/validations/sale'
 // order->checkout flow (PENDING -> COMPLETED) — never both, never on PENDING.
 
 const shopflowApiPostMock = vi.fn()
-const awardPointsForPurchaseMock = vi.fn(async () => 10)
+const awardPointsForPurchaseMock = vi.fn(async (_customerId: string, _purchaseAmount: number, _saleId: string) => 10)
 
 vi.mock('@/lib/api/client', () => ({
   shopflowApi: { post: (endpoint: string, data: unknown) => shopflowApiPostMock(endpoint, data) },
 }))
 
 vi.mock('@/lib/services/loyaltyService', () => ({
-  awardPointsForPurchase: (...args: unknown[]) => awardPointsForPurchaseMock(...args),
+  awardPointsForPurchase: (customerId: string, purchaseAmount: number, saleId: string) =>
+    awardPointsForPurchaseMock(customerId, purchaseAmount, saleId),
 }))
 
 afterEach(() => {

@@ -35,18 +35,33 @@ export function useCreateCashRegister() {
   })
 }
 
-/** The store's currently OPEN session across all of its registers, if any (the kiosco/direct screen treats a store as having one active caja at a time). */
-export function useOpenCashSession(storeId?: string | null) {
+/**
+ * The OPEN session for a SPECIFIC register, if any (FIX 1 — a store can have MULTIPLE
+ * registers each with its own OPEN session; the caller must pass the operator's selected
+ * `registerId`, e.g. via `useSelectedRegisterId`). Deliberately does NOT fall back to
+ * "most-recent OPEN session store-wide" — that picked the wrong register's session when
+ * more than one register was open, corrupting checkout/settlement's arqueo.
+ */
+export function useOpenCashSession(storeId?: string | null, registerId?: string | null) {
   const query = useQuery({
-    queryKey: [CASH_SESSIONS_QUERY_KEY, storeId, CashSessionStatus.OPEN],
-    queryFn: () => listCashSessions({ storeId, status: CashSessionStatus.OPEN }),
-    enabled: !!storeId,
+    queryKey: [CASH_SESSIONS_QUERY_KEY, storeId, registerId, CashSessionStatus.OPEN],
+    queryFn: () => listCashSessions({ storeId, cashRegisterId: registerId ?? undefined, status: CashSessionStatus.OPEN }),
+    enabled: !!storeId && !!registerId,
   })
 
   return {
     ...query,
     session: query.data && query.data.length > 0 ? query.data[0] : null,
   }
+}
+
+/** All OPEN sessions for the store, across every register — used to show each register's open/closed state in a register selector (at most one per register, per D5). */
+export function useOpenCashSessionsByStore(storeId?: string | null) {
+  return useQuery({
+    queryKey: [CASH_SESSIONS_QUERY_KEY, storeId, 'all-registers', CashSessionStatus.OPEN],
+    queryFn: () => listCashSessions({ storeId, status: CashSessionStatus.OPEN }),
+    enabled: !!storeId,
+  })
 }
 
 export function useOpenCashSessionMutation() {

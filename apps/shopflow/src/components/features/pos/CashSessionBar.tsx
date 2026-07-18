@@ -16,8 +16,6 @@ import { toast } from 'sonner'
 import { useStoreContextOptional } from '@/components/providers/StoreContext'
 import { useStoreConfig } from '@/hooks/useStoreConfig'
 import {
-  useCashRegisters,
-  useCreateCashRegister,
   useOpenCashSession,
   useOpenCashSessionMutation,
   useCloseCashSession,
@@ -25,24 +23,28 @@ import {
 } from '@/hooks/useCashSession'
 import { formatCurrency } from '@/lib/utils/format'
 
-const DEFAULT_REGISTER_NAME = 'Caja Principal'
+interface CashSessionBarProps {
+  /** The operator's SELECTED register (FIX 1 — `RegisterSelector` owns selection + persistence). */
+  registerId: string | null
+}
 
 /**
  * Caja gate for the direct/kiosco POS screen (spec `pos-sale-settlement`
  * scenario "No open session available"): blocks the checkout flow behind an
- * OPEN CashSession for the current store, and offers to close it (arqueo)
- * from the same bar. Exposes `session` via `useOpenCashSession` so the POS
- * screen itself can gate `TotalsPanel`/`PaymentModal` on the same query.
+ * OPEN CashSession for the operator's SELECTED register (FIX 1 — a store can
+ * have multiple registers, each with its own OPEN session; binding to "the
+ * store" instead of a specific register corrupted arqueo), and offers to
+ * close it (arqueo) from the same bar. Exposes `session` via
+ * `useOpenCashSession` so the POS screen itself can gate
+ * `TotalsPanel`/`PaymentModal` on the same query.
  */
-export function CashSessionBar() {
+export function CashSessionBar({ registerId }: CashSessionBarProps) {
   const storeContext = useStoreContextOptional()
   const storeId = storeContext?.currentStoreId ?? null
   const { data: storeConfig } = useStoreConfig()
   const currency = storeConfig?.currency ?? 'USD'
 
-  const { data: registers = [] } = useCashRegisters(storeId)
-  const { session, isLoading: sessionLoading } = useOpenCashSession(storeId)
-  const createRegisterMutation = useCreateCashRegister()
+  const { session, isLoading: sessionLoading } = useOpenCashSession(storeId, registerId)
   const openSessionMutation = useOpenCashSessionMutation()
   const closeSessionMutation = useCloseCashSession()
   const { data: report } = useCashSessionReport(session?.id ?? null)
@@ -53,20 +55,18 @@ export function CashSessionBar() {
   const [countedCash, setCountedCash] = useState('')
 
   const handleOpenSession = async () => {
+    if (!registerId) {
+      toast.error('Selecciona una caja antes de abrirla')
+      return
+    }
     const float = parseFloat(openingFloat)
     if (Number.isNaN(float) || float < 0) {
       toast.error('Ingresa un monto de apertura válido')
       return
     }
-    if (!storeId) {
-      toast.error('Selecciona un local de venta antes de abrir la caja')
-      return
-    }
 
     try {
-      const activeRegister = registers.find((r) => r.active) ?? registers[0] ?? null
-      const register = activeRegister ?? (await createRegisterMutation.mutateAsync({ storeId, name: DEFAULT_REGISTER_NAME }))
-      await openSessionMutation.mutateAsync({ cashRegisterId: register.id, openingFloat: float })
+      await openSessionMutation.mutateAsync({ cashRegisterId: registerId, openingFloat: float })
       setOpeningFloat('')
       setOpenDialogOpen(false)
       toast.success('Caja abierta')
@@ -91,6 +91,10 @@ export function CashSessionBar() {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Error al cerrar la caja')
     }
+  }
+
+  if (!registerId) {
+    return <p className="text-sm text-slate-500">Selecciona una caja para continuar.</p>
   }
 
   if (sessionLoading) {
@@ -127,9 +131,9 @@ export function CashSessionBar() {
               <Button
                 className="w-full"
                 onClick={handleOpenSession}
-                disabled={openSessionMutation.isPending || createRegisterMutation.isPending}
+                disabled={openSessionMutation.isPending}
               >
-                {openSessionMutation.isPending || createRegisterMutation.isPending ? 'Abriendo...' : 'Abrir caja'}
+                {openSessionMutation.isPending ? 'Abriendo...' : 'Abrir caja'}
               </Button>
             </div>
           </DialogContent>

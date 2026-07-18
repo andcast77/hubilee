@@ -16,7 +16,9 @@ import { ReceiptModal } from "@/components/features/pos/ReceiptModal";
 import { CustomerSelector } from "@/components/features/pos/CustomerSelector";
 import { StoreSelector } from "@/components/features/pos/StoreSelector";
 import { CashSessionBar } from "@/components/features/pos/CashSessionBar";
+import { RegisterSelector } from "@/components/features/pos/RegisterSelector";
 import { useOpenCashSession } from "@/hooks/useCashSession";
+import { useSelectedRegisterId } from "@/hooks/useSelectedRegister";
 import { ProductForm } from "@/components/features/products/ProductForm";
 import { CustomerForm } from "@/components/features/customers/CustomerForm";
 import { SupplierForm } from "@/components/features/suppliers/SupplierForm";
@@ -69,19 +71,26 @@ export function POSPage() {
   const [completedSaleId, setCompletedSaleId] = useState<string | null>(null);
   const { data: storeConfig } = usePosStoreConfig();
   const storeContext = useStoreContextOptional();
-  // Direct/kiosco flow (spec `pos-sale-settlement`): checkout requires an
-  // OPEN CashSession for the current store — `CashSessionBar` renders the
-  // open/close-caja gate, this hook shares the same cached query so the
-  // checkout button and the payment modal gate on the exact same session.
-  const { session: cashSession } = useOpenCashSession(storeContext?.currentStoreId ?? null);
+  const storeId = storeContext?.currentStoreId ?? null;
+  // FIX 1 (pos-cash-session, CRITICAL): a store can have several registers, each with its
+  // own OPEN session — `RegisterSelector` lets the cashier pick WHICH register they're on,
+  // persisted per store, and checkout binds to THAT register's session (not "the store's"
+  // ambiguous most-recent one). `CashSessionBar` renders the open/close-caja gate for the
+  // same registerId, this hook shares the same cached query so the checkout button and the
+  // payment modal gate on the exact same session.
+  const [selectedRegisterId, setSelectedRegisterId] = useSelectedRegisterId(storeId);
+  const { session: cashSession } = useOpenCashSession(storeId, selectedRegisterId);
   return (
     <PageFrame title="Punto de Venta">
       <div className="h-[calc(100vh-12rem)] flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">POS</h2>
-          <StoreSelector />
+          <div className="flex items-center gap-3">
+            <RegisterSelector storeId={storeId} registerId={selectedRegisterId} onChange={setSelectedRegisterId} />
+            <StoreSelector />
+          </div>
         </div>
-        <CashSessionBar />
+        <CashSessionBar registerId={selectedRegisterId} />
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 overflow-hidden">
           <div className="lg:col-span-5 overflow-hidden"><ProductPanel /></div>
           <div className="lg:col-span-7 flex flex-col gap-4 overflow-hidden">

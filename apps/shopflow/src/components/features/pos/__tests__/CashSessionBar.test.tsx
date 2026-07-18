@@ -3,23 +3,21 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { CashSessionBar } from '@/components/features/pos/CashSessionBar'
 import { CashSessionStatus } from '@/types'
 
-// Spec scenario "No open session available" (pos-sale-settlement, PR5): the
-// direct/kiosco POS screen must gate on an OPEN CashSession for the store —
-// prompt to open one when none exists, and offer to close (arqueo) when one
-// is open. Hooks are mocked; the wiring to the real endpoints is covered by
-// `useCashSession`'s own contract with `cashSessionService` (PR2/PR3 API).
+// Spec scenario "No open session available" (pos-sale-settlement, PR5), register-aware as
+// of FIX 1 (pos-cash-session): the direct/kiosco POS screen must gate on an OPEN CashSession
+// for the operator's SELECTED register (not "the store", which is ambiguous when a store has
+// several registers) — prompt to select a register when none is chosen yet, prompt to open
+// one when the selected register has no OPEN session, and offer to close (arqueo) when one is
+// open. Register selection itself is `RegisterSelector`'s responsibility (own test file);
+// `CashSessionBar` only consumes the resolved `registerId` prop.
 
 const useOpenCashSessionMutationMock = vi.fn()
-const useCreateCashRegisterMock = vi.fn()
 const useCloseCashSessionMock = vi.fn()
 
 let openSessionState: { session: any; isLoading: boolean } = { session: null, isLoading: false }
-let registersState: { data: any[] } = { data: [] }
 let reportState: { data: any } = { data: undefined }
 
 vi.mock('@/hooks/useCashSession', () => ({
-  useCashRegisters: () => registersState,
-  useCreateCashRegister: () => useCreateCashRegisterMock(),
   useOpenCashSession: () => openSessionState,
   useOpenCashSessionMutation: () => useOpenCashSessionMutationMock(),
   useCloseCashSession: () => useCloseCashSessionMock(),
@@ -42,19 +40,22 @@ afterEach(() => {
   cleanup()
   vi.clearAllMocks()
   openSessionState = { session: null, isLoading: false }
-  registersState = { data: [] }
   reportState = { data: undefined }
 })
 
-describe('CashSessionBar (caja gate for the direct POS screen)', () => {
-  it('prompts to open a caja when the store has no OPEN session, and opens one with the entered float', async () => {
-    const createRegisterMutateAsync = vi.fn(async () => ({ id: 'register-1', storeId: 'store-1', name: 'Caja Principal', active: true }))
-    useCreateCashRegisterMock.mockReturnValue({ mutateAsync: createRegisterMutateAsync, isPending: false })
+describe('CashSessionBar (register-aware caja gate)', () => {
+  it('prompts to select a register when none has been chosen yet', () => {
+    render(<CashSessionBar registerId={null} />)
 
+    expect(screen.getByText(/selecciona una caja/i)).not.toBeNull()
+    expect(screen.queryByRole('button', { name: /abrir caja/i })).toBeNull()
+  })
+
+  it('prompts to open the SELECTED register when it has no OPEN session, and opens it with the entered float', async () => {
     const openSessionMutateAsync = vi.fn(async () => ({ id: 'session-1', status: CashSessionStatus.OPEN, openingFloat: 500 }))
     useOpenCashSessionMutationMock.mockReturnValue({ mutateAsync: openSessionMutateAsync, isPending: false })
 
-    render(<CashSessionBar />)
+    render(<CashSessionBar registerId="register-A" />)
 
     expect(screen.getByText(/no hay una caja abierta/i)).not.toBeNull()
 
@@ -68,16 +69,13 @@ describe('CashSessionBar (caja gate for the direct POS screen)', () => {
     fireEvent.click(screen.getByRole('button', { name: /abrir caja/i }))
 
     await waitFor(() => {
-      expect(createRegisterMutateAsync).toHaveBeenCalledWith({ storeId: 'store-1', name: 'Caja Principal' })
-    })
-    await waitFor(() => {
-      expect(openSessionMutateAsync).toHaveBeenCalledWith({ cashRegisterId: 'register-1', openingFloat: 500 })
+      expect(openSessionMutateAsync).toHaveBeenCalledWith({ cashRegisterId: 'register-A', openingFloat: 500 })
     })
   })
 
-  it('shows the open caja and lets the cashier close it with an arqueo', async () => {
+  it('shows the open caja for the selected register and lets the cashier close it with an arqueo', async () => {
     openSessionState = {
-      session: { id: 'session-1', status: CashSessionStatus.OPEN, openingFloat: 500 },
+      session: { id: 'session-1', cashRegisterId: 'register-A', status: CashSessionStatus.OPEN, openingFloat: 500 },
       isLoading: false,
     }
     reportState = { data: { expectedCash: 620, cashSalesTotal: 120, openingFloat: 500 } }
@@ -85,7 +83,7 @@ describe('CashSessionBar (caja gate for the direct POS screen)', () => {
     const closeSessionMutateAsync = vi.fn(async () => ({ id: 'session-1', status: CashSessionStatus.CLOSED }))
     useCloseCashSessionMock.mockReturnValue({ mutateAsync: closeSessionMutateAsync, isPending: false })
 
-    render(<CashSessionBar />)
+    render(<CashSessionBar registerId="register-A" />)
 
     expect(screen.getByText(/caja abierta/i)).not.toBeNull()
 
