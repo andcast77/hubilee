@@ -1,7 +1,6 @@
 import { shopflowApi, type ApiResult } from '@/lib/api/client'
 import { ApiError, ErrorCodes } from '@/lib/utils/errors'
 import type { CreateSaleInput, SaleQueryInput, SaleItemInput, SettleSaleInput } from '@/lib/validations/sale'
-import { awardPointsForPurchase } from './loyaltyService'
 import { SaleStatus } from '@/types'
 
 export async function getSales(query: SaleQueryInput = { page: 1, limit: 20 }) {
@@ -95,19 +94,9 @@ export async function createSale(userId: string, data: CreateSaleInput) {
 
   const sale = response.data
 
-  // Award loyalty points only once the sale has actually settled money (COMPLETED).
-  // `createSale` can now return PENDING (moto/vendedor flow, PR4) — a PENDING sale
-  // has not been paid yet and may be abandoned/cancelled, so awarding here would grant
-  // points that are never reversed. The order->checkout flow awards instead at
-  // settlement time (see `settleSale` below), so a sale is awarded exactly once.
-  if (sale.customerId && sale.status === 'COMPLETED') {
-    try {
-      await awardPointsForPurchase(sale.customerId, sale.total, sale.id)
-    } catch (error) {
-      // Log error but don't fail the sale if points awarding fails
-      console.error('Failed to award loyalty points:', error)
-    }
-  }
+  // FIX D (pos-cash-session round 2, scope removal): loyalty (fidelización) is OUT of the POS
+  // MVP by user decision — sales created from the POS never award loyalty points. The loyalty
+  // backend/admin screens are untouched; this only disconnects the POS sale flow from them.
 
   return sale
 }
@@ -131,16 +120,8 @@ export async function settleSale(id: string, data: SettleSaleInput) {
 
   const sale = response.data
 
-  // Order->checkout flow: the sale was created PENDING (no points awarded then, see
-  // `createSale`) and only completes money-wise here. Award points now so a sale is
-  // awarded exactly once — direct sales award at create, order sales award at settle.
-  if (sale.customerId && sale.status === 'COMPLETED') {
-    try {
-      await awardPointsForPurchase(sale.customerId, sale.total, sale.id)
-    } catch (error) {
-      console.error('Failed to award loyalty points:', error)
-    }
-  }
+  // FIX D (pos-cash-session round 2, scope removal): see `createSale` above — loyalty is out
+  // of the POS MVP, so settlement never awards points either.
 
   return sale
 }

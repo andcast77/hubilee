@@ -3,12 +3,11 @@ import { createSale, settleSale } from '@/lib/services/saleService'
 import { PaymentMethod } from '@/types'
 import type { CreateSaleInput, SettleSaleInput } from '@/lib/validations/sale'
 
-// FIX 3 (pos-cash-session): loyalty points must only be awarded on COMPLETED
-// sales. createSale can now return PENDING (moto/vendedor flow, PR4) — awarding
-// points unconditionally on create would grant points for unpaid orders that
-// are never reversed. Points must be awarded exactly once: at create-time for
-// the direct/kiosco flow (COMPLETED immediately), or at settle-time for the
-// order->checkout flow (PENDING -> COMPLETED) — never both, never on PENDING.
+// FIX D (pos-cash-session round 2, scope removal): loyalty (fidelización) is OUT of the POS
+// MVP by user decision. `createSale` and `settleSale` must NEVER call `awardPointsForPurchase`
+// anymore — a sale awards zero loyalty points from the POS, regardless of status or customer.
+// The loyalty backend/admin screens are untouched (pre-existing, other screens still use them);
+// this only disconnects the POS sale flow from that feature.
 
 const shopflowApiPostMock = vi.fn()
 const awardPointsForPurchaseMock = vi.fn(async (_customerId: string, _purchaseAmount: number, _saleId: string) => 10)
@@ -26,7 +25,7 @@ afterEach(() => {
   vi.clearAllMocks()
 })
 
-describe('saleService loyalty gating (award only on COMPLETED)', () => {
+describe('saleService loyalty removed from POS flow (FIX D)', () => {
   it('awards ZERO points when createSale returns a PENDING sale', async () => {
     shopflowApiPostMock.mockResolvedValue({
       success: true,
@@ -47,7 +46,7 @@ describe('saleService loyalty gating (award only on COMPLETED)', () => {
     expect(awardPointsForPurchaseMock).not.toHaveBeenCalled()
   })
 
-  it('awards points once when createSale returns a COMPLETED (direct/kiosco) sale', async () => {
+  it('awards ZERO points when createSale returns a COMPLETED (direct/kiosco) sale', async () => {
     shopflowApiPostMock.mockResolvedValue({
       success: true,
       data: { id: 'sale-direct', customerId: 'cust-1', total: 100, status: 'COMPLETED' },
@@ -67,11 +66,10 @@ describe('saleService loyalty gating (award only on COMPLETED)', () => {
 
     await createSale('user-1', data)
 
-    expect(awardPointsForPurchaseMock).toHaveBeenCalledTimes(1)
-    expect(awardPointsForPurchaseMock).toHaveBeenCalledWith('cust-1', 100, 'sale-direct')
+    expect(awardPointsForPurchaseMock).not.toHaveBeenCalled()
   })
 
-  it('awards points once when settleSale moves a PENDING sale to COMPLETED', async () => {
+  it('awards ZERO points when settleSale moves a PENDING sale to COMPLETED', async () => {
     shopflowApiPostMock.mockResolvedValue({
       success: true,
       data: { id: 'sale-settled', customerId: 'cust-1', total: 250, status: 'COMPLETED' },
@@ -80,11 +78,10 @@ describe('saleService loyalty gating (award only on COMPLETED)', () => {
     const input: SettleSaleInput = { cashSessionId: 'session-1', paymentMethod: PaymentMethod.CASH, paidAmount: 250 }
     await settleSale('sale-settled', input)
 
-    expect(awardPointsForPurchaseMock).toHaveBeenCalledTimes(1)
-    expect(awardPointsForPurchaseMock).toHaveBeenCalledWith('cust-1', 250, 'sale-settled')
+    expect(awardPointsForPurchaseMock).not.toHaveBeenCalled()
   })
 
-  it('does not award points when settleSale is called for a sale without a customer', async () => {
+  it('awards ZERO points when settleSale is called for a sale without a customer', async () => {
     shopflowApiPostMock.mockResolvedValue({
       success: true,
       data: { id: 'sale-no-customer', customerId: null, total: 250, status: 'COMPLETED' },

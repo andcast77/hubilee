@@ -14,7 +14,6 @@ import {
   ShoppingCart,
   ClipboardList,
   Wallet,
-  Gift,
   Store,
   MapPin,
   Package,
@@ -78,7 +77,10 @@ const navGroups: SidebarProps['navGroups'] = [
       { title: 'Proveedores', href: '/suppliers', icon: Truck, module: Module.SUPPLIERS },
       { title: 'Usuarios', href: '/admin/users', icon: UserCog, module: Module.USERS },
       { title: 'Configuración', href: '/admin/settings', icon: Settings, module: Module.STORE_CONFIG },
-      { title: 'Lealtad', href: '/admin/loyalty', icon: Gift, module: Module.LOYALTY },
+      // FIX D (pos-cash-session round 2, scope removal): loyalty is OUT of the POS MVP — the
+      // nav entry is removed so it's not reachable from the sidebar. `/admin/loyalty` route
+      // code and the backend loyalty feature are untouched (pre-existing, other screens use
+      // them); this only unlinks the POS-facing entry point.
     ],
   },
   {

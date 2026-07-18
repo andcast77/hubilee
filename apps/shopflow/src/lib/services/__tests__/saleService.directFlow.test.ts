@@ -19,10 +19,6 @@ vi.mock('@/lib/api/client', () => ({
   shopflowApi: { post: (endpoint: string, data: unknown) => shopflowApiPostMock(endpoint, data) },
 }))
 
-vi.mock('@/lib/services/loyaltyService', () => ({
-  awardPointsForPurchase: vi.fn(async () => {}),
-}))
-
 afterEach(() => {
   vi.clearAllMocks()
 })
