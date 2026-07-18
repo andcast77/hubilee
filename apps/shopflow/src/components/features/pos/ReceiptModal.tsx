@@ -10,11 +10,9 @@ import {
 import { Button } from '@multisystem/ui'
 import { useSale } from '@/hooks/useSales'
 import { useStoreConfig } from '@/hooks/useStoreConfig'
-import { useCustomerPoints } from '@/hooks/useLoyalty'
 import { formatCurrency, formatDate } from '@/lib/utils/format'
 import { Separator } from '@multisystem/ui'
-import { Badge } from '@multisystem/ui'
-import { Printer, Gift } from 'lucide-react'
+import { Printer } from 'lucide-react'
 
 interface ReceiptModalProps {
   saleId: string | null
@@ -26,13 +24,6 @@ export function ReceiptModal({ saleId, open, onClose }: ReceiptModalProps) {
   const { data: sale } = useSale(saleId || '')
   const { data: storeConfig } = useStoreConfig()
   const currency = storeConfig?.currency ?? 'USD'
-
-  // Extract customerId safely
-  const customerId = sale && typeof sale === 'object' && 'customerId' in sale 
-    ? (sale.customerId as string | null)
-    : null
-    
-  const { data: customerPoints } = useCustomerPoints(customerId)
 
   const handlePrint = () => {
     window.print()
@@ -176,37 +167,6 @@ export function ReceiptModal({ saleId, open, onClose }: ReceiptModalProps) {
               <div>
                 <p className="text-sm text-gray-600">Notas:</p>
                 <p className="text-sm">{saleWithRelations.notes}</p>
-              </div>
-            </>
-          )}
-
-          {/* Loyalty Points Earned */}
-          {saleWithRelations.customer && customerPoints && (
-            <>
-              <Separator />
-              <div className="p-3 bg-blue-50 rounded-md border border-blue-200">
-                <div className="flex items-center gap-2 mb-2">
-                  <Gift className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm font-medium text-blue-900">
-                    Puntos de Lealtad
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-blue-700">
-                    Puntos ganados en esta compra:
-                  </span>
-                  <Badge variant="secondary" className="font-bold">
-                    +{Math.floor(saleWithRelations.total)} pts
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between mt-2 pt-2 border-t border-blue-200">
-                  <span className="text-sm font-medium text-blue-900">
-                    Total de puntos disponibles:
-                  </span>
-                  <Badge variant="default" className="font-bold">
-                    {customerPoints.availablePoints} pts
-                  </Badge>
-                </div>
               </div>
             </>
           )}

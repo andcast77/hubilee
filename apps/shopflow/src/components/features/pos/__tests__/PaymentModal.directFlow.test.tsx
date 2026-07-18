@@ -21,12 +21,6 @@ vi.mock('@/hooks/useStoreConfig', () => ({
   useStoreConfig: () => ({ data: { taxRate: 0, currency: 'USD' } }),
 }))
 
-vi.mock('@/hooks/useLoyalty', () => ({
-  useCustomerPoints: () => ({ data: undefined }),
-  useRedeemPoints: () => ({ mutateAsync: vi.fn() }),
-  useLoyaltyConfig: () => ({ data: undefined }),
-}))
-
 vi.mock('@/hooks/useUser', () => ({
   useUser: () => ({ data: { id: 'user-1' } }),
 }))
@@ -92,5 +86,35 @@ describe('PaymentModal (direct/kiosco flow, cashSessionId)', () => {
     expect(onSuccess).not.toHaveBeenCalled()
     // Still mounted / did not throw past the toast — the "Confirmar Pago" CTA is back.
     expect(await screen.findByRole('button', { name: /confirmar pago/i })).not.toBeNull()
+  })
+
+  // pos-cash-session Round 3, FIX 1: loyalty redemption was removed from the POS. A customer
+  // selected in the cart must NOT surface a points-redemption UI, and the sale's `discount`
+  // must be exactly the cart's global discount — no `pointsDiscount` folded in.
+  it('renders no points-redemption UI and sends only the global discount, even with a customer selected', async () => {
+    useCartStore.setState({
+      items: [{ product: { id: 'p1', name: 'Widget', price: 100, stock: 5, sku: 'W1' }, quantity: 1, discount: 0 }],
+      customerId: 'customer-1',
+      discount: 0,
+    })
+    createSaleMutateAsyncMock.mockResolvedValue({ id: 'sale-1' })
+    const onSuccess = vi.fn()
+
+    render(<PaymentModal open cashSessionId="session-1" onClose={vi.fn()} onSuccess={onSuccess} />)
+
+    expect(screen.queryByText(/puntos disponibles/i)).toBeNull()
+    expect(screen.queryByText(/canjear/i)).toBeNull()
+    expect(screen.queryByPlaceholderText(/puntos a canjear/i)).toBeNull()
+
+    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '100' } })
+    fireEvent.click(screen.getByRole('button', { name: /confirmar pago/i }))
+
+    await waitFor(() => {
+      expect(createSaleMutateAsyncMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ discount: 0, customerId: 'customer-1' }),
+        }),
+      )
+    })
   })
 })
