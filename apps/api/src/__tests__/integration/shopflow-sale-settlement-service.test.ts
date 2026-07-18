@@ -15,7 +15,7 @@ import './setup'
 
 import * as salesService from '../../services/shopflow-sales.service.js'
 import * as cashService from '../../services/shopflow-cash.service.js'
-import { NotFoundError, BadRequestError, ForbiddenError } from '../../common/errors/index.js'
+import { NotFoundError, BadRequestError, ForbiddenError, ConflictError } from '../../common/errors/index.js'
 import type { ShopflowContext } from '../../core/auth-context.js'
 
 describe('Shopflow sale lifecycle + settlement (PR4)', () => {
@@ -348,6 +348,77 @@ describe('Shopflow sale lifecycle + settlement (PR4)', () => {
 
       const cancelled = await salesService.cancelSale(fullAccessCtx, pendingSale.id as string)
       expect((cancelled as { data: { status: string } }).data.status).toBe('CANCELLED')
+      expect(await stockOf(product.id)).toBe(before)
+    })
+  })
+
+  // FIX A (pos-cash-session round 2, CRITICAL): `cancelSale` must reject non-PENDING sales.
+  // Without this guard, a Cajero could cancel a COMPLETED cash sale in an OPEN session, pocket
+  // the cash, and `sumCashSales`/`getCashSessionReport` (which only count COMPLETED sales) would
+  // silently drop it from `expectedCash` — the arqueo shows zero variance. Reversing a COMPLETED
+  // sale is the (higher-privilege) refund flow's job, never cancel's.
+  describe('cancelSale — FIX A: scoped to PENDING sales only', () => {
+    it('rejects cancelling a COMPLETED sale and leaves its stock/status untouched', async () => {
+      const product = await createProductWithStock(10)
+      const session = await openSession()
+
+      const direct = await salesService.createSale(fullAccessCtx, {
+        storeId: acmeStoreId,
+        userId: acmeUserId,
+        cashSessionId: session.id,
+        items: [{ productId: product.id, quantity: 2, price: 100 }],
+        paymentMethod: 'CASH',
+        paidAmount: 1_000_000,
+      })
+      const sale = (direct as { data: Record<string, unknown> }).data
+      expect(sale.status).toBe('COMPLETED')
+      const stockAfterCreate = await stockOf(product.id)
+
+      await expect(
+        salesService.cancelSale(fullAccessCtx, sale.id as string),
+      ).rejects.toBeInstanceOf(BadRequestError)
+
+      // A rejected cancel must not restore stock or flip the sale's status — otherwise the cash
+      // is still missing from the register while the books look untouched.
+      expect(await stockOf(product.id)).toBe(stockAfterCreate)
+      const unchanged = await prisma.sale.findUnique({ where: { id: sale.id as string } })
+      expect(unchanged?.status).toBe('COMPLETED')
+    })
+  })
+
+  // FIX B (pos-cash-session round 2, WARNING): guard against a concurrent double-cancel race.
+  // Two overlapping cancels of the same PENDING sale must not both pass and both run the
+  // stock-restore loop (double stock increment).
+  describe('cancelSale — FIX B: double-cancel race guard', () => {
+    it('rejects a concurrent second cancel of the same PENDING sale and restores stock only once', async () => {
+      const product = await createProductWithStock(10)
+      const before = await stockOf(product.id)
+
+      const pending = await salesService.createSale(fullAccessCtx, {
+        storeId: acmeStoreId,
+        userId: acmeUserId,
+        items: [{ productId: product.id, quantity: 4, price: 100 }],
+      })
+      const pendingSale = (pending as { data: Record<string, unknown> }).data
+      expect(await stockOf(product.id)).toBe(before - 4)
+
+      const results = await Promise.allSettled([
+        salesService.cancelSale(fullAccessCtx, pendingSale.id as string),
+        salesService.cancelSale(fullAccessCtx, pendingSale.id as string),
+      ])
+
+      const fulfilled = results.filter((r) => r.status === 'fulfilled')
+      const rejected = results.filter((r) => r.status === 'rejected')
+      expect(fulfilled).toHaveLength(1)
+      expect(rejected).toHaveLength(1)
+      // Whichever call loses the race is rejected — either the top-level "already processed"
+      // guard (FIX A) or, when both reads land before either commit, the updateMany-level
+      // status re-check (FIX B). Both are valid outcomes of a properly-guarded double-cancel;
+      // what matters is exactly one winner and exactly one stock restoration.
+      const reason = (rejected[0] as PromiseRejectedResult).reason
+      expect(reason instanceof BadRequestError || reason instanceof ConflictError).toBe(true)
+
+      // Stock restored exactly once, not twice.
       expect(await stockOf(product.id)).toBe(before)
     })
   })

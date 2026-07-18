@@ -105,4 +105,67 @@ describe('Shopflow Cajero role: cancel permission (real seed.ts grant)', () => {
     })
     expect(inventoryAfterCancel?.quantity).toBe(20)
   })
+
+  // FIX A (pos-cash-session round 2, CRITICAL): even though the seeded Cajero role has both
+  // `shopflow.sales.cancel` AND `shopflow.sales.settle`, cancel must reject a COMPLETED sale —
+  // otherwise a Cajero could cancel a cash sale they already settled and pocket the cash while
+  // the arqueo (which only counts COMPLETED sales) shows no variance.
+  it('the seeded Cajero role (ventas@acme.com) cannot cancel a COMPLETED sale', async () => {
+    const ownerUser = await prisma.user.findUnique({ where: { email: 'gerente@acme.com' } })
+    if (!ownerUser) throw new Error('Missing seeded gerente@acme.com (Owner) user')
+    const ownerToken = generateToken({
+      id: ownerUser.id,
+      email: ownerUser.email,
+      role: ownerUser.role,
+      isSuperuser: ownerUser.isSuperuser,
+    })
+
+    const registerRes = await inject(app, {
+      method: 'POST',
+      url: '/v1/shopflow/cash-registers',
+      headers: { Authorization: `Bearer ${ownerToken}`, 'content-type': 'application/json', 'x-store-id': acmeStoreId },
+      payload: { storeId: acmeStoreId, name: `Caja FIX-A ${Date.now()}` },
+    })
+    expect(registerRes.res.statusCode).toBe(200)
+    const registerId = registerRes.json.data.id as string
+
+    const sessionRes = await inject(app, {
+      method: 'POST',
+      url: '/v1/shopflow/cash-sessions/open',
+      headers: { Authorization: `Bearer ${cajeroToken}`, 'content-type': 'application/json', 'x-store-id': acmeStoreId },
+      payload: { cashRegisterId: registerId, openingFloat: 0 },
+    })
+    expect(sessionRes.res.statusCode).toBe(200)
+    const sessionId = sessionRes.json.data.id as string
+
+    const cajeroUser = await prisma.user.findUnique({ where: { email: 'ventas@acme.com' } })
+    const created = await inject(app, {
+      method: 'POST',
+      url: '/v1/shopflow/sales',
+      headers: { Authorization: `Bearer ${cajeroToken}`, 'content-type': 'application/json', 'x-store-id': acmeStoreId },
+      payload: {
+        storeId: acmeStoreId,
+        userId: cajeroUser!.id,
+        items: [{ productId: acmeProductId, quantity: 1, price: 50 }],
+        cashSessionId: sessionId,
+        paymentMethod: 'CASH',
+        paidAmount: 1000,
+      },
+    })
+    expect(created.res.statusCode).toBe(200)
+    expect(created.json.data.status).toBe('COMPLETED')
+    const saleId = created.json.data.id as string
+
+    const { res, json } = await inject(app, {
+      method: 'POST',
+      url: `/v1/shopflow/sales/${saleId}/cancel`,
+      headers: { Authorization: `Bearer ${cajeroToken}`, 'content-type': 'application/json', 'x-store-id': acmeStoreId },
+      payload: {},
+    })
+    expect(res.statusCode).toBe(400)
+    expect(json.error).toMatch(/pendientes/i)
+
+    const unchanged = await prisma.sale.findUnique({ where: { id: saleId } })
+    expect(unchanged?.status).toBe('COMPLETED')
+  })
 })

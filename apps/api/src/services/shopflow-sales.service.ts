@@ -1,6 +1,6 @@
 import { prisma, Prisma } from '../db/index.js'
 import type { ShopflowContext } from '../core/auth-context.js'
-import { NotFoundError, BadRequestError, ForbiddenError } from '../common/errors/index.js'
+import { NotFoundError, BadRequestError, ForbiddenError, ConflictError } from '../common/errors/index.js'
 import { parsePagination, toNumber } from '../common/database/index.js'
 import {
   assertStoreBelongsToCompany,
@@ -515,15 +515,25 @@ export async function cancelSale(
     select: { id: true, storeId: true, status: true, items: { select: { productId: true, quantity: true } } },
   })
   if (!sale) throw new NotFoundError('Venta no encontrada')
-  if (sale.status === 'CANCELLED') throw new BadRequestError('La venta ya está cancelada')
-  if (sale.status === 'REFUNDED') throw new BadRequestError('No se puede cancelar una venta reembolsada')
+  // FIX A (pos-cash-session round 2, CRITICAL): cancel is scoped to PENDING sales only. Without
+  // this guard, cancelling a COMPLETED cash sale in an OPEN session would let a Cajero pocket the
+  // cash — `getCashSessionReport`/`sumCashSales` only count COMPLETED sales, so a cancelled one
+  // silently drops out of `expectedCash` and the arqueo shows zero variance. Reversing a
+  // COMPLETED sale is the (higher-privilege) refund flow's job, never cancel's.
+  if (sale.status !== 'PENDING') {
+    throw new BadRequestError('Solo se pueden cancelar ventas pendientes')
+  }
 
   await prisma.$transaction(async (tx) => {
+    // FIX B (pos-cash-session round 2, WARNING): re-check status inside the updateMany itself
+    // (not just the read above) to guard against a concurrent double-cancel race — two
+    // overlapping cancels of the same PENDING sale must not both pass and both run the
+    // stock-restore loop below (double stock increment).
     const updated = await tx.sale.updateMany({
-      where: { id, companyId: ctx.companyId },
+      where: { id, companyId: ctx.companyId, status: 'PENDING' },
       data: { status: 'CANCELLED' },
     })
-    if (updated.count === 0) throw new NotFoundError('Venta no encontrada')
+    if (updated.count === 0) throw new ConflictError('La venta ya fue procesada por otra operación')
     for (const item of sale.items) {
       await tx.storeInventory.upsert({
         where: { storeId_productId: { storeId: sale.storeId, productId: item.productId } },
@@ -567,11 +577,14 @@ export async function refundSale(
   }
 
   await prisma.$transaction(async (tx) => {
+    // FIX B (pos-cash-session round 2, WARNING): same double-processing race guard as
+    // `cancelSale` — re-check status inside the updateMany so two overlapping refunds of the
+    // same COMPLETED sale don't both pass and both run the stock-restore loop below.
     const updated = await tx.sale.updateMany({
-      where: { id, companyId: ctx.companyId },
+      where: { id, companyId: ctx.companyId, status: 'COMPLETED' },
       data: { status: 'REFUNDED' },
     })
-    if (updated.count === 0) throw new NotFoundError('Venta no encontrada')
+    if (updated.count === 0) throw new ConflictError('La venta ya fue procesada por otra operación')
     for (const item of sale.items) {
       await tx.storeInventory.upsert({
         where: { storeId_productId: { storeId: sale.storeId, productId: item.productId } },
