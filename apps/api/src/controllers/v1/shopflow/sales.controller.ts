@@ -98,5 +98,5 @@ export function registerRoutes(fastify: FastifyInstance) {
   fastify.post('/v1/shopflow/sales', { preHandler: [...pre, requirePermission('shopflow.sales', 'create')] }, handle(createSale))
   fastify.post<{ Params: { id: string } }>('/v1/shopflow/sales/:id/cancel', { preHandler: [...pre, requirePermission('shopflow.sales', 'cancel')] }, handle(cancelSale))
   fastify.post<{ Params: { id: string } }>('/v1/shopflow/sales/:id/settle', { preHandler: [...pre, requirePermission('shopflow.sales', 'settle')] }, handle(settleSale))
-  fastify.post<{ Params: { id: string } }>('/v1/shopflow/sales/:id/refund', { preHandler: pre }, handle(refundSale))
+  fastify.post<{ Params: { id: string } }>('/v1/shopflow/sales/:id/refund', { preHandler: [...pre, requirePermission('shopflow.sales', 'refund')] }, handle(refundSale))
 }

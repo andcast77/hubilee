@@ -338,6 +338,12 @@ async function main() {
       action: 'settle',
       description: 'Liquidar (PENDING->COMPLETED) ventas en Shopflow, asignando sesión de caja y factura',
     },
+    {
+      name: 'shopflow.sales.refund',
+      resource: 'shopflow.sales',
+      action: 'refund',
+      description: 'Reembolsar (revertir) ventas completadas en Shopflow — acción elevada, salida de dinero',
+    },
     // Shopflow — inventario granular
     {
       name: 'shopflow.inventory.read',
@@ -595,6 +601,7 @@ async function main() {
       'shopflow.sales.read',
       'shopflow.sales.create',
       'shopflow.sales.cancel',
+      'shopflow.sales.refund',
       'shopflow.inventory.read',
       'shopflow.inventory.write',
       'techservices.access',
@@ -629,6 +636,7 @@ async function main() {
       'shopflow.sales.read',
       'shopflow.sales.create',
       'shopflow.sales.cancel',
+      'shopflow.sales.refund',
       'shopflow.inventory.read',
       'shopflow.inventory.write',
       'techservices.access',
@@ -678,12 +686,13 @@ async function main() {
       roleId: basicUserRole.id,
       permissionId: permissionsByName[name]!.id,
     })),
-    // Gerente Shopflow: acceso completo a ventas e inventario
+    // Gerente Shopflow: acceso completo a ventas e inventario (incluye refund — acción elevada)
     ...[
       'shopflow.access',
       'shopflow.sales.read',
       'shopflow.sales.create',
       'shopflow.sales.cancel',
+      'shopflow.sales.refund',
       'shopflow.inventory.read',
       'shopflow.inventory.write',
     ].map((name) => ({
@@ -1662,6 +1671,7 @@ async function main() {
       'shopflow.access',
       'shopflow.users.read',
       'shopflow.users.manage',
+      'shopflow.sales.refund',
       'techservices.access',
       'baro.access',
     ].map((name) => ({
@@ -1688,6 +1698,7 @@ async function main() {
       'shopflow.access',
       'shopflow.users.read',
       'shopflow.users.manage',
+      'shopflow.sales.refund',
       'techservices.access',
       'baro.access',
     ].map((name) => ({

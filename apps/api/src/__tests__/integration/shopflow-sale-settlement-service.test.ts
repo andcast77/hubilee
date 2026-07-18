@@ -386,6 +386,31 @@ describe('Shopflow sale lifecycle + settlement (PR4)', () => {
     })
   })
 
+  // FIX 3 (pos-cash-session round 3): `cancelSale` filtered only by companyId and never
+  // asserted store scope, unlike createSale/settleSale — a store-scoped Cajero could cancel
+  // another store's PENDING sale. Mirrors "denies a store-scoped cashier settling a session
+  // outside their assigned store" above, for cancelSale instead of settleSale.
+  describe('cancelSale — FIX 3: store scope enforced', () => {
+    it('denies a store-scoped user cancelling a PENDING sale from another store', async () => {
+      const product = await createProductWithStock(10, acmeStoreBId)
+      const pending = await salesService.createSale(fullAccessCtx, {
+        storeId: acmeStoreBId,
+        userId: acmeUserId,
+        items: [{ productId: product.id, quantity: 1, price: 100 }],
+      })
+      const pendingSale = (pending as { data: Record<string, unknown> }).data
+
+      const scopedCtx: ShopflowContext = { ...fullAccessCtx, membershipRole: 'USER', storeId: acmeStoreId }
+
+      await expect(
+        salesService.cancelSale(scopedCtx, pendingSale.id as string),
+      ).rejects.toBeInstanceOf(ForbiddenError)
+
+      const unchanged = await prisma.sale.findUnique({ where: { id: pendingSale.id as string } })
+      expect(unchanged?.status).toBe('PENDING')
+    })
+  })
+
   // FIX B (pos-cash-session round 2, WARNING): guard against a concurrent double-cancel race.
   // Two overlapping cancels of the same PENDING sale must not both pass and both run the
   // stock-restore loop (double stock increment).
@@ -420,6 +445,39 @@ describe('Shopflow sale lifecycle + settlement (PR4)', () => {
 
       // Stock restored exactly once, not twice.
       expect(await stockOf(product.id)).toBe(before)
+    })
+  })
+
+  // FIX 3 (pos-cash-session round 3): `refundSale` filtered only by companyId and never
+  // asserted store scope, unlike createSale/settleSale — a store-scoped user could refund
+  // another store's COMPLETED sale. `fullAccessCtx.userId` (gerente@acme.com) is assigned the
+  // real seeded Gerente role, which now carries `shopflow.sales.refund` (FIX 2's seed grant),
+  // so overriding membershipRole to 'USER' here exercises the real permission lookup, not the
+  // OWNER/ADMIN bypass — the store-scope guard (FIX 3) is what's under test.
+  describe('refundSale — FIX 3: store scope enforced', () => {
+    it('denies a store-scoped user refunding a COMPLETED sale from another store', async () => {
+      const product = await createProductWithStock(10, acmeStoreBId)
+      const session = await openSession(acmeStoreBId)
+
+      const direct = await salesService.createSale(fullAccessCtx, {
+        storeId: acmeStoreBId,
+        userId: acmeUserId,
+        cashSessionId: session.id,
+        items: [{ productId: product.id, quantity: 1, price: 100 }],
+        paymentMethod: 'CASH',
+        paidAmount: 1_000_000,
+      })
+      const sale = (direct as { data: Record<string, unknown> }).data
+      expect(sale.status).toBe('COMPLETED')
+
+      const scopedCtx: ShopflowContext = { ...fullAccessCtx, membershipRole: 'USER', storeId: acmeStoreId }
+
+      await expect(
+        salesService.refundSale(scopedCtx, sale.id as string),
+      ).rejects.toBeInstanceOf(ForbiddenError)
+
+      const unchanged = await prisma.sale.findUnique({ where: { id: sale.id as string } })
+      expect(unchanged?.status).toBe('COMPLETED')
     })
   })
 })

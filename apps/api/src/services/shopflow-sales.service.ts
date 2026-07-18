@@ -515,6 +515,9 @@ export async function cancelSale(
     select: { id: true, storeId: true, status: true, items: { select: { productId: true, quantity: true } } },
   })
   if (!sale) throw new NotFoundError('Venta no encontrada')
+  // FIX 3 (pos-cash-session round 3): a store-scoped user must not cancel a sale from a store
+  // they aren't assigned to — mirrors the same guard already enforced in createSale/settleSale.
+  assertStoreMatchForScopedUser(ctx, sale.storeId, 'Solo puedes cancelar ventas de tu local de venta asignado')
   // FIX A (pos-cash-session round 2, CRITICAL): cancel is scoped to PENDING sales only. Without
   // this guard, cancelling a COMPLETED cash sale in an OPEN session would let a Cajero pocket the
   // cash — `getCashSessionReport`/`sumCashSales` only count COMPLETED sales, so a cancelled one
@@ -563,11 +566,21 @@ export async function refundSale(
   ctx: ShopflowContext,
   id: string,
 ) {
+  // FIX 2 (pos-cash-session round 3, CRITICAL): defense in depth — the route already gates on
+  // `shopflow.sales:refund` via requirePermission, but refund is a money-out, elevated action
+  // (unlike cancel/settle it has no PENDING-state safety net once it lands on a COMPLETED sale),
+  // so the service re-asserts the permission itself in case this function is ever called from
+  // another entry point.
+  await assertPermission(ctx, 'shopflow.sales', 'refund', 'No tienes permiso para reembolsar ventas')
+
   const sale = await prisma.sale.findFirst({
     where: { id, companyId: ctx.companyId },
     select: { id: true, storeId: true, status: true, items: { select: { productId: true, quantity: true } } },
   })
   if (!sale) throw new NotFoundError('Venta no encontrada')
+  // FIX 3 (pos-cash-session round 3): a store-scoped user must not refund a sale from a store
+  // they aren't assigned to — mirrors the same guard already enforced in createSale/settleSale.
+  assertStoreMatchForScopedUser(ctx, sale.storeId, 'Solo puedes reembolsar ventas de tu local de venta asignado')
   if (sale.status === 'REFUNDED') throw new BadRequestError('La venta ya está reembolsada')
   if (sale.status === 'CANCELLED') throw new BadRequestError('No se puede reembolsar una venta cancelada')
   if (sale.status !== 'COMPLETED') {

@@ -239,6 +239,66 @@ describe('PLAN-18: RBAC Regression', () => {
   })
 
   // ---------------------------------------------------------------------------
+  // 3b. requirePermission deny-by-default — refund (Round 3, FIX 2)
+  //     `shopflow.sales.refund` is a NEW permission (previously the refund route had no
+  //     permission check at all). Mirrors the cancel deny-by-default coverage above: a USER
+  //     with only create-shaped permissions must get 403 refunding, before business logic runs.
+  // ---------------------------------------------------------------------------
+
+  it('USER without refund permission gets 403 on sale refund (deny-by-default)', async () => {
+    const vendedorEmail = `vendedor-deny-refund-${Date.now()}@authz.test`
+    const vendedorUser = await prisma.user.create({
+      data: {
+        email: vendedorEmail,
+        password: await bcrypt.hash('password123', 10),
+        firstName: 'Vendedor',
+        lastName: 'DenyRefundTest',
+        role: 'USER',
+        isActive: true,
+        isSuperuser: false,
+      },
+    })
+    await prisma.companyMember.create({
+      data: { userId: vendedorUser.id, companyId: acmeCompanyId, membershipRole: 'USER' },
+    })
+    const createPerm = await prisma.permission.upsert({
+      where: { name: 'shopflow.sales.create' },
+      create: { name: 'shopflow.sales.create', resource: 'shopflow.sales', action: 'create' },
+      update: { resource: 'shopflow.sales', action: 'create' },
+    })
+    const vendedorRole = await prisma.role.create({
+      data: { name: `Vendedor Deny Refund Test ${Date.now()}`, companyId: acmeCompanyId },
+    })
+    await prisma.rolePermission.create({ data: { roleId: vendedorRole.id, permissionId: createPerm.id } })
+    await prisma.userRoleAssignment.create({
+      data: { userId: vendedorUser.id, roleId: vendedorRole.id, companyId: acmeCompanyId },
+    })
+    const vendedorToken = generateToken({
+      id: vendedorUser.id,
+      email: vendedorUser.email,
+      role: vendedorUser.role,
+      isSuperuser: vendedorUser.isSuperuser,
+    })
+
+    // Use a fake sale UUID — we expect 403 from the permission check before business logic.
+    // Deliberately no `x-store-id` header: this user has no UserStore assignment, so sending
+    // one would 403 at the earlier store-access gate (`requireShopflowContext`) instead of the
+    // `requirePermission('shopflow.sales', 'refund')` gate this test is meant to isolate.
+    const fakeSaleId = '00000000-0000-0000-0000-000000000002'
+
+    const { res } = await inject(app, {
+      method: 'POST',
+      url: `/v1/shopflow/sales/${fakeSaleId}/refund`,
+      headers: {
+        Authorization: `Bearer ${vendedorToken}`,
+        'content-type': 'application/json',
+      },
+      payload: {},
+    })
+    expect(res.statusCode).toBe(403)
+  })
+
+  // ---------------------------------------------------------------------------
   // 4. Nivel 2: member with module disabled gets 403
   //    Temporarily disable shopflow for acmeMember, then verify GET /sales → 403
   // ---------------------------------------------------------------------------
