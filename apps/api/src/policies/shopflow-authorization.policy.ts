@@ -29,6 +29,14 @@ export async function canAccessUserPreferences(
   return createRepositories(companyId).companyMembers.existsUserMembership(targetUserId)
 }
 
+/**
+ * Resolves the store a scoped (non-full-access) user is allowed to read, using
+ * `ctx.storeId` as the single source of truth — it is already server-derived/validated
+ * against `UserStore` membership by `requireShopflowContext`. Deny-by-default: a null
+ * `ctx.storeId` (ambiguous or no membership) always denies, and a client-supplied
+ * `candidateStoreId` (e.g. `?storeId=`) is only honored when it matches that resolved
+ * store — it can never widen or override the server-derived scope.
+ */
 export async function resolveEffectiveStoreIdForScopedUser(
   ctx: ShopflowContext,
   candidateStoreId?: string | null
@@ -37,19 +45,28 @@ export async function resolveEffectiveStoreIdForScopedUser(
     return candidateStoreId ?? undefined
   }
 
-  const effective = candidateStoreId ?? ctx.storeId ?? null
-  if (!effective) {
+  if (ctx.storeId == null) {
     throw new ForbiddenError(STORE_REQUIRED_MSG)
   }
-  return effective
+  if (candidateStoreId != null && candidateStoreId !== ctx.storeId) {
+    throw new ForbiddenError('Solo puedes consultar tu local de venta asignado')
+  }
+  return ctx.storeId
 }
 
+/**
+ * Deny-by-default: a store-scoped (non-full-access) user is only allowed to operate on
+ * `targetStoreId` when it matches their server-derived `ctx.storeId`. A null `ctx.storeId`
+ * (ambiguous membership or none resolved) must ALWAYS deny here — it must never be
+ * treated as "no restriction".
+ */
 export function assertStoreMatchForScopedUser(
   ctx: ShopflowContext,
   targetStoreId: string,
   message = 'Solo puedes operar en tu local de venta asignado'
 ): void {
-  if (!hasFullStoreAccess(ctx) && ctx.storeId != null && targetStoreId !== ctx.storeId) {
+  if (hasFullStoreAccess(ctx)) return
+  if (ctx.storeId == null || targetStoreId !== ctx.storeId) {
     throw new ForbiddenError(message)
   }
 }

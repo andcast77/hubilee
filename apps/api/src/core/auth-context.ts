@@ -212,19 +212,26 @@ export async function requireCompanyContext(
 
 /**
  * PreHandler para rutas Shopflow: requireAuth + requireCompanyContext + X-Store-Id.
- * Si viene X-Store-Id: para USER valida UserStore; para OWNER/ADMIN/superuser valida que la tienda sea de la empresa.
+ *
+ * Security: store scope is DENY-BY-DEFAULT and SERVER-DERIVED — the optional
+ * `X-Store-Id` header is never trusted on its own, and its ABSENCE must never disable
+ * store isolation.
+ * - OWNER/ADMIN/superuser (full access): X-Store-Id, if present, must belong to the
+ *   company; if absent, no store restriction is applied (unchanged).
+ * - USER (store-scoped): the effective store is grounded in the user's server-side
+ *   `UserStore` memberships, never the client alone.
+ *   - Header present -> must be one of the user's memberships (also implies it
+ *     belongs to the company, since memberships are looked up within it) or 403.
+ *   - Header absent + exactly one membership -> auto-derive that store.
+ *   - Header absent + zero or 2+ memberships -> scope stays unresolved
+ *     (`request.storeId = undefined`); every downstream store-scope check must then
+ *     deny by default instead of treating "unresolved" as "unrestricted".
  */
 export async function requireShopflowContext(
   request: FastifyRequest,
   reply: FastifyReply
 ): Promise<void> {
   await requireCompanyContext(request, reply)
-
-  const rawStoreId = getStoreIdFromHeader(request)
-  if (!rawStoreId) {
-    request.storeId = undefined
-    return
-  }
 
   const userId = request.user!.id
   const companyId = request.companyId!
@@ -234,32 +241,48 @@ export async function requireShopflowContext(
     membershipRole === 'OWNER' ||
     membershipRole === 'ADMIN'
 
-  const store = await prisma.store.findFirst({
-    where: { id: rawStoreId, companyId },
-  })
+  const rawStoreId = getStoreIdFromHeader(request)
 
-  if (!store) {
-    reply.code(403).send({
-      success: false,
-      error: 'No tienes acceso a esta tienda',
+  if (isFullAccess) {
+    if (!rawStoreId) {
+      request.storeId = undefined
+      return
+    }
+    const store = await prisma.store.findFirst({
+      where: { id: rawStoreId, companyId },
     })
-    throw new Error('Store access denied')
-  }
-
-  if (!isFullAccess) {
-    const userStore = await prisma.userStore.findUnique({
-      where: { userId_storeId: { userId, storeId: rawStoreId } },
-    })
-    if (!userStore) {
+    if (!store) {
       reply.code(403).send({
         success: false,
         error: 'No tienes acceso a esta tienda',
       })
       throw new Error('Store access denied')
     }
+    request.storeId = rawStoreId
+    return
   }
 
-  request.storeId = rawStoreId
+  // Store-scoped (non-full-access) user: resolve membership within THIS company only.
+  const memberships = await prisma.userStore.findMany({
+    where: { userId, store: { companyId } },
+    select: { storeId: true },
+  })
+  const membershipStoreIds = new Set(memberships.map((m: { storeId: string }) => m.storeId))
+
+  if (rawStoreId) {
+    if (!membershipStoreIds.has(rawStoreId)) {
+      reply.code(403).send({
+        success: false,
+        error: 'No tienes acceso a esta tienda',
+      })
+      throw new Error('Store access denied')
+    }
+    request.storeId = rawStoreId
+    return
+  }
+
+  // No header: derive only when unambiguous. Never fail open on ambiguity.
+  request.storeId = membershipStoreIds.size === 1 ? [...membershipStoreIds][0] : undefined
 }
 
 /**

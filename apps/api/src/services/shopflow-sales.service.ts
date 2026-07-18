@@ -181,7 +181,9 @@ export async function getSaleById(
   if (!sale) {
     throw new NotFoundError('Venta no encontrada')
   }
-  if (!hasFullStoreAccess(ctx) && ctx.storeId != null && sale.storeId !== ctx.storeId) {
+  // Deny-by-default: a null ctx.storeId (ambiguous membership / none resolved) must
+  // deny too, not be treated as "no restriction" (see shopflow-authorization.policy.ts).
+  if (!hasFullStoreAccess(ctx) && (ctx.storeId == null || sale.storeId !== ctx.storeId)) {
     throw new NotFoundError('Venta no encontrada')
   }
   // Curated shape (mirrors `listSales`) instead of a raw `...sale` spread — do not leak
