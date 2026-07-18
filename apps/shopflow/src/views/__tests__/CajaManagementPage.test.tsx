@@ -55,6 +55,13 @@ vi.mock('@/components/features/pos/StoreSelector', () => ({
   StoreSelector: () => null,
 }))
 
+// FIX C (pos-cash-session round 2): RegisterSelector now reads `useUser()` to gate the
+// "+ Nueva caja" create button to admin/owner roles — mock an owner so this page's existing
+// register-selection behavior is unaffected.
+vi.mock('@/hooks/useUser', () => ({
+  useUser: () => ({ data: { isSuperuser: false, membershipRole: 'OWNER' } }),
+}))
+
 vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }))

@@ -11,11 +11,16 @@ const useCreateCashRegisterMock = vi.fn()
 
 let registersState: { data: any[]; isLoading: boolean } = { data: [], isLoading: false }
 let openSessionsState: { data: any[] } = { data: [] }
+let userState: { data: any } = { data: { isSuperuser: true, membershipRole: 'OWNER' } }
 
 vi.mock('@/hooks/useCashSession', () => ({
   useCashRegisters: () => registersState,
   useOpenCashSessionsByStore: () => openSessionsState,
   useCreateCashRegister: () => useCreateCashRegisterMock(),
+}))
+
+vi.mock('@/hooks/useUser', () => ({
+  useUser: () => userState,
 }))
 
 vi.mock('sonner', () => ({
@@ -27,6 +32,7 @@ afterEach(() => {
   vi.clearAllMocks()
   registersState = { data: [], isLoading: false }
   openSessionsState = { data: [] }
+  userState = { data: { isSuperuser: true, membershipRole: 'OWNER' } }
 })
 
 beforeEach(() => {
@@ -75,6 +81,54 @@ describe('RegisterSelector', () => {
     })
     await waitFor(() => {
       expect(onChange).toHaveBeenCalledWith('register-new')
+    })
+  })
+
+  // FIX C (pos-cash-session round 2, WARNING): register creation is an admin/owner setup task —
+  // `shopflow.cash-registers.create` is granted to NO role (only OWNER/ADMIN bypass it), so a
+  // Cajero clicking "+ Nueva caja" would only hit a 403 dead-end.
+  describe('FIX C: create-register UI is admin/owner-only', () => {
+    it('hides the "+ Nueva caja" button for a non-admin role', () => {
+      userState = { data: { isSuperuser: false, membershipRole: 'USER' } }
+      registersState = {
+        data: [{ id: 'register-A', storeId: 'store-1', name: 'Caja 1', active: true }],
+        isLoading: false,
+      }
+
+      render(<RegisterSelector storeId="store-1" registerId={null} onChange={vi.fn()} />)
+
+      expect(screen.queryByRole('button', { name: /nueva caja/i })).toBeNull()
+    })
+
+    it('shows the "+ Nueva caja" button for an OWNER', () => {
+      userState = { data: { isSuperuser: false, membershipRole: 'OWNER' } }
+      registersState = {
+        data: [{ id: 'register-A', storeId: 'store-1', name: 'Caja 1', active: true }],
+        isLoading: false,
+      }
+
+      render(<RegisterSelector storeId="store-1" registerId={null} onChange={vi.fn()} />)
+
+      expect(screen.getByRole('button', { name: /nueva caja/i })).not.toBeNull()
+    })
+
+    it('shows the "+ Nueva caja" button for an ADMIN', () => {
+      userState = { data: { isSuperuser: false, membershipRole: 'ADMIN' } }
+      registersState = { data: [], isLoading: false }
+
+      render(<RegisterSelector storeId="store-1" registerId={null} onChange={vi.fn()} />)
+
+      expect(screen.getByRole('button', { name: /nueva caja/i })).not.toBeNull()
+    })
+
+    it('shows an empty-state message (not the create button) for a non-admin when the store has no registers', () => {
+      userState = { data: { isSuperuser: false, membershipRole: 'USER' } }
+      registersState = { data: [], isLoading: false }
+
+      render(<RegisterSelector storeId="store-1" registerId={null} onChange={vi.fn()} />)
+
+      expect(screen.queryByRole('button', { name: /nueva caja/i })).toBeNull()
+      expect(screen.getByText(/pedí a un administrador que cree la caja/i)).not.toBeNull()
     })
   })
 })

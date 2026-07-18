@@ -13,6 +13,7 @@ import {
 } from '@multisystem/ui'
 import { toast } from 'sonner'
 import { useCashRegisters, useCreateCashRegister, useOpenCashSessionsByStore } from '@/hooks/useCashSession'
+import { useUser } from '@/hooks/useUser'
 
 interface RegisterSelectorProps {
   storeId: string | null
@@ -33,11 +34,20 @@ export function RegisterSelector({ storeId, registerId, onChange }: RegisterSele
   const { data: registers = [], isLoading } = useCashRegisters(storeId)
   const { data: openSessions = [] } = useOpenCashSessionsByStore(storeId)
   const createRegisterMutation = useCreateCashRegister()
+  const { data: currentUser } = useUser()
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [newRegisterName, setNewRegisterName] = useState('')
 
   const openRegisterIds = new Set(openSessions.map((s) => s.cashRegisterId))
+
+  // FIX C (pos-cash-session round 2, WARNING): `shopflow.cash-registers.create` is granted to
+  // NO role — only the OWNER/ADMIN membership bypass can create a register (see
+  // `core/permissions.ts`). Register provisioning is an admin setup task; showing the create UI
+  // to everyone else just leads to a 403 dead-end.
+  const canCreateRegister = currentUser?.isSuperuser === true
+    || currentUser?.membershipRole === 'OWNER'
+    || currentUser?.membershipRole === 'ADMIN'
 
   const handleCreate = async () => {
     if (!storeId || !newRegisterName.trim()) return
@@ -75,32 +85,41 @@ export function RegisterSelector({ storeId, registerId, onChange }: RegisterSele
           </option>
         ))}
       </select>
-      <Button size="sm" variant="outline" onClick={() => setDialogOpen(true)}>
-        + Nueva caja
-      </Button>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Nueva caja</DialogTitle>
-            <DialogDescription>Crea un nuevo registro de caja para este local.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div>
-              <Label htmlFor="new-register-name">Nombre</Label>
-              <Input
-                id="new-register-name"
-                value={newRegisterName}
-                onChange={(e) => setNewRegisterName(e.target.value)}
-                placeholder="Caja Principal"
-              />
+      {canCreateRegister ? (
+        <Button size="sm" variant="outline" onClick={() => setDialogOpen(true)}>
+          + Nueva caja
+        </Button>
+      ) : !isLoading && registers.length === 0 ? (
+        <span className="text-sm text-gray-500">
+          Pedí a un administrador que cree la caja
+        </span>
+      ) : null}
+
+      {canCreateRegister ? (
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Nueva caja</DialogTitle>
+              <DialogDescription>Crea un nuevo registro de caja para este local.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="new-register-name">Nombre</Label>
+                <Input
+                  id="new-register-name"
+                  value={newRegisterName}
+                  onChange={(e) => setNewRegisterName(e.target.value)}
+                  placeholder="Caja Principal"
+                />
+              </div>
+              <Button className="w-full" onClick={handleCreate} disabled={createRegisterMutation.isPending || !newRegisterName.trim()}>
+                {createRegisterMutation.isPending ? 'Creando...' : 'Crear'}
+              </Button>
             </div>
-            <Button className="w-full" onClick={handleCreate} disabled={createRegisterMutation.isPending || !newRegisterName.trim()}>
-              {createRegisterMutation.isPending ? 'Creando...' : 'Crear'}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+      ) : null}
     </div>
   )
 }
