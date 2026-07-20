@@ -3,7 +3,7 @@ import type { CompanyContext } from '../core/auth-context.js'
 import { getCompanyModules } from '../core/modules.js'
 import { sseManager } from './sse.service.js'
 import * as workOrdersService from './work-orders.service.js'
-import * as techservicesHelper from '../helpers/techservices.helper.js'
+import * as techHelper from '../helpers/tech.helper.js'
 import { parsePagination } from '../common/database/index.js'
 import type {
   WorkOrderListQuery,
@@ -16,15 +16,15 @@ import type {
   PartUpdateBody,
   VisitCreateBody,
   VisitUpdateBody,
-  TechServicesMeCompany,
-} from '../dto/techservices.dto.js'
+  TechMeCompany,
+} from '../dto/tech.dto.js'
 
 // ----- Work orders (delegate to work-orders.service) -----
 
 export async function listWorkOrders(ctx: CompanyContext, query: WorkOrderListQuery) {
   const result = await workOrdersService.listWorkOrders(ctx, query)
   return {
-    workOrders: result.workOrders.map((row) => techservicesHelper.toWorkOrderResponse(row)),
+    workOrders: result.workOrders.map((row) => techHelper.toWorkOrderResponse(row)),
     page: result.page,
     limit: result.limit,
     total: result.total,
@@ -34,7 +34,7 @@ export async function listWorkOrders(ctx: CompanyContext, query: WorkOrderListQu
 
 export async function getWorkOrderById(ctx: CompanyContext, id: string) {
   const row = await workOrdersService.getWorkOrderById(ctx, id)
-  return row ? techservicesHelper.toWorkOrderResponse(row) : null
+  return row ? techHelper.toWorkOrderResponse(row) : null
 }
 
 /** Validate assetId and assignedEmployeeId belong to company; return error message or null */
@@ -61,16 +61,16 @@ export async function createWorkOrder(ctx: CompanyContext, body: WorkOrderCreate
   const refError = await validateWorkOrderRefs(ctx, body)
   if (refError) return refError
   const row = await workOrdersService.createWorkOrder(ctx, body)
-  sseManager.emit(ctx.companyId, 'techservices:dashboard:invalidate', { reason: 'work-order-created' })
-  return { data: techservicesHelper.toWorkOrderResponse(row) }
+  sseManager.emit(ctx.companyId, 'tech:dashboard:invalidate', { reason: 'work-order-created' })
+  return { data: techHelper.toWorkOrderResponse(row) }
 }
 
 export async function updateWorkOrder(ctx: CompanyContext, id: string, body: WorkOrderUpdateBody) {
   const refError = await validateWorkOrderRefs(ctx, body)
   if (refError) return refError
   const row = await workOrdersService.updateWorkOrder(ctx, id, body)
-  if (row) sseManager.emit(ctx.companyId, 'techservices:dashboard:invalidate', { reason: 'work-order-updated' })
-  return row ? { data: techservicesHelper.toWorkOrderResponse(row) } : null
+  if (row) sseManager.emit(ctx.companyId, 'tech:dashboard:invalidate', { reason: 'work-order-updated' })
+  return row ? { data: techHelper.toWorkOrderResponse(row) } : null
 }
 
 // ----- Assets -----
@@ -102,7 +102,7 @@ export async function listAssets(ctx: CompanyContext, query: AssetListQuery) {
     }),
   ])
   return {
-    items: rows.map((r) => techservicesHelper.toAssetResponse(r as techservicesHelper.AssetEntity)),
+    items: rows.map((r) => techHelper.toAssetResponse(r as techHelper.AssetEntity)),
     pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
   }
 }
@@ -111,7 +111,7 @@ export async function getAssetById(ctx: CompanyContext, id: string) {
   const row = await prisma.technicalAsset.findFirst({
     where: { id, companyId: ctx.companyId },
   })
-  return row ? techservicesHelper.toAssetResponse(row as techservicesHelper.AssetEntity) : null
+  return row ? techHelper.toAssetResponse(row as techHelper.AssetEntity) : null
 }
 
 export async function createAsset(ctx: CompanyContext, body: AssetCreateBody) {
@@ -128,7 +128,7 @@ export async function createAsset(ctx: CompanyContext, body: AssetCreateBody) {
       notes: body.notes ?? null,
     },
   })
-  return techservicesHelper.toAssetResponse(row as techservicesHelper.AssetEntity)
+  return techHelper.toAssetResponse(row as techHelper.AssetEntity)
 }
 
 export async function updateAsset(ctx: CompanyContext, id: string, body: AssetUpdateBody) {
@@ -158,7 +158,7 @@ export async function updateAsset(ctx: CompanyContext, id: string, body: AssetUp
   const row = await prisma.technicalAsset.findFirst({
     where: { id, companyId: ctx.companyId },
   })
-  return row ? techservicesHelper.toAssetResponse(row as techservicesHelper.AssetEntity) : null
+  return row ? techHelper.toAssetResponse(row as techHelper.AssetEntity) : null
 }
 
 export async function deleteAsset(ctx: CompanyContext, id: string) {
@@ -180,7 +180,7 @@ export async function listParts(ctx: CompanyContext, workOrderId: string) {
     orderBy: { createdAt: 'desc' },
   })
   return rows.map((r) =>
-    techservicesHelper.toPartResponse({ ...r, unitCost: Number(r.unitCost) } as unknown as techservicesHelper.PartEntity)
+    techHelper.toPartResponse({ ...r, unitCost: Number(r.unitCost) } as unknown as techHelper.PartEntity)
   )
 }
 
@@ -201,8 +201,8 @@ export async function createPart(ctx: CompanyContext, workOrderId: string, body:
     },
   })
   return {
-    data: techservicesHelper.toPartResponse(
-      { ...row, unitCost: Number(row.unitCost) } as unknown as techservicesHelper.PartEntity
+    data: techHelper.toPartResponse(
+      { ...row, unitCost: Number(row.unitCost) } as unknown as techHelper.PartEntity
     ),
   }
 }
@@ -256,11 +256,11 @@ export async function listVisits(ctx: CompanyContext, workOrderId: string) {
     include: { assignedEmployee: { select: { id: true, firstName: true, lastName: true } } },
   })
   return rows.map((r) =>
-    techservicesHelper.toVisitResponse({
+    techHelper.toVisitResponse({
       ...r,
       employee_first_name: r.assignedEmployee?.firstName ?? null,
       employee_last_name: r.assignedEmployee?.lastName ?? null,
-    } as techservicesHelper.VisitEntity)
+    } as techHelper.VisitEntity)
   )
 }
 
@@ -287,8 +287,8 @@ export async function createVisit(ctx: CompanyContext, workOrderId: string, body
       notes: body.notes ?? null,
     },
   })
-  sseManager.emit(ctx.companyId, 'techservices:dashboard:invalidate', { reason: 'visit-created' })
-  return { data: techservicesHelper.toVisitResponse(row as techservicesHelper.VisitEntity) }
+  sseManager.emit(ctx.companyId, 'tech:dashboard:invalidate', { reason: 'visit-created' })
+  return { data: techHelper.toVisitResponse(row as techHelper.VisitEntity) }
 }
 
 export async function updateVisit(ctx: CompanyContext, visitId: string, body: VisitUpdateBody) {
@@ -321,7 +321,7 @@ export async function updateVisit(ctx: CompanyContext, visitId: string, body: Vi
     data,
   })
   if (updated.count === 0) return null
-  sseManager.emit(ctx.companyId, 'techservices:dashboard:invalidate', { reason: 'visit-updated' })
+  sseManager.emit(ctx.companyId, 'tech:dashboard:invalidate', { reason: 'visit-updated' })
   return { updated: true }
 }
 
@@ -333,7 +333,7 @@ export async function deleteVisit(ctx: CompanyContext, visitId: string) {
   const deleted = await prisma.serviceVisit.deleteMany({
     where: { id: visitId, workOrder: { companyId: ctx.companyId } },
   })
-  if (deleted.count > 0) sseManager.emit(ctx.companyId, 'techservices:dashboard:invalidate', { reason: 'visit-deleted' })
+  if (deleted.count > 0) sseManager.emit(ctx.companyId, 'tech:dashboard:invalidate', { reason: 'visit-deleted' })
   return deleted.count > 0
 }
 
@@ -488,14 +488,14 @@ export async function getMe(ctx: CompanyContext) {
     select: { id: true, name: true },
   })
   const modules = company ? await getCompanyModules(company.id) : undefined
-  const companyForMe: TechServicesMeCompany | undefined = company
+  const companyForMe: TechMeCompany | undefined = company
     ? {
         id: company.id,
         name: company.name,
         hrEnabled: modules?.hr ?? false,
         posEnabled: modules?.pos ?? false,
-        technicalServicesEnabled: modules?.techservices ?? false,
+        technicalServicesEnabled: modules?.tech ?? false,
       }
     : undefined
-  return techservicesHelper.toMeResponse(user, companyForMe, ctx)
+  return techHelper.toMeResponse(user, companyForMe, ctx)
 }

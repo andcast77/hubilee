@@ -4,7 +4,7 @@ Biblioteca de componentes React compartida para las apps Hubilee. **Carpeta del 
 
 ## En este monorepo
 
-Las apps **hub**, **pos**, **hr** y **techservices** declaran `"@hubilee/ui": "workspace:*"`. Tras clonar, `pnpm install` en la raíz enlaza el paquete local.
+Las apps **hub**, **pos**, **hr** y **tech** declaran `"@hubilee/ui": "workspace:*"`. Tras clonar, `pnpm install` en la raíz enlaza el paquete local.
 
 En desarrollo, `pnpm run dev:hub` (Turbo) levanta **`@hubilee/ui` en watch** (`vite build --watch`) y el Hub a la vez; no hace falta un `build` manual previo salvo CI o primera vez.
 

@@ -35,7 +35,7 @@ const features = [
   },
 ];
 
-export function TechservicesProductFeatures() {
+export function TechProductFeatures() {
   return (
     <section className="py-24 px-4 bg-[#0a0a0f] relative">
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />

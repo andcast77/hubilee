@@ -18,12 +18,12 @@ export function toAuthUserResponse(
 }
 
 export function toAuthCompanyResponse(
-  company: { id: string; name: string; modules?: { hr: boolean; pos: boolean; techservices: boolean } }
+  company: { id: string; name: string; modules?: { hr: boolean; pos: boolean; tech: boolean } }
 ): AuthCompanyResponse {
   return {
     id: company.id,
     name: company.name,
-    modules: company.modules ?? { hr: false, pos: false, techservices: false },
+    modules: company.modules ?? { hr: false, pos: false, tech: false },
   }
 }
 
@@ -31,6 +31,6 @@ export function companyRowToAuthCompany(row: CompanyRow): AuthCompanyResponse {
   return {
     id: row.id,
     name: row.name,
-    modules: row.modules ?? { hr: false, pos: false, techservices: false },
+    modules: row.modules ?? { hr: false, pos: false, tech: false },
   }
 }

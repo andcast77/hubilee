@@ -5,7 +5,7 @@ import { API_URL } from "@/lib/api/client";
 
 const SSE_SUPPORTED = typeof EventSource !== "undefined";
 
-export function useTechservicesDashboardSSE(
+export function useTechDashboardSSE(
   companyId: string | null | undefined,
   onInvalidate: () => void
 ) {
@@ -19,14 +19,14 @@ export function useTechservicesDashboardSSE(
     const es = new EventSource(url, { withCredentials: true });
 
     const handler = () => cbRef.current();
-    es.addEventListener("techservices:dashboard:invalidate", handler);
+    es.addEventListener("tech:dashboard:invalidate", handler);
 
     es.onerror = () => {
       es.close();
     };
 
     return () => {
-      es.removeEventListener("techservices:dashboard:invalidate", handler);
+      es.removeEventListener("tech:dashboard:invalidate", handler);
       es.close();
     };
   }, [companyId]);

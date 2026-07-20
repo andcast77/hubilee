@@ -1,6 +1,6 @@
 # Hubilee API
 
-API compartida **Fastify 5** para Hubilee: JWT, multi-empresa (contexto de compañía/miembro) y rutas agrupadas por módulo (**pos**, **hr**, **techservices**). Acceso a datos con **@hubilee/database** (Prisma).
+API compartida **Fastify 5** para Hubilee: JWT, multi-empresa (contexto de compañía/miembro) y rutas agrupadas por módulo (**pos**, **hr**, **tech**). Acceso a datos con **@hubilee/database** (Prisma).
 
 **Producción / preview:** el camino oficial es **Vercel** (esta API) + **Neon** (PostgreSQL). Otros hosts (p. ej. Render) y **`.env.render.example`** se documentan como **legado**; no sustituyen esa historia de despliegue.
 
@@ -69,7 +69,7 @@ packages/api/
 │   ├── server.ts             # Fastify: env, CORS, rate limit, registro de controllers
 │   ├── swagger.ts
 │   ├── db/                   # Acceso Prisma
-│   ├── controllers/          # health (raíz); v1/* — auth, users, companies, pos/*, hr, techservices
+│   ├── controllers/          # health (raíz); v1/* — auth, users, companies, pos/*, hr, tech
 │   ├── services/
 │   ├── repositories/
 │   ├── dto/
@@ -159,7 +159,7 @@ Si aún despliegas fuera de Vercel, ver **`.env.render.example`** en este paquet
 | `/v1/companies`, miembros | Empresas y membresías |
 | `/v1/pos/*` | Ventas, productos, clientes, tiendas, reportes, export, notificaciones, etc. |
 | `/v1/hr/*` | RRHH / asistencia (módulo habilitado por empresa) |
-| `/v1/techservices/*` | Servicios técnicos / mantenimiento (módulo habilitado) |
+| `/v1/tech/*` | Servicios técnicos / mantenimiento (módulo habilitado) |
 
 Muchas rutas exigen **sesión (cookie) o Bearer JWT** y contexto de compañía. Listado y esquemas: **`/v1/docs`** (si está habilitado).
 

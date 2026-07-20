@@ -3,7 +3,7 @@ import { ShoppingCart, Users, Wrench, LayoutDashboard, ArrowRight } from "lucide
 import { getLandingUrls, getHubRegisterUrl } from "@/lib/landingUrls";
 import { HubHero } from "@/components/landing/HubHero";
 import { ModuleCard } from "@/components/landing/ModuleCard";
-import { TechservicesProductFeatures } from "@/components/landing/TechservicesProductFeatures";
+import { TechProductFeatures } from "@/components/landing/TechProductFeatures";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 
 export function LandingHome() {
@@ -34,7 +34,7 @@ export function LandingHome() {
       description: "Órdenes, activos y visitas. Estás en servicio técnico.",
       icon: <Wrench className="w-6 h-6" />,
       features: ["Órdenes", "Activos", "Visitas"],
-      href: urls.techservices,
+      href: urls.tech,
       accentColor: "text-amber-400",
       accentBg: "bg-amber-500/10",
     },
@@ -89,7 +89,7 @@ export function LandingHome() {
         </div>
 
         <section id="caracteristicas">
-          <TechservicesProductFeatures />
+          <TechProductFeatures />
         </section>
 
         <section id="ecosistema" className="py-24 px-4 bg-[#0a0a0f] relative">

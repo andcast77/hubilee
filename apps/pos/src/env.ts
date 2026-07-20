@@ -22,8 +22,8 @@ export const env = {
   get posUrl() {
     return readEnv('VITE_POS_URL')
   },
-  get techservicesUrl() {
-    return readEnv('VITE_TECHSERVICES_URL')
+  get techUrl() {
+    return readEnv('VITE_TECH_URL')
   },
   get turnstileSiteKey() {
     return readEnv('VITE_TURNSTILE_SITE_KEY')

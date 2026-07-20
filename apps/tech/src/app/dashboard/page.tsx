@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { techServicesApi, authApi } from "@/lib/api/client";
-import { useTechservicesDashboardSSE } from "@/hooks/useTechservicesDashboardSSE";
+import { useTechDashboardSSE } from "@/hooks/useTechDashboardSSE";
 import {
   Bar,
   BarChart,
@@ -80,7 +80,7 @@ export default function DashboardPage() {
       .catch(() => setCompanyId(null));
   }, []);
 
-  useTechservicesDashboardSSE(companyId, load);
+  useTechDashboardSSE(companyId, load);
 
   const statusChartData = Object.entries(stats?.ordersByStatus ?? {}).map(([key, count]) => ({
     name: STATUS_LABEL[key] ?? key,

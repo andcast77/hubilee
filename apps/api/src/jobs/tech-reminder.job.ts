@@ -8,13 +8,13 @@ function systemCtx(companyId: string): CompanyContext {
   return { companyId, userId: 'system', isSuperuser: false, membershipRole: null }
 }
 
-export async function runTechServicesReminderForCompany(companyId: string): Promise<void> {
+export async function runTechReminderForCompany(companyId: string): Promise<void> {
   const runId = createRunId()
   const startedAt = Date.now()
   const run: Parameters<typeof saveJobRun>[0] = {
     id: runId,
     companyId,
-    jobName: 'techservices-reminder',
+    jobName: 'tech-reminder',
     status: 'running',
     startedAt,
   }
@@ -114,13 +114,13 @@ export async function runTechServicesReminderForCompany(companyId: string): Prom
         title: notifTitle,
         message: notifMessage,
         data: notifData,
-        actionUrl: '/techservices',
+        actionUrl: '/tech',
       })
 
       void sendPushToUser(userId, {
         title: notifTitle,
         body: notifMessage,
-        url: '/techservices',
+        url: '/tech',
         data: notifData,
       }).catch(() => {})
 
@@ -144,11 +144,11 @@ export async function runTechServicesReminderForCompany(companyId: string): Prom
   }
 }
 
-export async function runTechServicesReminderJob(): Promise<void> {
+export async function runTechReminderJob(): Promise<void> {
   const companies = await prisma.company.findMany({
     where: { isActive: true },
     select: { id: true },
   })
 
-  await Promise.allSettled(companies.map((c) => runTechServicesReminderForCompany(c.id)))
+  await Promise.allSettled(companies.map((c) => runTechReminderForCompany(c.id)))
 }

@@ -3,7 +3,7 @@ import { runInventoryAlertJob } from './inventory-alert.job.js'
 import { runScheduledReportJob } from './scheduled-report.job.js'
 import { runInvoiceReminderJob } from './invoice-reminder.job.js'
 import { runBackupJob } from './backup.job.js'
-import { runTechServicesReminderJob } from './techservices-reminder.job.js'
+import { runTechReminderJob } from './tech-reminder.job.js'
 import { runDataRetentionJob } from './data-retention.job.js'
 
 type ScheduledTask = ReturnType<typeof cron.schedule>
@@ -34,8 +34,8 @@ export function startJobRunner(): void {
   // Auto-backup — daily at 02:00 AM
   registerJob('0 2 * * *', 'backup', runBackupJob)
 
-  // TechServices daily reminder — 08:00 every day
-  registerJob('0 8 * * *', 'techservices-reminder', runTechServicesReminderJob)
+  // Tech daily reminder — 08:00 every day
+  registerJob('0 8 * * *', 'tech-reminder', runTechReminderJob)
 
   // Data retention — daily at 03:00 AM (off-peak; cleans expired sessions + old logs)
   registerJob('0 3 * * *', 'data-retention', runDataRetentionJob)

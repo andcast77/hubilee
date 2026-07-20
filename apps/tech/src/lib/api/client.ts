@@ -6,13 +6,13 @@ const apiClient = new SharedApiClient(API_URL);
 
 export const techServicesApi = {
   get: <T>(endpoint: string, options?: RequestInit) =>
-    apiClient.get<T>(`/v1/techservices${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`, options),
+    apiClient.get<T>(`/v1/tech${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`, options),
   post: <T>(endpoint: string, data?: unknown, options?: RequestInit) =>
-    apiClient.post<T>(`/v1/techservices${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`, data, options),
+    apiClient.post<T>(`/v1/tech${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`, data, options),
   put: <T>(endpoint: string, data?: unknown, options?: RequestInit) =>
-    apiClient.put<T>(`/v1/techservices${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`, data, options),
+    apiClient.put<T>(`/v1/tech${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`, data, options),
   delete: <T>(endpoint: string, data?: unknown, options?: RequestInit) =>
-    apiClient.delete<T>(`/v1/techservices${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`, data, options),
+    apiClient.delete<T>(`/v1/tech${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`, data, options),
 };
 
 export const authApi = {

@@ -312,14 +312,14 @@ export function SettingsPage() {
                   />
                 </div>
 
-                {/* TechServices Module */}
+                {/* Tech Module */}
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
                     <h4 className="font-medium">Tech Services</h4>
                     <p className="text-sm text-slate-600">Gestión de servicios técnicos</p>
                   </div>
                   <Switch
-                    checked={company.modules?.techservices ?? company.technicalServicesEnabled ?? false}
+                    checked={company.modules?.tech ?? company.technicalServicesEnabled ?? false}
                     onCheckedChange={(checked: boolean) => handleModulesChange("techServices", checked)}
                     disabled={!isOwner}
                   />

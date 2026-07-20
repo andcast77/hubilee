@@ -174,5 +174,5 @@ export type AuthUserResponse = {
 export type AuthCompanyResponse = {
   id: string
   name: string
-  modules: { hr: boolean; pos: boolean; techservices: boolean }
+  modules: { hr: boolean; pos: boolean; tech: boolean }
 }

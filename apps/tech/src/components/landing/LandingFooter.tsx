@@ -33,7 +33,7 @@ export function LandingFooter({ urls, registerHref = "/register", moduleName, mo
                   <a href={urls.hr} className="text-white/40 hover:text-white transition-colors duration-150" target="_blank" rel="noopener noreferrer">Hr</a>
                 </li>
                 <li>
-                  <a href={urls.techservices} className="text-white/40 hover:text-white transition-colors duration-150" target="_blank" rel="noopener noreferrer">Servicios Técnicos</a>
+                  <a href={urls.tech} className="text-white/40 hover:text-white transition-colors duration-150" target="_blank" rel="noopener noreferrer">Servicios Técnicos</a>
                 </li>
               </ul>
             </div>

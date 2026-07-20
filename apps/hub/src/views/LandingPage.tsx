@@ -38,7 +38,7 @@ export function LandingPage() {
         description: "Órdenes de servicio técnico, gestión de activos y visitas de campo.",
         icon: <Wrench className="w-6 h-6" />,
         features: ["Órdenes de trabajo", "Gestión de activos", "Visitas técnicas"],
-        href: urls.techservices,
+        href: urls.tech,
         accentColor: "text-amber-400",
         accentBg: "bg-amber-500/10",
       },

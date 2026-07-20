@@ -124,7 +124,7 @@ export function MembersPage() {
         <CardContent className="text-sm text-blue-800">
           <p>
             La gestión de miembros (agregar, editar, eliminar) se realiza desde los módulos específicos
-            (Hr, Pos, TechServices) para mantener la separación de responsabilidades.
+            (Hr, Pos, Tech) para mantener la separación de responsabilidades.
           </p>
           <p className="mt-2">
             Accede a los módulos desde tu dashboard para administrar los usuarios según el contexto del módulo.

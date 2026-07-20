@@ -49,7 +49,7 @@ export function Footer() {
                 </li>
                 <li>
                   <a
-                    href={urls.techservices}
+                    href={urls.tech}
                     className="text-white/40 hover:text-white transition-colors duration-150"
                     rel="noopener noreferrer"
                   >

@@ -16,7 +16,7 @@ export type Company = {
   hrEnabled?: boolean;
   /** @deprecated Use modules.pos */
   posEnabled?: boolean;
-  /** @deprecated Use modules.techservices */
+  /** @deprecated Use modules.tech */
   technicalServicesEnabled?: boolean;
   modules?: CompanyModules;
   isActive: boolean;
@@ -85,10 +85,10 @@ export type { CompanyModules } from "@hubilee/contracts";
 /** Resolve whether a module is enabled (supports both modules.* and legacy hrEnabled etc.) */
 export function isModuleEnabled(
   company: Company,
-  module: "hr" | "pos" | "techservices"
+  module: "hr" | "pos" | "tech"
 ): boolean {
   const m = company.modules;
-  if (m) return module === "hr" ? m.hr : module === "pos" ? m.pos : m.techservices;
+  if (m) return module === "hr" ? m.hr : module === "pos" ? m.pos : m.tech;
   if (module === "hr") return company.hrEnabled ?? false;
   if (module === "pos") return company.posEnabled ?? false;
   return company.technicalServicesEnabled ?? false;

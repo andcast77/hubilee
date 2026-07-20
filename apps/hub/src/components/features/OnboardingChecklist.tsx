@@ -43,7 +43,7 @@ export function OnboardingChecklist({ company, stats, posUrl }: Props) {
   const modulesOk =
     isModuleEnabled(company, "hr") ||
     isModuleEnabled(company, "pos") ||
-    isModuleEnabled(company, "techservices");
+    isModuleEnabled(company, "tech");
   const teamOk = (stats?.totalMembers ?? 0) >= 2;
   const stores = storesRes ?? [];
   const activeStores = stores.filter((s) => s.active !== false);

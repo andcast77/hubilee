@@ -52,14 +52,14 @@ export async function update(companyId: string, caller: TokenPayload, body: Upda
     body.posEnabled !== undefined ||
     body.technicalServicesEnabled !== undefined
   ) {
-    const modulesMap = await findModulesByKeys(['hr', 'pos', 'techservices'])
+    const modulesMap = await findModulesByKeys(['hr', 'pos', 'tech'])
     const hrMod = modulesMap.get('hr')
     const posMod = modulesMap.get('pos')
-    const techservicesMod = modulesMap.get('techservices')
+    const techMod = modulesMap.get('tech')
     const updates: { moduleId: string; enabled: boolean }[] = []
     if (body.hrEnabled !== undefined && hrMod) updates.push({ moduleId: hrMod.id, enabled: body.hrEnabled })
     if (body.posEnabled !== undefined && posMod) updates.push({ moduleId: posMod.id, enabled: body.posEnabled })
-    if (body.technicalServicesEnabled !== undefined && techservicesMod) updates.push({ moduleId: techservicesMod.id, enabled: body.technicalServicesEnabled })
+    if (body.technicalServicesEnabled !== undefined && techMod) updates.push({ moduleId: techMod.id, enabled: body.technicalServicesEnabled })
     for (const { moduleId, enabled } of updates) {
       await prisma.companyModule.upsert({
         where: { companyId_moduleId: { companyId, moduleId } },

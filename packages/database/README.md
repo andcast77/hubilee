@@ -9,7 +9,7 @@ Referencias: [Prisma + Neon](https://www.prisma.io/docs/orm/overview/databases/n
 
 ## Contenido
 
-- **Schema:** `prisma/schema.prisma` (modelos hr, pos, techservices, usuarios, empresas, módulos, etc.)
+- **Schema:** `prisma/schema.prisma` (modelos hr, pos, tech, usuarios, empresas, módulos, etc.)
 - **Migraciones activas:** `prisma/migrations/` · histórico bajo `prisma/migrations_legacy_20260213/` · SQL manual en `prisma/migrations/manual/`
 - **Cliente:** `prisma generate` escribe en `dist/generated/prisma`; el build copia a `generated/` para que compile `src/client.ts`; runtime resuelve desde `dist/`
 
@@ -113,7 +113,7 @@ Si una credencial de producción fue compartida por chat, ticket, commit o captu
 
 ## Seeds
 
-El seed cubre **hr**, **pos** y **techservices** (registros `Module`, permisos hub, datos de ejemplo por módulo).
+El seed cubre **hr**, **pos** y **tech** (registros `Module`, permisos hub, datos de ejemplo por módulo).
 
 ### Ejecutar Seeds
 
@@ -136,7 +136,7 @@ El seed incluye:
 - Empleados vinculados a usuarios
 - Días festivos
 
-**Techservices:** módulo `techservices` en BD, permiso `techservices.access`; las empresas de ejemplo pueden tener el módulo contratado (el seed no crea aún activos/órdenes de ejemplo salvo que el script lo amplíe).
+**Tech:** módulo `tech` en BD, permiso `tech.access`; las empresas de ejemplo pueden tener el módulo contratado (el seed no crea aún activos/órdenes de ejemplo salvo que el script lo amplíe).
 
 **Pos:**
 - Categorías (Electrónica, Ropa)

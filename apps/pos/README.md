@@ -36,7 +36,7 @@ Crear **`apps/pos/.env.local`** (ver `.env.example`).
 | **`NEXT_PUBLIC_API_URL`** | Base URL principal de la API en **`src/lib/api/client.ts`**. Fallback por defecto: **`http://localhost:3000`**. |
 | **`NEXT_PUBLIC_HUB_URL`** | Enlaces al Hub cuando aplica. |
 | **`NEXT_PUBLIC_VAPID_PUBLIC_KEY`** | Opcional — notificaciones push Web Push. |
-| **`NEXT_PUBLIC_POS_URL`**, **`NEXT_PUBLIC_HR_URL`**, **`NEXT_PUBLIC_TECHSERVICES_URL`** | URLs públicas del ecosistema (landing). |
+| **`NEXT_PUBLIC_POS_URL`**, **`NEXT_PUBLIC_HR_URL`**, **`NEXT_PUBLIC_TECH_URL`** | URLs públicas del ecosistema (landing). |
 
 En desarrollo, **`next.config.ts`** reescribe **`/v1/*`** al API en `http://127.0.0.1:3000` (mismo criterio que Hub).
 

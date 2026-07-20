@@ -64,7 +64,7 @@ export async function getMe(ctx: CompanyContext): Promise<{ user: HrMeUser } | {
         name: companyRow.name,
         hrEnabled: modules?.hr ?? false,
         posEnabled: modules?.pos ?? false,
-        technicalServicesEnabled: modules?.techservices ?? false,
+        technicalServicesEnabled: modules?.tech ?? false,
       })
     }
   }

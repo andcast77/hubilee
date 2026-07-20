@@ -59,11 +59,11 @@ export function DashboardPage() {
       color: "blue",
     },
     {
-      title: "TechServices",
+      title: "Tech",
       description: "Gestión de servicios técnicos",
       icon: Wrench,
-      href: process.env.NEXT_PUBLIC_TECHSERVICES_URL || "http://localhost:3004",
-      enabled: company.modules?.techservices ?? company.technicalServicesEnabled ?? false,
+      href: process.env.NEXT_PUBLIC_TECH_URL || "http://localhost:3004",
+      enabled: company.modules?.tech ?? company.technicalServicesEnabled ?? false,
       color: "green",
     },
   ];

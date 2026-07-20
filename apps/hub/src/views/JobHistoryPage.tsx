@@ -36,7 +36,7 @@ const JOB_NAME_LABELS: Record<string, string> = {
   "scheduled-report-weekly": "Reporte semanal",
   "invoice-reminder": "Recordatorio de órdenes",
   backup: "Backup automático",
-  "techservices-reminder": "Recordatorio TechServices",
+  "tech-reminder": "Recordatorio Tech",
 };
 
 function formatDate(timestamp: number) {

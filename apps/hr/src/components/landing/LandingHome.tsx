@@ -33,7 +33,7 @@ export function LandingHome() {
       description: "Órdenes, activos y visitas técnicas para equipos de campo.",
       icon: <Wrench className="w-6 h-6" />,
       features: ["Órdenes", "Activos", "Visitas"],
-      href: urls.techservices,
+      href: urls.tech,
       accentColor: "text-amber-400",
       accentBg: "bg-amber-500/10",
     },

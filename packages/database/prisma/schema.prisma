@@ -428,7 +428,7 @@ model CompanyMember {
   @@map("company_members")
 }
 
-/// Catálogo global de módulos (Hr, Pos, Techservices, etc.)
+/// Catálogo global de módulos (Hr, Pos, Tech, etc.)
 model Module {
   id          String   @id @default(uuid())
   key         String   @unique

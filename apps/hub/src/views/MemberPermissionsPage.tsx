@@ -25,7 +25,7 @@ import type { MemberModuleItem, MemberRoleItem } from "@/lib/api-client";
 const MODULE_LABELS: Record<string, string> = {
   hr: "Hr (RRHH)",
   pos: "Pos (Ventas)",
-  techservices: "Tech Services",
+  tech: "Tech Services",
 };
 
 export function MemberPermissionsPage() {

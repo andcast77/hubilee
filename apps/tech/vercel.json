@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd ../.. && pnpm exec turbo run build --filter=@hubilee/techservices...",
+  "buildCommand": "cd ../.. && pnpm exec turbo run build --filter=@hubilee/tech...",
   "outputDirectory": ".next",
   "installCommand": "cd ../.. && pnpm install",
   "framework": "nextjs"

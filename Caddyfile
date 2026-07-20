@@ -22,8 +22,8 @@
     reverse_proxy hub:3001
 }
 
-{$TECHSERVICES_DOMAIN:techservices.hubilee.app} {
-    reverse_proxy techservices:3004
+{$TECH_DOMAIN:tech.hubilee.app} {
+    reverse_proxy tech:3004
 }
 
 {$BALANCE_DOMAIN:balance.hubilee.app} {

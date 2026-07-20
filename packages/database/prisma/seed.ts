@@ -130,9 +130,9 @@ async function main() {
     },
   })
 
-  const moduleTechservices = await prisma.module.create({
+  const moduleTech = await prisma.module.create({
     data: {
-      key: 'techservices',
+      key: 'tech',
       name: 'Tech Services',
       description: 'Módulo de servicios técnicos',
     },
@@ -287,16 +287,16 @@ async function main() {
       action: 'manage',
       description: 'Crear o modificar usuarios desde Pos',
     },
-    // Techservices
+    // Tech
     {
-      name: 'techservices.access',
-      resource: 'techservices',
+      name: 'tech.access',
+      resource: 'tech',
       action: 'access',
       description: 'Acceder al módulo de servicios técnicos',
     },
     {
-      name: 'techservices.visits.close',
-      resource: 'techservices.visits',
+      name: 'tech.visits.close',
+      resource: 'tech.visits',
       action: 'close',
       description: 'Cerrar órdenes de servicio técnico',
     },
@@ -431,7 +431,7 @@ async function main() {
     data: [
       { companyId: company.id, moduleId: moduleHr.id, enabled: true },
       { companyId: company.id, moduleId: modulePos.id, enabled: true },
-      { companyId: company.id, moduleId: moduleTechservices.id, enabled: true },
+      { companyId: company.id, moduleId: moduleTech.id, enabled: true },
       { companyId: company.id, moduleId: moduleBaro.id, enabled: true },
     ],
   })
@@ -491,7 +491,7 @@ async function main() {
       // Owner: todos los módulos activos de la empresa
       { companyMemberId: acmeOwnerMember.id, moduleId: moduleHr.id, enabled: true },
       { companyMemberId: acmeOwnerMember.id, moduleId: modulePos.id, enabled: true },
-      { companyMemberId: acmeOwnerMember.id, moduleId: moduleTechservices.id, enabled: true },
+      { companyMemberId: acmeOwnerMember.id, moduleId: moduleTech.id, enabled: true },
       { companyMemberId: acmeOwnerMember.id, moduleId: moduleBaro.id, enabled: true },
       // Usuario estándar: Hr + Pos por defecto
       { companyMemberId: acmeUserMember.id, moduleId: moduleHr.id, enabled: true },
@@ -604,8 +604,8 @@ async function main() {
       'pos.sales.refund',
       'pos.inventory.read',
       'pos.inventory.write',
-      'techservices.access',
-      'techservices.visits.close',
+      'tech.access',
+      'tech.visits.close',
       'baro.access',
       'baro.expedientes.manage',
     ].map((name) => ({
@@ -639,8 +639,8 @@ async function main() {
       'pos.sales.refund',
       'pos.inventory.read',
       'pos.inventory.write',
-      'techservices.access',
-      'techservices.visits.close',
+      'tech.access',
+      'tech.visits.close',
       'baro.access',
       'baro.expedientes.manage',
     ].map((name) => ({
@@ -680,7 +680,7 @@ async function main() {
     ...[
       'hr.access',
       'pos.access',
-      'techservices.access',
+      'tech.access',
       'baro.access',
     ].map((name) => ({
       roleId: basicUserRole.id,
@@ -1450,7 +1450,7 @@ async function main() {
     data: [
       { companyId: company2.id, moduleId: moduleHr.id, enabled: true },
       { companyId: company2.id, moduleId: modulePos.id, enabled: true },
-      { companyId: company2.id, moduleId: moduleTechservices.id, enabled: true },
+      { companyId: company2.id, moduleId: moduleTech.id, enabled: true },
       { companyId: company2.id, moduleId: moduleBaro.id, enabled: true },
     ],
   })
@@ -1499,7 +1499,7 @@ async function main() {
     data: [
       { companyMemberId: betaOwnerMember.id, moduleId: moduleHr.id, enabled: true },
       { companyMemberId: betaOwnerMember.id, moduleId: modulePos.id, enabled: true },
-      { companyMemberId: betaOwnerMember.id, moduleId: moduleTechservices.id, enabled: true },
+      { companyMemberId: betaOwnerMember.id, moduleId: moduleTech.id, enabled: true },
       { companyMemberId: betaOwnerMember.id, moduleId: moduleBaro.id, enabled: true },
       { companyMemberId: betaUserMember.id, moduleId: moduleHr.id, enabled: true },
       { companyMemberId: betaUserMember.id, moduleId: modulePos.id, enabled: true },
@@ -1672,7 +1672,7 @@ async function main() {
       'pos.users.read',
       'pos.users.manage',
       'pos.sales.refund',
-      'techservices.access',
+      'tech.access',
       'baro.access',
     ].map((name) => ({
       roleId: betaOwnerRole.id,
@@ -1699,7 +1699,7 @@ async function main() {
       'pos.users.read',
       'pos.users.manage',
       'pos.sales.refund',
-      'techservices.access',
+      'tech.access',
       'baro.access',
     ].map((name) => ({
       roleId: betaAdminRole.id,
@@ -1735,7 +1735,7 @@ async function main() {
     ...[
       'hr.access',
       'pos.access',
-      'techservices.access',
+      'tech.access',
       'baro.access',
     ].map((name) => ({
       roleId: betaBasicUserRole.id,

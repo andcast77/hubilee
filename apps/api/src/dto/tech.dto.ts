@@ -184,8 +184,8 @@ export type VisitResponse = {
 
 // ----- Me -----
 
-/** TechServices /me company */
-export type TechServicesMeCompany = {
+/** Tech /me company */
+export type TechMeCompany = {
   id: string
   name: string
   hrEnabled: boolean
@@ -193,8 +193,8 @@ export type TechServicesMeCompany = {
   technicalServicesEnabled: boolean
 }
 
-/** TechServices /me response */
-export type TechServicesMeResponse = {
+/** Tech /me response */
+export type TechMeResponse = {
   user: {
     id: string
     email: string
@@ -202,6 +202,6 @@ export type TechServicesMeResponse = {
     companyId: string
     membershipRole: string | null
     isSuperuser: boolean
-    company: TechServicesMeCompany | undefined
+    company: TechMeCompany | undefined
   }
 }

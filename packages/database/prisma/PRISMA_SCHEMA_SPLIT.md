@@ -21,7 +21,7 @@ El schema actual está en un único archivo `schema.prisma`. Prisma 7 soporta m�
 
    - `shared.prisma`: User, Session, Company, CompanyMember, Module, CompanyModule, CompanyMemberModule, Role, Permission, RolePermission, UserRoleAssignment, UserPermission
    - `hr.prisma`: Department, Position, Employee, WorkShift, Schedule, SpecialDayAssignment, Holiday, TimeEntry, Payroll, PayrollRule, License, LicensePolicy, Document, AuditLog, IntegrationLog, Report, Translation
-   - `techservices.prisma`: TechnicalAsset, WorkOrder, WorkOrderPart, ServiceVisit
+   - `tech.prisma`: TechnicalAsset, WorkOrder, WorkOrderPart, ServiceVisit
    - `pos.prisma`: Product, Category, Supplier, Customer, Sale, SaleItem, StoreConfig, Store, UserStore, TicketConfig, UserPreferences, InventoryTransfer, LoyaltyConfig, LoyaltyPoint, Notification, NotificationPreference, ActionHistory
 
 3. **Contenido de `schema.prisma`**  

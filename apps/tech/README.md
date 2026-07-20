@@ -1,6 +1,6 @@
-# Techservices (`@hubilee/techservices`)
+# Tech (`@hubilee/tech`)
 
-App **Next.js 16** (App Router) para el módulo **servicios técnicos**: órdenes de trabajo, activos y agenda. Consume la API compartida en **`/api/techservices/*`** y **`/api/auth/*`**.
+App **Next.js 16** (App Router) para el módulo **servicios técnicos**: órdenes de trabajo, activos y agenda. Consume la API compartida en **`/api/tech/*`** y **`/api/auth/*`**.
 
 El usuario debe tener el módulo activo para la empresa (`technicalServicesEnabled`); si no, el layout del dashboard muestra aviso. La sesión usa la misma cookie **`token`** (JWT) que el **Hub** u otras apps.
 
@@ -19,7 +19,7 @@ El usuario debe tener el módulo activo para la empresa (`technicalServicesEnabl
 
 - **Next.js 16**, **React 19**, **Tailwind CSS 4**
 - **@hubilee/ui**, **@hubilee/shared**, **@hubilee/contracts**
-- Cliente HTTP en **`src/lib/api/client.ts`**: `techServicesApi` (prefijo `/api/techservices`), `authApi` (`/api/auth`)
+- Cliente HTTP en **`src/lib/api/client.ts`**: `techServicesApi` (prefijo `/api/tech`), `authApi` (`/api/auth`)
 
 `next.config.ts` fija **`turbopack.root`** y **`outputFileTracingRoot`** en la raíz del monorepo para desarrollo/build desde el workspace.
 
@@ -32,14 +32,14 @@ El usuario debe tener el módulo activo para la empresa (`technicalServicesEnabl
 | `pnpm lint` / `pnpm type-check` | Calidad |
 
 ```bash
-pnpm --filter @hubilee/techservices dev
+pnpm --filter @hubilee/tech dev
 ```
 
-Incluir **`http://localhost:3004`** en **`CORS_ORIGIN`** de la API. Desde el **Hub**: `VITE_TECHSERVICES_URL=http://localhost:3004`.
+Incluir **`http://localhost:3004`** en **`CORS_ORIGIN`** de la API. Desde el **Hub**: `VITE_TECH_URL=http://localhost:3004`.
 
 ## Variables de entorno
 
-Crear **`apps/techservices/.env.local`** (o `.env`):
+Crear **`apps/tech/.env.local`** (o `.env`):
 
 | Variable | Descripción |
 |----------|-------------|
@@ -50,4 +50,4 @@ Ver `.env.example`.
 ## Enlaces
 
 - [README raíz](../../README.md)
-- [API](../../packages/api/README.md) — rutas techservices en Swagger `/api/docs`
+- [API](../../packages/api/README.md) — rutas tech en Swagger `/api/docs`

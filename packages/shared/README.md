@@ -1,6 +1,6 @@
 # @hubilee/shared
 
-Utilidades **frontend** compartidas entre **hub**, **pos**, **hr** y **techservices**: cookie de sesión JWT y cliente HTTP (`fetch`) con el mismo contrato en todas las apps.
+Utilidades **frontend** compartidas entre **hub**, **pos**, **hr** y **tech**: cookie de sesión JWT y cliente HTTP (`fetch`) con el mismo contrato en todas las apps.
 
 No publica `dist`: el paquete exporta **fuentes TypeScript** (`main` / `exports` → `src/*.ts`). Las apps deben resolver TS vía el bundler (p. ej. `transpilePackages` en Next.js).
 

@@ -181,12 +181,12 @@ describe('PLAN-25: Dashboard data completeness (integration)', () => {
     expect(res.statusCode).toBe(401)
   })
 
-  // --- TechServices (requires techservices on CompanyMemberModule — Acme owner has it) ---
+  // --- Tech (requires tech on CompanyMemberModule — Acme owner has it) ---
 
-  it('GET /v1/techservices/dashboard/stats returns 200 with metrics shape', async () => {
+  it('GET /v1/tech/dashboard/stats returns 200 with metrics shape', async () => {
     const { res, json } = await inject(app, {
       method: 'GET',
-      url: '/v1/techservices/dashboard/stats',
+      url: '/v1/tech/dashboard/stats',
       headers: { Authorization: `Bearer ${acmeOwnerToken}` },
     })
     expect(res.statusCode).toBe(200)

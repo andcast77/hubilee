@@ -8,7 +8,7 @@ import { runDataRetentionJob } from '../../jobs/data-retention.job.js'
 import { runInventoryAlertJob } from '../../jobs/inventory-alert.job.js'
 import { runInvoiceReminderJob } from '../../jobs/invoice-reminder.job.js'
 import { runScheduledReportJob } from '../../jobs/scheduled-report.job.js'
-import { runTechServicesReminderJob } from '../../jobs/techservices-reminder.job.js'
+import { runTechReminderJob } from '../../jobs/tech-reminder.job.js'
 
 type CronEnv = { CRON_SECRET?: string }
 
@@ -72,8 +72,8 @@ export async function registerRoutes(fastify: FastifyInstance) {
     runAndOk(request, reply, 'backup', runBackupJob),
   )
 
-  fastify.get('/v1/internal/cron/techservices-reminder', (request, reply) =>
-    runAndOk(request, reply, 'techservices-reminder', runTechServicesReminderJob),
+  fastify.get('/v1/internal/cron/tech-reminder', (request, reply) =>
+    runAndOk(request, reply, 'tech-reminder', runTechReminderJob),
   )
 
   fastify.get('/v1/internal/cron/data-retention', (request, reply) =>

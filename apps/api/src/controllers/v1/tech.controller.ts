@@ -14,8 +14,8 @@ import {
   partUpdateBodySchema,
   visitCreateBodySchema,
   visitUpdateBodySchema,
-} from '../../dto/techservices.dto.js'
-import * as techservicesService from '../../services/techservices.service.js'
+} from '../../dto/tech.dto.js'
+import * as techService from '../../services/tech.service.js'
 
 // ----- Work orders -----
 
@@ -25,7 +25,7 @@ export async function listWorkOrders(
 ) {
   try {
     const ctx = contextFromRequest(request)
-    const result = await techservicesService.listWorkOrders(ctx, request.query)
+    const result = await techService.listWorkOrders(ctx, request.query)
     return {
       success: true,
       data: result.workOrders,
@@ -42,7 +42,7 @@ export async function getWorkOrderById(
 ) {
   try {
     const ctx = contextFromRequest(request)
-    const data = await techservicesService.getWorkOrderById(ctx, request.params.id)
+    const data = await techService.getWorkOrderById(ctx, request.params.id)
     if (!data) return sendNotFound(reply, 'Orden no encontrada')
     return { success: true, data }
   } catch (error) {
@@ -57,7 +57,7 @@ export async function createWorkOrder(
   const body = validateBody(workOrderCreateBodySchema, request.body)
   try {
     const ctx = contextFromRequest(request)
-    const result = await techservicesService.createWorkOrder(ctx, body)
+    const result = await techService.createWorkOrder(ctx, body)
     if (result && 'error' in result) {
       reply.code(400)
       return { success: false, error: result.error }
@@ -77,7 +77,7 @@ export async function updateWorkOrder(
   const body = validateBody(workOrderUpdateBodySchema, request.body ?? {})
   try {
     const ctx = contextFromRequest(request)
-    const result = await techservicesService.updateWorkOrder(ctx, request.params.id, body)
+    const result = await techService.updateWorkOrder(ctx, request.params.id, body)
     if (!result) return sendNotFound(reply, 'Orden no encontrada')
     if ('error' in result) {
       reply.code(400)
@@ -98,7 +98,7 @@ export async function listAssets(
   try {
     const ctx = contextFromRequest(request)
     const q = request.query as { search?: string; active?: 'true' | 'false'; page?: string; limit?: string }
-    const data = await techservicesService.listAssets(ctx, q)
+    const data = await techService.listAssets(ctx, q)
     return { success: true, data }
   } catch (error) {
     return sendServerError(reply, error, request.log, 'Error al listar activos')
@@ -111,7 +111,7 @@ export async function getAssetById(
 ) {
   try {
     const ctx = contextFromRequest(request)
-    const data = await techservicesService.getAssetById(ctx, request.params.id)
+    const data = await techService.getAssetById(ctx, request.params.id)
     if (!data) return sendNotFound(reply, 'Activo no encontrado')
     return { success: true, data }
   } catch (error) {
@@ -126,7 +126,7 @@ export async function createAsset(
   const body = validateBody(assetCreateBodySchema, request.body)
   try {
     const ctx = contextFromRequest(request)
-    const data = await techservicesService.createAsset(ctx, body)
+    const data = await techService.createAsset(ctx, body)
     return { success: true, data }
   } catch (error) {
     return sendServerError(reply, error, request.log, 'Error al crear activo')
@@ -140,7 +140,7 @@ export async function updateAsset(
   const body = validateBody(assetUpdateBodySchema, request.body ?? {})
   try {
     const ctx = contextFromRequest(request)
-    const data = await techservicesService.updateAsset(ctx, request.params.id, body)
+    const data = await techService.updateAsset(ctx, request.params.id, body)
     if (!data) return sendNotFound(reply, 'Activo no encontrado')
     return { success: true, data }
   } catch (error) {
@@ -154,7 +154,7 @@ export async function deleteAsset(
 ) {
   try {
     const ctx = contextFromRequest(request)
-    const deleted = await techservicesService.deleteAsset(ctx, request.params.id)
+    const deleted = await techService.deleteAsset(ctx, request.params.id)
     if (!deleted) return sendNotFound(reply, 'Activo no encontrado')
     return { success: true }
   } catch (error) {
@@ -170,7 +170,7 @@ export async function listParts(
 ) {
   try {
     const ctx = contextFromRequest(request)
-    const data = await techservicesService.listParts(ctx, request.params.id)
+    const data = await techService.listParts(ctx, request.params.id)
     return { success: true, data }
   } catch (error) {
     return sendServerError(reply, error, request.log, 'Error al listar partes')
@@ -184,7 +184,7 @@ export async function createPart(
   const body = validateBody(partCreateBodySchema, request.body)
   try {
     const ctx = contextFromRequest(request)
-    const result = await techservicesService.createPart(ctx, request.params.id, body)
+    const result = await techService.createPart(ctx, request.params.id, body)
     if (result && 'notFound' in result) return sendNotFound(reply, 'Orden no encontrada')
     return { success: true, data: result!.data }
   } catch (error) {
@@ -199,7 +199,7 @@ export async function updatePart(
   const body = validateBody(partUpdateBodySchema, request.body ?? {})
   try {
     const ctx = contextFromRequest(request)
-    const result = await techservicesService.updatePart(ctx, request.params.id, body)
+    const result = await techService.updatePart(ctx, request.params.id, body)
     if (!result) return sendNotFound(reply, 'Parte no encontrada')
     return { success: true }
   } catch (error) {
@@ -213,7 +213,7 @@ export async function deletePart(
 ) {
   try {
     const ctx = contextFromRequest(request)
-    const deleted = await techservicesService.deletePart(ctx, request.params.id)
+    const deleted = await techService.deletePart(ctx, request.params.id)
     if (!deleted) return sendNotFound(reply, 'Parte no encontrada')
     return { success: true }
   } catch (error) {
@@ -229,7 +229,7 @@ export async function listVisits(
 ) {
   try {
     const ctx = contextFromRequest(request)
-    const data = await techservicesService.listVisits(ctx, request.params.id)
+    const data = await techService.listVisits(ctx, request.params.id)
     return { success: true, data }
   } catch (error) {
     return sendServerError(reply, error, request.log, 'Error al listar visitas')
@@ -243,7 +243,7 @@ export async function createVisit(
   const body = validateBody(visitCreateBodySchema, request.body)
   try {
     const ctx = contextFromRequest(request)
-    const result = await techservicesService.createVisit(ctx, request.params.id, body)
+    const result = await techService.createVisit(ctx, request.params.id, body)
     if (result && 'badRequest' in result) return sendBadRequest(reply, result.badRequest)
     if (result && 'notFound' in result) return sendNotFound(reply, 'Orden no encontrada')
     return { success: true, data: result!.data }
@@ -259,7 +259,7 @@ export async function updateVisit(
   const body = validateBody(visitUpdateBodySchema, request.body ?? {})
   try {
     const ctx = contextFromRequest(request)
-    const result = await techservicesService.updateVisit(ctx, request.params.id, body)
+    const result = await techService.updateVisit(ctx, request.params.id, body)
     if (result && 'badRequest' in result) return sendBadRequest(reply, result.badRequest)
     if (!result) return sendNotFound(reply, 'Visita no encontrada')
     return { success: true }
@@ -274,7 +274,7 @@ export async function deleteVisit(
 ) {
   try {
     const ctx = contextFromRequest(request)
-    const deleted = await techservicesService.deleteVisit(ctx, request.params.id)
+    const deleted = await techService.deleteVisit(ctx, request.params.id)
     if (!deleted) return sendNotFound(reply, 'Visita no encontrada')
     return { success: true }
   } catch (error) {
@@ -285,7 +285,7 @@ export async function deleteVisit(
 export async function getDashboardStats(request: FastifyRequest, reply: FastifyReply) {
   try {
     const ctx = contextFromRequest(request)
-    const stats = await techservicesService.getDashboardStats(ctx)
+    const stats = await techService.getDashboardStats(ctx)
     return { success: true, ...stats }
   } catch (error) {
     return sendServerError(reply, error, request.log, 'Error al obtener estadísticas del panel')
@@ -297,7 +297,7 @@ export async function getDashboardStats(request: FastifyRequest, reply: FastifyR
 export async function getMe(request: FastifyRequest, reply: FastifyReply) {
   try {
     const ctx = contextFromRequest(request)
-    const result = await techservicesService.getMe(ctx)
+    const result = await techService.getMe(ctx)
     if (result && 'unauthorized' in result) {
       reply.code(401)
       return { success: false, error: result.unauthorized }
@@ -308,7 +308,7 @@ export async function getMe(request: FastifyRequest, reply: FastifyReply) {
   }
 }
 
-const preTech = [requireAuth, requireHrContext, requireModuleAccess('techservices')]
+const preTech = [requireAuth, requireHrContext, requireModuleAccess('tech')]
 
 /** Wraps a handler so Fastify's generic request is cast to the handler's expected type. */
 function handle<T extends (req: any, rep: any) => any>(
@@ -318,23 +318,23 @@ function handle<T extends (req: any, rep: any) => any>(
 }
 
 export async function registerRoutes(fastify: FastifyInstance) {
-  fastify.get('/v1/techservices/me', { preHandler: preTech }, handle(getMe))
-  fastify.get('/v1/techservices/dashboard/stats', { preHandler: preTech }, handle(getDashboardStats))
-  fastify.get('/v1/techservices/work-orders', { preHandler: preTech }, handle(listWorkOrders))
-  fastify.get<{ Params: { id: string } }>('/v1/techservices/work-orders/:id', { preHandler: preTech }, handle(getWorkOrderById))
-  fastify.post('/v1/techservices/work-orders', { preHandler: preTech }, handle(createWorkOrder))
-  fastify.put<{ Params: { id: string } }>('/v1/techservices/work-orders/:id', { preHandler: preTech }, handle(updateWorkOrder))
-  fastify.get('/v1/techservices/assets', { preHandler: preTech }, handle(listAssets))
-  fastify.get<{ Params: { id: string } }>('/v1/techservices/assets/:id', { preHandler: preTech }, handle(getAssetById))
-  fastify.post('/v1/techservices/assets', { preHandler: preTech }, handle(createAsset))
-  fastify.put<{ Params: { id: string } }>('/v1/techservices/assets/:id', { preHandler: preTech }, handle(updateAsset))
-  fastify.delete<{ Params: { id: string } }>('/v1/techservices/assets/:id', { preHandler: preTech }, handle(deleteAsset))
-  fastify.get<{ Params: { id: string } }>('/v1/techservices/work-orders/:id/parts', { preHandler: preTech }, handle(listParts))
-  fastify.post<{ Params: { id: string } }>('/v1/techservices/work-orders/:id/parts', { preHandler: preTech }, handle(createPart))
-  fastify.put<{ Params: { id: string } }>('/v1/techservices/parts/:id', { preHandler: preTech }, handle(updatePart))
-  fastify.delete<{ Params: { id: string } }>('/v1/techservices/parts/:id', { preHandler: preTech }, handle(deletePart))
-  fastify.get<{ Params: { id: string } }>('/v1/techservices/work-orders/:id/visits', { preHandler: preTech }, handle(listVisits))
-  fastify.post<{ Params: { id: string } }>('/v1/techservices/work-orders/:id/visits', { preHandler: preTech }, handle(createVisit))
-  fastify.put<{ Params: { id: string } }>('/v1/techservices/visits/:id', { preHandler: preTech }, handle(updateVisit))
-  fastify.delete<{ Params: { id: string } }>('/v1/techservices/visits/:id', { preHandler: preTech }, handle(deleteVisit))
+  fastify.get('/v1/tech/me', { preHandler: preTech }, handle(getMe))
+  fastify.get('/v1/tech/dashboard/stats', { preHandler: preTech }, handle(getDashboardStats))
+  fastify.get('/v1/tech/work-orders', { preHandler: preTech }, handle(listWorkOrders))
+  fastify.get<{ Params: { id: string } }>('/v1/tech/work-orders/:id', { preHandler: preTech }, handle(getWorkOrderById))
+  fastify.post('/v1/tech/work-orders', { preHandler: preTech }, handle(createWorkOrder))
+  fastify.put<{ Params: { id: string } }>('/v1/tech/work-orders/:id', { preHandler: preTech }, handle(updateWorkOrder))
+  fastify.get('/v1/tech/assets', { preHandler: preTech }, handle(listAssets))
+  fastify.get<{ Params: { id: string } }>('/v1/tech/assets/:id', { preHandler: preTech }, handle(getAssetById))
+  fastify.post('/v1/tech/assets', { preHandler: preTech }, handle(createAsset))
+  fastify.put<{ Params: { id: string } }>('/v1/tech/assets/:id', { preHandler: preTech }, handle(updateAsset))
+  fastify.delete<{ Params: { id: string } }>('/v1/tech/assets/:id', { preHandler: preTech }, handle(deleteAsset))
+  fastify.get<{ Params: { id: string } }>('/v1/tech/work-orders/:id/parts', { preHandler: preTech }, handle(listParts))
+  fastify.post<{ Params: { id: string } }>('/v1/tech/work-orders/:id/parts', { preHandler: preTech }, handle(createPart))
+  fastify.put<{ Params: { id: string } }>('/v1/tech/parts/:id', { preHandler: preTech }, handle(updatePart))
+  fastify.delete<{ Params: { id: string } }>('/v1/tech/parts/:id', { preHandler: preTech }, handle(deletePart))
+  fastify.get<{ Params: { id: string } }>('/v1/tech/work-orders/:id/visits', { preHandler: preTech }, handle(listVisits))
+  fastify.post<{ Params: { id: string } }>('/v1/tech/work-orders/:id/visits', { preHandler: preTech }, handle(createVisit))
+  fastify.put<{ Params: { id: string } }>('/v1/tech/visits/:id', { preHandler: preTech }, handle(updateVisit))
+  fastify.delete<{ Params: { id: string } }>('/v1/tech/visits/:id', { preHandler: preTech }, handle(deleteVisit))
 }

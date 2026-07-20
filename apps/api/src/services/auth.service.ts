@@ -78,7 +78,7 @@ export type LoginResult =
 export type RegisterResult = {
   user: { id: string; email: string; name: string; role: string; companyId?: string }
   token: string
-  company?: { id: string; name: string; modules: { hr: boolean; pos: boolean; techservices: boolean } }
+  company?: { id: string; name: string; modules: { hr: boolean; pos: boolean; tech: boolean } }
 }
 
 export type MeResult = {
@@ -92,7 +92,7 @@ export type MeResult = {
   membershipRole?: string
   isSuperuser?: boolean
   twoFactorEnabled?: boolean
-  company?: { id: string; name: string; modules: { hr: boolean; pos: boolean; techservices: boolean } }
+  company?: { id: string; name: string; modules: { hr: boolean; pos: boolean; tech: boolean } }
 }
 
 export async function login(body: LoginBody): Promise<LoginResult> {
@@ -394,10 +394,10 @@ export async function register(body: RegisterBody): Promise<RegisterResult> {
     }
     await verifyAndConsumeRegistrationTicket(cfg, email, ticket)
 
-    const modulesMap = await findModulesByKeys(['hr', 'pos', 'techservices'])
+    const modulesMap = await findModulesByKeys(['hr', 'pos', 'tech'])
     const hrMod = modulesMap.get('hr')
     const posMod = modulesMap.get('pos')
-    const techservicesMod = modulesMap.get('techservices')
+    const techMod = modulesMap.get('tech')
 
     const { user, company } = await prisma.$transaction(async (tx) => {
       const u = await tx.user.create({
@@ -428,7 +428,7 @@ export async function register(body: RegisterBody): Promise<RegisterResult> {
       const moduleIds: string[] = []
       if (hrEnabled && hrMod) moduleIds.push(hrMod.id)
       if (posEnabled && posMod) moduleIds.push(posMod.id)
-      if (technicalServicesEnabled && techservicesMod) moduleIds.push(techservicesMod.id)
+      if (technicalServicesEnabled && techMod) moduleIds.push(techMod.id)
       for (const modId of moduleIds) {
         await tx.companyModule.create({
           data: { companyId: c.id, moduleId: modId, enabled: true },
@@ -469,7 +469,7 @@ export async function register(body: RegisterBody): Promise<RegisterResult> {
       company: {
         id: company.id,
         name: company.name,
-        modules: { hr: hrEnabled, pos: posEnabled, techservices: technicalServicesEnabled },
+        modules: { hr: hrEnabled, pos: posEnabled, tech: technicalServicesEnabled },
       },
     }
   }
@@ -532,7 +532,7 @@ export async function me(decoded: TokenPayload): Promise<MeResult> {
     }
   }
 
-  let company: { id: string; name: string; modules: { hr: boolean; pos: boolean; techservices: boolean } } | null = null
+  let company: { id: string; name: string; modules: { hr: boolean; pos: boolean; tech: boolean } } | null = null
   let responseCompanyId: string | undefined = decoded.companyId
 
   if (decoded.companyId) {
@@ -596,7 +596,7 @@ export type SetContextResult = {
   token: string
   companyId: string
   membershipRole: string | null
-  company: { id: string; name: string; modules: { hr: boolean; pos: boolean; techservices: boolean } } | null
+  company: { id: string; name: string; modules: { hr: boolean; pos: boolean; tech: boolean } } | null
 }
 
 export async function setContext(

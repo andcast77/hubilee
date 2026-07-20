@@ -7,7 +7,7 @@
  *  - scheduled-report.job: report generation, date range, notification
  *  - invoice-reminder.job: idempotency, order classification, consolidated notification
  *  - backup.job: count collection, Redis snapshot, IntegrationLog writes
- *  - techservices-reminder.job: visit grouping by userId, priority logic
+ *  - tech-reminder.job: visit grouping by userId, priority logic
  *  - job-history.service: Redis key scanning and result sorting
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -117,7 +117,7 @@ import { checkAndAlertLowStock, runInventoryAlertJob } from '../../jobs/inventor
 import { runScheduledReportForCompany, runScheduledReportJob } from '../../jobs/scheduled-report.job.js'
 import { runInvoiceReminderForCompany, runInvoiceReminderJob } from '../../jobs/invoice-reminder.job.js'
 import { runBackupForCompany, runBackupJob } from '../../jobs/backup.job.js'
-import { runTechServicesReminderForCompany, runTechServicesReminderJob } from '../../jobs/techservices-reminder.job.js'
+import { runTechReminderForCompany, runTechReminderJob } from '../../jobs/tech-reminder.job.js'
 import { listJobHistory } from '../../jobs/job-history.service.js'
 
 const COMPANY_ID = 'company-test-123'
@@ -587,9 +587,9 @@ describe('backup.job — runBackupJob', () => {
 })
 
 // ================================================================
-// techservices-reminder.job
+// tech-reminder.job
 // ================================================================
-describe('techservices-reminder.job — runTechServicesReminderForCompany', () => {
+describe('tech-reminder.job — runTechReminderForCompany', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockCacheSet.mockResolvedValue(undefined)
@@ -598,7 +598,7 @@ describe('techservices-reminder.job — runTechServicesReminderForCompany', () =
 
   it('skips notifications when no visits are found', async () => {
     mockServiceVisitFindMany.mockResolvedValue([])
-    await runTechServicesReminderForCompany(COMPANY_ID)
+    await runTechReminderForCompany(COMPANY_ID)
     expect(mockCreateNotification).not.toHaveBeenCalled()
   })
 
@@ -610,7 +610,7 @@ describe('techservices-reminder.job — runTechServicesReminderForCompany', () =
         makeVisit('v3', 'user-tech-2'),
       ])
       .mockResolvedValueOnce([]) // no stalled
-    await runTechServicesReminderForCompany(COMPANY_ID)
+    await runTechReminderForCompany(COMPANY_ID)
     expect(mockCreateNotification).toHaveBeenCalledTimes(2)
   })
 
@@ -620,7 +620,7 @@ describe('techservices-reminder.job — runTechServicesReminderForCompany', () =
         { id: 'v1', status: 'SCHEDULED', scheduledStartAt: new Date(), assignedEmployee: null, workOrder: { id: 'wo1', title: 'WO' } },
       ])
       .mockResolvedValueOnce([])
-    await runTechServicesReminderForCompany(COMPANY_ID)
+    await runTechReminderForCompany(COMPANY_ID)
     expect(mockCreateNotification).not.toHaveBeenCalled()
   })
 
@@ -630,7 +630,7 @@ describe('techservices-reminder.job — runTechServicesReminderForCompany', () =
         { id: 'v1', status: 'SCHEDULED', scheduledStartAt: new Date(), assignedEmployee: { id: 'e1', firstName: 'A', lastName: 'B', userId: null }, workOrder: { id: 'wo1', title: 'WO' } },
       ])
       .mockResolvedValueOnce([])
-    await runTechServicesReminderForCompany(COMPANY_ID)
+    await runTechReminderForCompany(COMPANY_ID)
     expect(mockCreateNotification).not.toHaveBeenCalled()
   })
 
@@ -640,7 +640,7 @@ describe('techservices-reminder.job — runTechServicesReminderForCompany', () =
     mockServiceVisitFindMany
       .mockResolvedValueOnce([tech])
       .mockResolvedValueOnce([stalled])
-    await runTechServicesReminderForCompany(COMPANY_ID)
+    await runTechReminderForCompany(COMPANY_ID)
     expect(mockCreateNotification).toHaveBeenCalledOnce()
     const body = mockCreateNotification.mock.calls[0][1]
     expect(body.data.todayVisits).toHaveLength(1)
@@ -651,7 +651,7 @@ describe('techservices-reminder.job — runTechServicesReminderForCompany', () =
     mockServiceVisitFindMany
       .mockResolvedValueOnce([makeVisit('v1', 'user-tech')])
       .mockResolvedValueOnce([])
-    await runTechServicesReminderForCompany(COMPANY_ID)
+    await runTechReminderForCompany(COMPANY_ID)
     const body = mockCreateNotification.mock.calls[0][1]
     expect(body.priority).toBe('HIGH')
   })
@@ -660,7 +660,7 @@ describe('techservices-reminder.job — runTechServicesReminderForCompany', () =
     mockServiceVisitFindMany
       .mockResolvedValueOnce([]) // no today visits
       .mockResolvedValueOnce([makeVisit('v1', 'user-tech')]) // only stalled
-    await runTechServicesReminderForCompany(COMPANY_ID)
+    await runTechReminderForCompany(COMPANY_ID)
     const body = mockCreateNotification.mock.calls[0][1]
     expect(body.priority).toBe('MEDIUM')
   })
@@ -671,7 +671,7 @@ describe('techservices-reminder.job — runTechServicesReminderForCompany', () =
     mockServiceVisitFindMany
       .mockResolvedValueOnce([today])
       .mockResolvedValueOnce([stalled])
-    await runTechServicesReminderForCompany(COMPANY_ID)
+    await runTechReminderForCompany(COMPANY_ID)
     const body = mockCreateNotification.mock.calls[0][1]
     expect(body.message).toContain('programada')
     expect(body.message).toContain('pendiente')
@@ -679,13 +679,13 @@ describe('techservices-reminder.job — runTechServicesReminderForCompany', () =
 
   it('saves error run and re-throws on DB failure', async () => {
     mockServiceVisitFindMany.mockRejectedValue(new Error('Query error'))
-    await expect(runTechServicesReminderForCompany(COMPANY_ID)).rejects.toThrow('Query error')
+    await expect(runTechReminderForCompany(COMPANY_ID)).rejects.toThrow('Query error')
     const errorCall = mockCacheSet.mock.calls.find(([, r]) => r?.status === 'error')
     expect(errorCall).toBeDefined()
   })
 })
 
-describe('techservices-reminder.job — runTechServicesReminderJob', () => {
+describe('tech-reminder.job — runTechReminderJob', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockCacheSet.mockResolvedValue(undefined)
@@ -694,7 +694,7 @@ describe('techservices-reminder.job — runTechServicesReminderJob', () => {
 
   it('processes all active companies (2 queries per company)', async () => {
     mockCompanyFindMany.mockResolvedValue([{ id: 'c1' }, { id: 'c2' }])
-    await runTechServicesReminderJob()
+    await runTechReminderJob()
     // today + stalled = 2 queries per company
     expect(mockServiceVisitFindMany).toHaveBeenCalledTimes(4)
   })

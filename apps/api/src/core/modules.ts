@@ -4,21 +4,21 @@ import { cacheThrough, cacheDel } from '../common/cache/index.js'
 import { ForbiddenError } from '../common/errors/app-error.js'
 
 /** Keys de módulos conocidos (según seed) */
-export const MODULE_KEYS = ['hr', 'pos', 'techservices', 'baro'] as const
+export const MODULE_KEYS = ['hr', 'pos', 'tech', 'baro'] as const
 export type ModuleKeys = (typeof MODULE_KEYS)[number]
 
 /** Shape de módulos habilitados por empresa/miembro */
 export type CompanyModulesShape = {
   hr: boolean
   pos: boolean
-  techservices: boolean
+  tech: boolean
   baro: boolean
 }
 
 const DEFAULT_MODULES: CompanyModulesShape = {
   hr: false,
   pos: false,
-  techservices: false,
+  tech: false,
   baro: false,
 }
 
@@ -112,7 +112,7 @@ export async function getMemberModules(
 }
 
 /**
- * Obtiene los IDs de módulos por keys (hr, pos, techservices).
+ * Obtiene los IDs de módulos por keys (hr, pos, tech).
  * Útil para evitar N consultas separadas.
  */
 export async function findModulesByKeys(

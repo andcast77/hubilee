@@ -12,7 +12,7 @@ x-next-build-args: &next-build-args
   NEXT_PUBLIC_HUB_URL: ${HUB_URL:-http://localhost:3001}
   NEXT_PUBLIC_POS_URL: ${POS_URL:-http://localhost:3002}
   NEXT_PUBLIC_HR_URL: ${HR_URL:-http://localhost:3003}
-  NEXT_PUBLIC_TECHSERVICES_URL: ${TECHSERVICES_URL:-http://localhost:3004}
+  NEXT_PUBLIC_TECH_URL: ${TECH_URL:-http://localhost:3004}
   NEXT_PUBLIC_BALANCE_URL: ${BALANCE_URL:-http://localhost:3005}
   NEXT_PUBLIC_BARO_URL: ${BARO_URL:-http://localhost:3006}
 
@@ -70,7 +70,7 @@ services:
       BARO_DOMAIN: ${BARO_DOMAIN:-forms.baroconstruccionessrl.com.ar}
       HR_DOMAIN: ${HR_DOMAIN:-rrhh.baroconstruccionessrl.com.ar}
       POS_DOMAIN: ${POS_DOMAIN:-pos.baroconstruccionessrl.com.ar}
-      TECHSERVICES_DOMAIN: ${TECHSERVICES_DOMAIN:-techservices.hubilee.app}
+      TECH_DOMAIN: ${TECH_DOMAIN:-tech.hubilee.app}
       BALANCE_DOMAIN: ${BALANCE_DOMAIN:-balance.hubilee.app}
       UPDATE_DOMAIN: ${UPDATE_DOMAIN:-update.hubilee.app}
     ports:
@@ -97,7 +97,7 @@ services:
         NEXT_PUBLIC_HUB_URL: ${HUB_URL?HUB_URL is required}
         NEXT_PUBLIC_POS_URL: ${POS_URL?POS_URL is required}
         NEXT_PUBLIC_HR_URL: ${HR_URL?HR_URL is required}
-        NEXT_PUBLIC_TECHSERVICES_URL: ${TECHSERVICES_URL:-http://localhost:3004}
+        NEXT_PUBLIC_TECH_URL: ${TECH_URL:-http://localhost:3004}
         NEXT_PUBLIC_BALANCE_URL: ${BALANCE_URL:-http://localhost:3005}
         NEXT_PUBLIC_BARO_URL: ${BARO_URL?BARO_URL is required}
     container_name: ${STACK_NAME:-hubilee}-hub
@@ -155,17 +155,17 @@ services:
     depends_on:
       - api
 
-  techservices:
+  tech:
     build:
       context: .
       dockerfile: docker/Dockerfile.nextjs
       args:
         <<: *next-build-args
-        PACKAGE: '@hubilee/techservices'
-        APP_DIR: techservices
+        PACKAGE: '@hubilee/tech'
+        APP_DIR: tech
         PORT: '3004'
-        NEXT_PUBLIC_TECHSERVICES_URL: ${TECHSERVICES_URL:-http://localhost:3004}
-    container_name: ${STACK_NAME:-hubilee}-techservices
+        NEXT_PUBLIC_TECH_URL: ${TECH_URL:-http://localhost:3004}
+    container_name: ${STACK_NAME:-hubilee}-tech
     restart: unless-stopped
     environment:
       <<: *app-env

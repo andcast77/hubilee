@@ -1,7 +1,7 @@
 export type CompanyModules = {
   hr: boolean
   pos: boolean
-  techservices: boolean
+  tech: boolean
 }
 
 export type CompanyRow = {

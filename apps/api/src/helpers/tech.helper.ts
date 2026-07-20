@@ -4,9 +4,9 @@ import type {
   PartResponse,
   VisitResponse,
   VisitAssignedEmployee,
-  TechServicesMeResponse,
-  TechServicesMeCompany,
-} from '../dto/techservices.dto.js'
+  TechMeResponse,
+  TechMeCompany,
+} from '../dto/tech.dto.js'
 
 /** Work order entity (DB row) */
 export type WorkOrderEntity = {
@@ -164,9 +164,9 @@ export type MeCompanyEntity = {
 
 export function toMeResponse(
   user: MeUserEntity,
-  company: TechServicesMeCompany | undefined,
+  company: TechMeCompany | undefined,
   ctx: { companyId: string; membershipRole: string | null; isSuperuser: boolean }
-): TechServicesMeResponse {
+): TechMeResponse {
   const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email
   return {
     user: {
