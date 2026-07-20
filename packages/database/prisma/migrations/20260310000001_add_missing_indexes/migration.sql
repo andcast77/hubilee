@@ -28,7 +28,7 @@ CREATE INDEX IF NOT EXISTS "sales_customerId_idx" ON "sales"("customerId");
 CREATE INDEX IF NOT EXISTS "sale_items_saleId_idx" ON "sale_items"("saleId");
 CREATE INDEX IF NOT EXISTS "sale_items_productId_idx" ON "sale_items"("productId");
 
--- Workify: Employee, TimeEntry
+-- HR: Employee, TimeEntry
 CREATE INDEX IF NOT EXISTS "employees_companyId_idx" ON "employees"("companyId");
 CREATE INDEX IF NOT EXISTS "employees_departmentId_idx" ON "employees"("departmentId");
 CREATE INDEX IF NOT EXISTS "time_entries_companyId_date_idx" ON "time_entries"("companyId", "date");

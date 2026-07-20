@@ -22,7 +22,7 @@ DROP INDEX "user_permissions_userId_permissionId_key";
 -- AlterTable
 ALTER TABLE "companies" DROP COLUMN "posEnabled",
 DROP COLUMN "technicalServicesEnabled",
-DROP COLUMN "workifyEnabled",
+DROP COLUMN "hrEnabled",
 ADD COLUMN     "address" TEXT,
 ADD COLUMN     "logo" TEXT,
 ADD COLUMN     "phone" TEXT,

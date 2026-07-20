@@ -93,7 +93,7 @@ CREATE TABLE "companies" (
     "name" TEXT NOT NULL,
     "parentId" TEXT,
     "ownerUserId" TEXT,
-    "workifyEnabled" BOOLEAN NOT NULL DEFAULT false,
+    "hrEnabled" BOOLEAN NOT NULL DEFAULT false,
     "posEnabled" BOOLEAN NOT NULL DEFAULT false,
     "technicalServicesEnabled" BOOLEAN NOT NULL DEFAULT false,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
