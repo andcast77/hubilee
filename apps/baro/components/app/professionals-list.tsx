@@ -1,7 +1,7 @@
 'use client'
 
 import { baroApi } from '@/lib/api/client'
-import { ApiError } from '@multisystem/shared'
+import { ApiError } from '@hubilee/shared'
 import { useState } from 'react'
 import { useAccount } from '@/components/app/account-context'
 import type {

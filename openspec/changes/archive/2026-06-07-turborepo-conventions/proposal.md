@@ -2,12 +2,12 @@
 
 ## Intent
 
-Align multisystem with **official Turborepo conventions** for workspace layout, task orchestration, CI, and Docker deploy. Today deploy is broken (`next: not found`), API lives under `packages/`, deploy uses manual `node_modules` copies and `api:bundle` hacks — all incompatible with [Turborepo structuring](https://turbo.build/repo/docs/crafting-your-repository/structuring-a-repository) and [Docker + `turbo prune`](https://turbo.build/repo/docs/guides/tools/docker).
+Align hubilee with **official Turborepo conventions** for workspace layout, task orchestration, CI, and Docker deploy. Today deploy is broken (`next: not found`), API lives under `packages/`, deploy uses manual `node_modules` copies and `api:bundle` hacks — all incompatible with [Turborepo structuring](https://turbo.build/repo/docs/crafting-your-repository/structuring-a-repository) and [Docker + `turbo prune`](https://turbo.build/repo/docs/guides/tools/docker).
 
 ## Scope
 
 ### In Scope
-- **Phase A — Workspace:** `@multisystem/shared` builds to `dist/`; root scripts use `turbo run … --filter=<pkg>...`; remove baro-only `turbo.json` overrides; CI `--affected` + `fetch-depth: 0` (base `v2` + `main`)
+- **Phase A — Workspace:** `@hubilee/shared` builds to `dist/`; root scripts use `turbo run … --filter=<pkg>...`; remove baro-only `turbo.json` overrides; CI `--affected` + `fetch-depth: 0` (base `v2` + `main`)
 - **Phase B — Layout:** move `packages/api` → `apps/api`; rename `packages/component-library` → `packages/ui`; update path refs (Tailwind `@source`, cursor rules, scripts)
 - **Phase C — Deploy:** one `docker/Dockerfile.nextjs` + `docker/Dockerfile.api` using `turbo prune --docker`; Next `output: 'standalone'` + `outputFileTracingRoot` on hub/shopflow/workify/techservices/baro; remove per-app Dockerfiles; drop `api:bundle`; standardize `vercel.json` build commands; compose build-args for `NEXT_PUBLIC_*`
 - Update canonical **`containerized-deployment`** spec deltas
@@ -73,10 +73,10 @@ Revert branch commits per slice. `git mv` reversed restores `packages/api` and `
 
 ## Success Criteria
 
-- [ ] `pnpm turbo run build --filter=@multisystem/hub...` succeeds
-- [ ] `docker build -f docker/Dockerfile.nextjs --build-arg PACKAGE=@multisystem/hub --build-arg APP_DIR=hub --build-arg PORT=3001 .` produces image where `node apps/hub/server.js` starts
+- [ ] `pnpm turbo run build --filter=@hubilee/hub...` succeeds
+- [ ] `docker build -f docker/Dockerfile.nextjs --build-arg PACKAGE=@hubilee/hub --build-arg APP_DIR=hub --build-arg PORT=3001 .` produces image where `node apps/hub/server.js` starts
 - [ ] `docker build -f docker/Dockerfile.api .` succeeds; API runs migrations + serves
 - [ ] CI uses `turbo run lint typecheck test build --affected` on PRs to `v2`/`main`
-- [ ] `api:bundle` removed; API Vercel uses `turbo build --filter=@multisystem/api...`
+- [ ] `api:bundle` removed; API Vercel uses `turbo build --filter=@hubilee/api...`
 - [ ] No per-app Dockerfiles under `apps/*/Dockerfile`
 - [ ] `containerized-deployment` spec scenarios updated and verified in `sdd-verify`

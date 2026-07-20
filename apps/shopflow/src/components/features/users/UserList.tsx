@@ -4,8 +4,8 @@ import { useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useUser } from '@/hooks/useUser'
 import { useCompanyMembers, useDeleteUser } from '@/hooks/useUsers'
-import { Button } from '@multisystem/ui'
-import { Input } from '@multisystem/ui'
+import { Button } from '@hubilee/ui'
+import { Input } from '@hubilee/ui'
 import {
   Table,
   TableBody,
@@ -13,15 +13,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@multisystem/ui'
+} from '@hubilee/ui'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@multisystem/ui'
-import { Skeleton } from '@multisystem/ui'
+} from '@hubilee/ui'
+import { Skeleton } from '@hubilee/ui'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,9 +32,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@multisystem/ui'
+} from '@hubilee/ui'
 import { Plus, Search, User as UserIcon, Edit, Trash2, ChevronsUpDown, ChevronUp, ChevronDown } from 'lucide-react'
-import { Badge } from '@multisystem/ui'
+import { Badge } from '@hubilee/ui'
 import type { UserRole } from '@/types'
 
 const PAGE_SIZE = 20

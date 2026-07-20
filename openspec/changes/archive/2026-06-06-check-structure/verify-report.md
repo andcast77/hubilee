@@ -8,7 +8,7 @@
 
 | Phase | Status | Notes |
 |-------|--------|-------|
-| 1 — Schema / seed / legacy script | ✅ | Baro models in `@multisystem/database`, migration, seed, legacy script |
+| 1 — Schema / seed / legacy script | ✅ | Baro models in `@hubilee/database`, migration, seed, legacy script |
 | 2 — `/v1/baro/*` API + tests | ✅ | Integration tests: module 403, cross-tenant 404; Vitest Upstash skip in test env |
 | 3 — Baro app → central API | ✅ | Auth Option B, `baroApi`, Prisma removed from app |
 | 4 — Docker / CORS / wiring | ✅ | `docker compose config` OK; baro-db removed; 6 app + api + caddy services |
@@ -19,7 +19,7 @@
 ### API baro tests (strict TDD PR2)
 
 ```
-pnpm --filter @multisystem/api vitest run \
+pnpm --filter @hubilee/api vitest run \
   src/__tests__/unit/baro.dto.test.ts \
   src/__tests__/integration/baro-tenant-isolation.test.ts
 ```
@@ -36,7 +36,7 @@ docker compose config -q
 
 ### CORS
 
-- `packages/api/.env.example` — localhost 3000–3006 + `https://*.multisystem.app` subdomains listed explicitly
+- `packages/api/.env.example` — localhost 3000–3006 + `https://*.hubilee.app` subdomains listed explicitly
 - `docker-compose.yml` api service — same CORS list in `CORS_ORIGIN`
 
 ## Spec scenarios

@@ -1,5 +1,5 @@
-import { ApiClient as SharedApiClient } from '@multisystem/shared'
-import type { LoginResponse } from '@multisystem/contracts'
+import { ApiClient as SharedApiClient } from '@hubilee/shared'
+import type { LoginResponse } from '@hubilee/contracts'
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
 
@@ -74,4 +74,4 @@ export const baroApi = {
     apiClient.delete<T>(`/v1/baro${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`, undefined, options),
 }
 
-export type { ApiResponse } from '@multisystem/contracts'
+export type { ApiResponse } from '@hubilee/contracts'

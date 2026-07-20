@@ -16,7 +16,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@multisystem/ui'
+} from '@hubilee/ui'
 import { CheckCircle2, Eye, EyeOff } from 'lucide-react'
 
 const resetPasswordSchema = z.object({

@@ -1,6 +1,6 @@
 /**
  * Re-export shared auth utilities.
- * Apps can import directly from @multisystem/shared/auth
+ * Apps can import directly from @hubilee/shared/auth
  * or use this local re-export for backward compatibility.
  */
-export { getTokenFromCookie, setTokenCookie, clearTokenCookie } from '@multisystem/shared/auth'
+export { getTokenFromCookie, setTokenCookie, clearTokenCookie } from '@hubilee/shared/auth'

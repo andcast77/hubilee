@@ -18,7 +18,7 @@ import {
   Button,
   Switch,
   Label,
-} from "@multisystem/ui";
+} from "@hubilee/ui";
 import { ArrowLeft, Shield, Package, CheckCircle, XCircle } from "lucide-react";
 import type { MemberModuleItem, MemberRoleItem } from "@/lib/api-client";
 

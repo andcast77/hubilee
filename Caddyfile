@@ -1,8 +1,8 @@
-# Caddy reverse proxy — multisystem stack domain routing
+# Caddy reverse proxy — hubilee stack domain routing
 # TLS is automatic via Let's Encrypt (Caddy default).
 # Usage: docker compose up -d
 
-{$API_DOMAIN:api.multisystem.app} {
+{$API_DOMAIN:api.hubilee.app} {
     reverse_proxy api:3000
 }
 
@@ -18,18 +18,18 @@
     reverse_proxy shopflow:3002
 }
 
-{$HUB_DOMAIN:hub.multisystem.app} {
+{$HUB_DOMAIN:hub.hubilee.app} {
     reverse_proxy hub:3001
 }
 
-{$TECHSERVICES_DOMAIN:techservices.multisystem.app} {
+{$TECHSERVICES_DOMAIN:techservices.hubilee.app} {
     reverse_proxy techservices:3004
 }
 
-{$BALANCE_DOMAIN:balance.multisystem.app} {
+{$BALANCE_DOMAIN:balance.hubilee.app} {
     reverse_proxy balance:3005
 }
 
-{$UPDATE_DOMAIN:update.multisystem.app} {
+{$UPDATE_DOMAIN:update.hubilee.app} {
     reverse_proxy 172.18.0.1:2999
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@multisystem/ui';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@hubilee/ui';
 import SpecialDayAssignmentForm from './SpecialDayAssignmentForm';
 
 interface SpecialDayAssignmentModalProps {

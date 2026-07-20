@@ -2,7 +2,7 @@
 
 ## Technical Approach
 
-Selective port of `andcast77/baro` **`main`** into `apps/baro` using rsync with denylist, preserving monorepo integration artifacts (`lib/api/**`, adapted server actions, Docker, `@multisystem/baro` package.json). Upstream schema/API deltas land in `packages/database` and `packages/api` only when inventory finds data-model changes.
+Selective port of `andcast77/baro` **`main`** into `apps/baro` using rsync with denylist, preserving monorepo integration artifacts (`lib/api/**`, adapted server actions, Docker, `@hubilee/baro` package.json). Upstream schema/API deltas land in `packages/database` and `packages/api` only when inventory finds data-model changes.
 
 ## Architecture Decisions
 
@@ -33,7 +33,7 @@ upstream main (andcast77/baro)
    apps/baro (UI, stores, tests, DOCX)
         │ serverBaro* / baroApi
         ▼
-   @multisystem/api /v1/baro/*
+   @hubilee/api /v1/baro/*
         │
         ▼
    packages/database (Baro* models)
@@ -46,19 +46,19 @@ upstream main (andcast77/baro)
 | `apps/baro/**` | Modify | Upstream UI, tests, locales, DOCX (excl. denylist) |
 | `apps/baro/lib/api/**` | Preserve | Never overwritten |
 | `apps/baro/lib/expediente/actions/{update-all,nueva,delete}.ts` | Preserve/merge | Keep API-backed versions |
-| `apps/baro/package.json` | Preserve | `@multisystem/baro`, port 3006 |
+| `apps/baro/package.json` | Preserve | `@hubilee/baro`, port 3006 |
 | `packages/api/src/services/baro.service.ts` | Modify | If upstream logic delta detected |
 | `packages/database/prisma/**` | Modify | Only if upstream schema delta vs Baro* |
 | `openspec/changes/baro-upstream-sync/upstream-baseline.md` | Create | Record SHA + inventory |
 
 ## Interfaces / Contracts
 
-No new HTTP routes. Existing `/v1/baro/*` and `@multisystem/contracts` baro types remain; extend only when upstream adds fields.
+No new HTTP routes. Existing `/v1/baro/*` and `@hubilee/contracts` baro types remain; extend only when upstream adds fields.
 
 ## Testing Strategy
 
-- `pnpm --filter @multisystem/baro test`
-- `pnpm --filter @multisystem/api test -- baro-tenant-isolation`
+- `pnpm --filter @hubilee/baro test`
+- `pnpm --filter @hubilee/api test -- baro-tenant-isolation`
 - Root `pnpm typecheck` if available
 
 ## Migration / Rollback

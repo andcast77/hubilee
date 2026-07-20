@@ -1,7 +1,7 @@
 import { WorkspaceDashboard } from '@/components/app/workspace-dashboard'
 import { getSessionUserId } from '@/lib/auth/session'
 import { serverBaroGetData } from '@/lib/api/server'
-import type { BaroExpedienteDto, BaroProfessionalDto } from '@multisystem/contracts'
+import type { BaroExpedienteDto, BaroProfessionalDto } from '@hubilee/contracts'
 
 export default async function AppHomePage() {
   const userId = await getSessionUserId()

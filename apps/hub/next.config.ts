@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
     root: monorepoRoot,
   },
 
-  transpilePackages: ["@multisystem/ui"],
+  transpilePackages: ["@hubilee/ui"],
 
   poweredByHeader: false,
   compress: true,

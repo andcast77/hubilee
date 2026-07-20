@@ -8,7 +8,7 @@
 
 **Rationale:** ADR-auth-token-storage — `ms_session` is httpOnly on the API host. Baro origin cannot read it in middleware/proxy. Hub uses the same pattern.
 
-**Rejected:** Restore upstream `ACCESS_COOKIE` JWT check on baro origin — incompatible with multisystem auth.
+**Rejected:** Restore upstream `ACCESS_COOKIE` JWT check on baro origin — incompatible with hubilee auth.
 
 ### D2 — Default Turbopack build
 
@@ -44,7 +44,7 @@ Exports only `isAuthEnabled()` for proxy and tests. No fake cookie validation he
 sequenceDiagram
   participant Browser
   participant Baro as Baro Next.js
-  participant API as @multisystem/api
+  participant API as @hubilee/api
 
   Browser->>Baro: GET /expedientes
   Baro->>Baro: proxy passthrough

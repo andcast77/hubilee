@@ -2,7 +2,7 @@
 
 ## Technical Approach
 
-Realign multisystem to official Turborepo patterns in **three apply slices** (chained PRs if diff >400 lines). Slice A fixes workspace/task/CI contracts; B fixes layout (`apps/api`, `packages/ui`); C replaces broken Docker/Vercel deploy with **`turbo prune --docker` + Next standalone**. Implements `turborepo-workspace-conventions` (new) and `containerized-deployment` (delta).
+Realign hubilee to official Turborepo patterns in **three apply slices** (chained PRs if diff >400 lines). Slice A fixes workspace/task/CI contracts; B fixes layout (`apps/api`, `packages/ui`); C replaces broken Docker/Vercel deploy with **`turbo prune --docker` + Next standalone**. Implements `turborepo-workspace-conventions` (new) and `containerized-deployment` (delta).
 
 Refs: [structuring](https://turbo.build/repo/docs/crafting-your-repository/structuring-a-repository), [docker](https://turbo.build/repo/docs/guides/tools/docker).
 
@@ -13,9 +13,9 @@ Refs: [structuring](https://turbo.build/repo/docs/crafting-your-repository/struc
 | Docker build | `turbo prune` + pnpm install on `out/json` + `out/full` | Manual COPY `node_modules`; per-app Dockerfiles | Official Turborepo + pnpm model; fixes `next: not found` |
 | Next runtime | `output: 'standalone'` + `node apps/{app}/server.js` | `next start` on workspace symlinks | Next file tracing; no pnpm `.bin` dependency |
 | API location | `git mv packages/api → apps/api` | Keep in `packages/` | Turborepo deployable = `apps/` |
-| UI folder | `git mv packages/component-library → packages/ui` | Rename package only | Folder matches `@multisystem/ui` |
+| UI folder | `git mv packages/component-library → packages/ui` | Rename package only | Folder matches `@hubilee/ui` |
 | Shared lib | `tsc` → `dist/`, update `exports` | Keep raw TS exports | Internal package contract + Turbo cache |
-| Vercel API | `turbo build --filter=@multisystem/api...` | `api:bundle` cp hack | Turbo dependency graph |
+| Vercel API | `turbo build --filter=@hubilee/api...` | `api:bundle` cp hack | Turbo dependency graph |
 | CI | `turbo run … --affected`, `fetch-depth: 0` | Full monorepo every PR | Official affected runs |
 | Baro | Remove `turbo.json` overrides + nested `packageManager` only | Full catalog realignment now | Out of scope; structural debt only |
 
@@ -25,7 +25,7 @@ Refs: [structuring](https://turbo.build/repo/docs/crafting-your-repository/struc
 
 ```
 pnpm install (root)
-    → turbo run build --filter=@multisystem/hub...
+    → turbo run build --filter=@hubilee/hub...
         → ^build: shared, contracts, ui, database
         → hub: next build (standalone artifact in .next/)
 ```
@@ -33,9 +33,9 @@ pnpm install (root)
 ### Docker (Next app)
 
 ```
-COPY repo → turbo prune @multisystem/hub --docker
+COPY repo → turbo prune @hubilee/hub --docker
     → out/json → pnpm install --frozen-lockfile
-    → out/full → turbo run build --filter=@multisystem/hub...
+    → out/full → turbo run build --filter=@hubilee/hub...
     → runner: .next/standalone + static + public
     → CMD node apps/hub/server.js
 ```
@@ -43,8 +43,8 @@ COPY repo → turbo prune @multisystem/hub --docker
 ### Docker (API)
 
 ```
-turbo prune @multisystem/api --docker → install → build
-    → entrypoint: pnpm --filter @multisystem/database migrate:deploy
+turbo prune @hubilee/api --docker → install → build
+    → entrypoint: pnpm --filter @hubilee/database migrate:deploy
     → CMD node apps/api/dist/server.js
 ```
 
@@ -74,7 +74,7 @@ turbo prune @multisystem/api --docker → install → build
 **Docker build args (Next):**
 
 ```dockerfile
-ARG PACKAGE=@multisystem/hub
+ARG PACKAGE=@hubilee/hub
 ARG APP_DIR=hub
 ARG PORT=3001
 ARG NEXT_PUBLIC_API_URL
@@ -88,13 +88,13 @@ build:
   context: .
   dockerfile: docker/Dockerfile.nextjs
   args:
-    PACKAGE: "@multisystem/hub"
+    PACKAGE: "@hubilee/hub"
     APP_DIR: hub
     PORT: 3001
     NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3000}
 ```
 
-**`@multisystem/shared` exports (target):**
+**`@hubilee/shared` exports (target):**
 
 ```json
 "main": "./dist/index.js",
@@ -106,8 +106,8 @@ build:
 | Layer | What | Approach |
 |-------|------|----------|
 | Unit | Unaffected | Existing package tests via `--affected` |
-| Integration | API after move | `pnpm --filter @multisystem/api test` |
-| Build | Hub closure | `pnpm turbo run build --filter=@multisystem/hub...` |
+| Integration | API after move | `pnpm --filter @hubilee/api test` |
+| Build | Hub closure | `pnpm turbo run build --filter=@hubilee/hub...` |
 | Docker | Hub + API images | `docker build` + `node apps/hub/server.js` smoke; API health |
 | CI | Affected graph | PR touching `apps/hub` only runs hub + deps |
 

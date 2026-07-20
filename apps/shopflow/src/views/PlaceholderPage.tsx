@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@multisystem/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@hubilee/ui";
 import { PageFrame } from "@/views/PageFrame";
 
 export function PlaceholderPage({ title }: { title: string }) {

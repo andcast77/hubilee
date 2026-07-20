@@ -2,7 +2,7 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 
-/* AuthLayout (@multisystem/ui): Tailwind v4 no escanea packages/ui por defecto */
+/* AuthLayout (@hubilee/ui): Tailwind v4 no escanea packages/ui por defecto */
 @source '../../../../packages/ui/src';
 
 @custom-variant dark (&:is(.dark *));

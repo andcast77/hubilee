@@ -1,5 +1,5 @@
-import { ApiClient as SharedApiClient } from '@multisystem/shared'
-import type { MeResponse } from '@multisystem/contracts'
+import { ApiClient as SharedApiClient } from '@hubilee/shared'
+import type { MeResponse } from '@hubilee/contracts'
 import { createApiClientOptions } from '@/lib/platform'
 
 // API Client for ShopFlow Frontend

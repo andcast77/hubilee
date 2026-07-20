@@ -2,10 +2,10 @@
 
 import { useStoreConfig } from '@/hooks/useStoreConfig'
 import { useCartStore } from '@/store/cartStore'
-import { Button } from '@multisystem/ui'
-import { Card, CardContent, CardHeader, CardTitle } from '@multisystem/ui'
-import { Input } from '@multisystem/ui'
-import { ScrollArea } from '@multisystem/ui'
+import { Button } from '@hubilee/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@hubilee/ui'
+import { Input } from '@hubilee/ui'
+import { ScrollArea } from '@hubilee/ui'
 import { Trash2, ShoppingCart as CartIcon } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/format'
 

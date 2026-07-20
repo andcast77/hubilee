@@ -6,7 +6,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@multisystem/ui'
+} from '@hubilee/ui'
 import { useStoreContext } from '@/components/providers/StoreContext'
 import { Store } from 'lucide-react'
 

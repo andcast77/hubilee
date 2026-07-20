@@ -51,13 +51,13 @@ The sync MUST NOT introduce standalone baro persistence or auth into `apps/baro`
 - GIVEN an upstream server action that wrote via Prisma
 - WHEN ported into `apps/baro`
 - THEN the action MUST call `serverBaro*` helpers or equivalent API client wrappers
-- AND MUST NOT access `@multisystem/database` or Prisma from the app
+- AND MUST NOT access `@hubilee/database` or Prisma from the app
 
 #### Scenario: Session from shared auth
 
 - GIVEN a ported server action requires authentication
 - WHEN executed in `apps/baro`
-- THEN session resolution MUST use the integrated multisystem session model
+- THEN session resolution MUST use the integrated hubilee session model
 - AND MUST NOT use upstream JWT or refresh-token flows
 
 ### Requirement: Schema and API Parity
@@ -86,7 +86,7 @@ Each sync phase MUST pass automated verification before merge to the target bran
 
 - GIVEN a completed sync phase
 - WHEN running verification
-- THEN `pnpm --filter @multisystem/baro test` MUST pass
+- THEN `pnpm --filter @hubilee/baro test` MUST pass
 - AND baro API tenant-isolation tests MUST pass
 - AND repository typecheck MUST pass
 

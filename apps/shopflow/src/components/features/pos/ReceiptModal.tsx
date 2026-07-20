@@ -6,12 +6,12 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@multisystem/ui'
-import { Button } from '@multisystem/ui'
+} from '@hubilee/ui'
+import { Button } from '@hubilee/ui'
 import { useSale } from '@/hooks/useSales'
 import { useStoreConfig } from '@/hooks/useStoreConfig'
 import { formatCurrency, formatDate } from '@/lib/utils/format'
-import { Separator } from '@multisystem/ui'
+import { Separator } from '@hubilee/ui'
 import { Printer } from 'lucide-react'
 
 interface ReceiptModalProps {

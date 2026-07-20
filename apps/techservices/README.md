@@ -1,4 +1,4 @@
-# Techservices (`@multisystem/techservices`)
+# Techservices (`@hubilee/techservices`)
 
 App **Next.js 16** (App Router) para el módulo **servicios técnicos**: órdenes de trabajo, activos y agenda. Consume la API compartida en **`/api/techservices/*`** y **`/api/auth/*`**.
 
@@ -18,7 +18,7 @@ El usuario debe tener el módulo activo para la empresa (`technicalServicesEnabl
 ## Stack
 
 - **Next.js 16**, **React 19**, **Tailwind CSS 4**
-- **@multisystem/ui**, **@multisystem/shared**, **@multisystem/contracts**
+- **@hubilee/ui**, **@hubilee/shared**, **@hubilee/contracts**
 - Cliente HTTP en **`src/lib/api/client.ts`**: `techServicesApi` (prefijo `/api/techservices`), `authApi` (`/api/auth`)
 
 `next.config.ts` fija **`turbopack.root`** y **`outputFileTracingRoot`** en la raíz del monorepo para desarrollo/build desde el workspace.
@@ -32,7 +32,7 @@ El usuario debe tener el módulo activo para la empresa (`technicalServicesEnabl
 | `pnpm lint` / `pnpm type-check` | Calidad |
 
 ```bash
-pnpm --filter @multisystem/techservices dev
+pnpm --filter @hubilee/techservices dev
 ```
 
 Incluir **`http://localhost:3004`** en **`CORS_ORIGIN`** de la API. Desde el **Hub**: `VITE_TECHSERVICES_URL=http://localhost:3004`.

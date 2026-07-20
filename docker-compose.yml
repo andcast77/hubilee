@@ -1,4 +1,4 @@
-# Unified multisystem stack — shared Postgres, central API, Caddy, six Next.js apps.
+# Unified hubilee stack — shared Postgres, central API, Caddy, six Next.js apps.
 # Usage: docker compose up --build -d
 # Copy .env.example to .env and adjust values per environment.
 
@@ -19,12 +19,12 @@ x-next-build-args: &next-build-args
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: ${STACK_NAME:-multisystem}-db
+    container_name: ${STACK_NAME:-hubilee}-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-multisystem}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-multisystem}
-      POSTGRES_DB: ${POSTGRES_DB:-multisystem}
+      POSTGRES_USER: ${POSTGRES_USER:-hubilee}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hubilee}
+      POSTGRES_DB: ${POSTGRES_DB:-hubilee}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -32,7 +32,7 @@ services:
     networks:
       - caddy_network
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-multisystem} -d ${POSTGRES_DB:-multisystem}']
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-hubilee} -d ${POSTGRES_DB:-hubilee}']
       interval: 5s
       timeout: 5s
       retries: 10
@@ -41,12 +41,12 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.api
-    container_name: ${STACK_NAME:-multisystem}-api
+    container_name: ${STACK_NAME:-hubilee}-api
     restart: unless-stopped
     environment:
       PORT: '3000'
       NODE_ENV: ${NODE_ENV:-production}
-      DATABASE_URL: postgresql://${POSTGRES_USER:-multisystem}:${POSTGRES_PASSWORD:-multisystem}@postgres:5432/${POSTGRES_DB:-multisystem}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-hubilee}:${POSTGRES_PASSWORD:-hubilee}@postgres:5432/${POSTGRES_DB:-hubilee}
       PRISMA_USE_PG_ADAPTER: 'true'
       JWT_SECRET: ${JWT_SECRET?JWT_SECRET is required}
       FIELD_ENCRYPTION_KEY: ${FIELD_ENCRYPTION_KEY?FIELD_ENCRYPTION_KEY is required}
@@ -62,17 +62,17 @@ services:
 
   caddy:
     image: caddy:2-alpine
-    container_name: ${STACK_NAME:-multisystem}-caddy
+    container_name: ${STACK_NAME:-hubilee}-caddy
     restart: unless-stopped
     environment:
-      API_DOMAIN: ${API_DOMAIN:-api.multisystem.app}
-      HUB_DOMAIN: ${HUB_DOMAIN:-hub.multisystem.app}
+      API_DOMAIN: ${API_DOMAIN:-api.hubilee.app}
+      HUB_DOMAIN: ${HUB_DOMAIN:-hub.hubilee.app}
       BARO_DOMAIN: ${BARO_DOMAIN:-forms.baroconstruccionessrl.com.ar}
       WORKIFY_DOMAIN: ${WORKIFY_DOMAIN:-rrhh.baroconstruccionessrl.com.ar}
       SHOPFLOW_DOMAIN: ${SHOPFLOW_DOMAIN:-pos.baroconstruccionessrl.com.ar}
-      TECHSERVICES_DOMAIN: ${TECHSERVICES_DOMAIN:-techservices.multisystem.app}
-      BALANCE_DOMAIN: ${BALANCE_DOMAIN:-balance.multisystem.app}
-      UPDATE_DOMAIN: ${UPDATE_DOMAIN:-update.multisystem.app}
+      TECHSERVICES_DOMAIN: ${TECHSERVICES_DOMAIN:-techservices.hubilee.app}
+      BALANCE_DOMAIN: ${BALANCE_DOMAIN:-balance.hubilee.app}
+      UPDATE_DOMAIN: ${UPDATE_DOMAIN:-update.hubilee.app}
     ports:
       - '80:80'
       - '443:443'
@@ -91,7 +91,7 @@ services:
       dockerfile: docker/Dockerfile.nextjs
       args:
         <<: *next-build-args
-        PACKAGE: '@multisystem/hub'
+        PACKAGE: '@hubilee/hub'
         APP_DIR: hub
         PORT: '3001'
         NEXT_PUBLIC_HUB_URL: ${HUB_URL?HUB_URL is required}
@@ -100,7 +100,7 @@ services:
         NEXT_PUBLIC_TECHSERVICES_URL: ${TECHSERVICES_URL:-http://localhost:3004}
         NEXT_PUBLIC_BALANCE_URL: ${BALANCE_URL:-http://localhost:3005}
         NEXT_PUBLIC_BARO_URL: ${BARO_URL?BARO_URL is required}
-    container_name: ${STACK_NAME:-multisystem}-hub
+    container_name: ${STACK_NAME:-hubilee}-hub
     restart: unless-stopped
     environment:
       <<: *app-env
@@ -116,13 +116,13 @@ services:
       dockerfile: docker/Dockerfile.nextjs
       args:
         <<: *next-build-args
-        PACKAGE: '@multisystem/shopflow'
+        PACKAGE: '@hubilee/shopflow'
         APP_DIR: shopflow
         PORT: '3002'
         NEXT_PUBLIC_SHOPFLOW_URL: ${SHOPFLOW_URL?SHOPFLOW_URL is required}
         NEXT_PUBLIC_HUB_URL: ${HUB_URL?HUB_URL is required}
         NEXT_PUBLIC_WORKIFY_URL: ${WORKIFY_URL?WORKIFY_URL is required}
-    container_name: ${STACK_NAME:-multisystem}-shopflow
+    container_name: ${STACK_NAME:-hubilee}-shopflow
     restart: unless-stopped
     environment:
       <<: *app-env
@@ -140,12 +140,12 @@ services:
       dockerfile: docker/Dockerfile.nextjs
       args:
         <<: *next-build-args
-        PACKAGE: '@multisystem/workify'
+        PACKAGE: '@hubilee/workify'
         APP_DIR: workify
         PORT: '3003'
         NEXT_PUBLIC_WORKIFY_URL: ${WORKIFY_URL?WORKIFY_URL is required}
         NEXT_PUBLIC_HUB_URL: ${HUB_URL?HUB_URL is required}
-    container_name: ${STACK_NAME:-multisystem}-workify
+    container_name: ${STACK_NAME:-hubilee}-workify
     restart: unless-stopped
     environment:
       <<: *app-env
@@ -161,11 +161,11 @@ services:
       dockerfile: docker/Dockerfile.nextjs
       args:
         <<: *next-build-args
-        PACKAGE: '@multisystem/techservices'
+        PACKAGE: '@hubilee/techservices'
         APP_DIR: techservices
         PORT: '3004'
         NEXT_PUBLIC_TECHSERVICES_URL: ${TECHSERVICES_URL:-http://localhost:3004}
-    container_name: ${STACK_NAME:-multisystem}-techservices
+    container_name: ${STACK_NAME:-hubilee}-techservices
     restart: unless-stopped
     environment:
       <<: *app-env
@@ -181,13 +181,13 @@ services:
       dockerfile: docker/Dockerfile.nextjs
       args:
         <<: *next-build-args
-        PACKAGE: '@multisystem/baro'
+        PACKAGE: '@hubilee/baro'
         APP_DIR: baro
         PORT: '3006'
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3000}
         NEXT_PUBLIC_HUB_URL: ${HUB_URL?HUB_URL is required}
         NEXT_PUBLIC_BARO_URL: ${BARO_URL?BARO_URL is required}
-    container_name: ${STACK_NAME:-multisystem}-baro
+    container_name: ${STACK_NAME:-hubilee}-baro
     restart: unless-stopped
     environment:
       <<: *app-env
@@ -201,7 +201,7 @@ services:
 
 networks:
   caddy_network:
-    name: ${NETWORK_NAME:-multisystem-caddy-network}
+    name: ${NETWORK_NAME:-hubilee-caddy-network}
     driver: bridge
 
 volumes:

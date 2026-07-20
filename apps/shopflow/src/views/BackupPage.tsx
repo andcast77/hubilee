@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@multisystem/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@hubilee/ui";
 import { CreateBackupButton } from "@/components/features/backup/CreateBackupButton";
 import { RestoreBackupDialog } from "@/components/features/backup/RestoreBackupDialog";
 import { BackupList } from "@/components/features/backup/BackupList";

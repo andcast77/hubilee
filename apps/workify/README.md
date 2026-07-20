@@ -1,12 +1,12 @@
-# Workify (`@multisystem/workify`)
+# Workify (`@hubilee/workify`)
 
-Módulo **RRHH y asistencia** del monorepo Multisystem: empleados, cargos, turnos, fichajes, reportes, usuarios/roles de empresa y ajustes (festivos, etc.). Los datos salen de la API central **`/api/workify/*`** (Fastify); **no** usa Prisma ni API Routes propias para el dominio de negocio.
+Módulo **RRHH y asistencia** del monorepo Hubilee: empleados, cargos, turnos, fichajes, reportes, usuarios/roles de empresa y ajustes (festivos, etc.). Los datos salen de la API central **`/api/workify/*`** (Fastify); **no** usa Prisma ni API Routes propias para el dominio de negocio.
 
 ## Stack
 
 - **Next.js 16** (App Router, **Turbopack** en `dev`), **React 19**, **Tailwind 4**
 - **TanStack Query**, **Zustand**, **react-hook-form** + **Zod**
-- **@multisystem/ui** (`transpilePackages`), **@multisystem/shared**, **@multisystem/contracts**
+- **@hubilee/ui** (`transpilePackages`), **@hubilee/shared**, **@hubilee/contracts**
 - **Recharts**, **ExcelJS**, **jsPDF**, **react-to-print**, **Vitest**
 
 Cliente HTTP: **`src/lib/api/client.ts`** — `workifyApi` (`/api/workify`), `authApi` (`/api/auth`), `companiesApi` (miembros `/api/companies/:id/members`). Cookie **`token`** (JWT), alineada con Hub / Shopflow.
@@ -21,7 +21,7 @@ Cliente HTTP: **`src/lib/api/client.ts`** — `workifyApi` (`/api/workify`), `au
 | `pnpm test` / `pnpm test:run` | Vitest |
 
 ```bash
-pnpm --filter @multisystem/workify dev
+pnpm --filter @hubilee/workify dev
 ```
 
 Añadir **`http://localhost:3003`** a **`CORS_ORIGIN`** en la API. En el Hub: **`VITE_WORKIFY_URL=http://localhost:3003`**.
@@ -43,8 +43,8 @@ Si en el navegador ves branding **ShopFlow POS** o landing de tienda, casi segur
 
 ### Deploy (Vercel u otro host)
 
-- El proyecto debe construir y servir el paquete **`@multisystem/workify`** (directorio **`apps/workify`**). Si el proyecto de Vercel apunta por error a **`apps/shopflow`**, desplegarás el POS, no RRHH.
-- En monorepos, suele configurarse **Root Directory** `apps/workify` o build desde la raíz con **Turborepo** filtrando `@multisystem/workify` (coherente con [`vercel.json`](vercel.json) y el resto de apps).
+- El proyecto debe construir y servir el paquete **`@hubilee/workify`** (directorio **`apps/workify`**). Si el proyecto de Vercel apunta por error a **`apps/shopflow`**, desplegarás el POS, no RRHH.
+- En monorepos, suele configurarse **Root Directory** `apps/workify` o build desde la raíz con **Turborepo** filtrando `@hubilee/workify` (coherente con [`vercel.json`](vercel.json) y el resto de apps).
 - En producción, define **`NEXT_PUBLIC_APP_URL`** con la URL pública de Workify (para `metadataBase` y Open Graph en `layout.tsx`).
 
 ## Variables de entorno
@@ -63,7 +63,7 @@ Detalle en `src/lib/constants/routes.ts`.
 
 ## Monorepo
 
-`next.config.ts` define **`turbopack.root`** en la raíz del repo para resolver workspaces. La BD y migraciones están en **`@multisystem/database`**; la API en **`@multisystem/api`**.
+`next.config.ts` define **`turbopack.root`** en la raíz del repo para resolver workspaces. La BD y migraciones están en **`@hubilee/database`**; la API en **`@hubilee/api`**.
 
 ## Enlaces
 

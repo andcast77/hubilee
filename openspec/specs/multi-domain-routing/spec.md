@@ -15,14 +15,14 @@ The Caddyfile MUST define one `{domain}` block per product app and the API, rout
 #### Scenario: All apps served on their domains
 
 - GIVEN Caddy is running with all app containers healthy
-- WHEN a request arrives at any configured `*.multisystem.app` app domain
+- WHEN a request arrives at any configured `*.hubilee.app` app domain
 - THEN Caddy proxies to the matching service and port
 - AND requests to other domains route to their respective containers
 
 #### Scenario: Baro upstream port
 
 - GIVEN Caddy is running and baro listens on port 3006
-- WHEN a request arrives at `baro.multisystem.app`
+- WHEN a request arrives at `baro.hubilee.app`
 - THEN Caddy proxies the request to `baro:3006`
 
 #### Scenario: Unknown domain receives no match
@@ -45,7 +45,7 @@ Every domain block in the Caddyfile MUST have a corresponding Docker Compose ser
 #### Scenario: Missing service fails fast
 
 - GIVEN a domain block references service `balance` but compose omits it
-- WHEN a request arrives at `balance.multisystem.app`
+- WHEN a request arrives at `balance.hubilee.app`
 - THEN Caddy returns 502
 - AND compose parity check in CI SHOULD fail before merge
 
@@ -72,7 +72,7 @@ Caddy MUST return 502 Bad Gateway when an upstream container is unreachable and 
 #### Scenario: Unreachable upstream container
 
 - GIVEN the `baro` container is stopped or crashed
-- WHEN a request arrives at `baro.multisystem.app`
+- WHEN a request arrives at `baro.hubilee.app`
 - THEN Caddy returns HTTP 502
 - AND Caddy logs the upstream connection failure
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { workifyApi } from '@/lib/api/client';
-import { Button } from '@multisystem/ui';
+import { Button } from '@hubilee/ui';
 
 interface Employee {
   id: string;

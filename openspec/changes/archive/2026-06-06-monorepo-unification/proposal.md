@@ -2,17 +2,17 @@
 
 ## Intent
 
-Absorb the standalone `baro` Next.js app into the `@multisystem/*` Turborepo monorepo, eliminating a second codebase while minimizing disruption. Deliver unified Docker + Vercel deployment, a Caddy reverse proxy for per-domain routing, and a progressive unification roadmap across 3 phases.
+Absorb the standalone `baro` Next.js app into the `@hubilee/*` Turborepo monorepo, eliminating a second codebase while minimizing disruption. Deliver unified Docker + Vercel deployment, a Caddy reverse proxy for per-domain routing, and a progressive unification roadmap across 3 phases.
 
 ## Scope
 
 ### In Scope
-- Move `baro/` to `apps/baro/` with path alias rewriting (`@/*` → `@multisystem/baro/*`)
-- Caddy reverse proxy with per-app domain routing (`*.multisystem.app`)
+- Move `baro/` to `apps/baro/` with path alias rewriting (`@/*` → `@hubilee/baro/*`)
+- Caddy reverse proxy with per-app domain routing (`*.hubilee.app`)
 - Docker Compose with all apps + Postgres per service + Caddy
 - Separate Prisma schema (Fase 1), separate auth (Fase 1)
 - pnpm catalog merge with version bumps (TS 6.0.2, Next 16.2.4, Prisma 7.8)
-- Keep `@multisystem/*` namespace convention for baro
+- Keep `@hubilee/*` namespace convention for baro
 
 ### Out of Scope
 - Auth unification (deferred to Fase 3+)
@@ -37,7 +37,7 @@ Absorb the standalone `baro` Next.js app into the `@multisystem/*` Turborepo mon
 |------|-------|-------------|
 | 1 (infra) | Move baro, infra | Move to `apps/baro/`, Dockerfiles, Caddy, docker-compose. Keep Prisma + auth separate. |
 | 2 (catalogs) | Version alignment | Merge pnpm catalogs: TS 6.0.2, Next 16.2.4, Prisma 7.8. Root typecheck passes. |
-| 3+ (opt-in) | Share packages | Progressively consume `@multisystem/ui`, `@multisystem/api`, etc. Evaluate auth unification. |
+| 3+ (opt-in) | Share packages | Progressively consume `@hubilee/ui`, `@hubilee/api`, etc. Evaluate auth unification. |
 
 ## Affected Areas
 
@@ -55,7 +55,7 @@ Absorb the standalone `baro` Next.js app into the `@multisystem/*` Turborepo mon
 
 | Risk | Likelihood | Mitigation |
 |------|------------|------------|
-| Path alias conflicts (`@/*` in baro vs root) | High | Rewrite to `@multisystem/baro/*` before move |
+| Path alias conflicts (`@/*` in baro vs root) | High | Rewrite to `@hubilee/baro/*` before move |
 | Docker port collisions (baro Postgres:5433) | Med | Map external ports uniquely; internal DNS resolves |
 | Deploy regression during coexistence | Med | Fase 1 preserves Vercel deploys; new Docker path is additive |
 
@@ -71,7 +71,7 @@ Per Fase: revert the specific changes — remove `apps/baro/`, restore `docker-c
 
 ## Success Criteria
 
-- [ ] `apps/baro/` serves at `baro.multisystem.app` via Caddy, identical behavior to standalone
+- [ ] `apps/baro/` serves at `baro.hubilee.app` via Caddy, identical behavior to standalone
 - [ ] All 6 apps (5 existing + baro) run in `docker compose up`
 - [ ] Root `pnpm typecheck` passes across all apps
 - [ ] Fase 1 requires zero changes to existing app code

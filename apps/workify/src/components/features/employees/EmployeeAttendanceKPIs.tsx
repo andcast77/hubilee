@@ -1,6 +1,6 @@
 'use client';
 
-import { Card } from '@multisystem/ui';
+import { Card } from '@hubilee/ui';
 import { 
   Clock, 
   AlertTriangle, 

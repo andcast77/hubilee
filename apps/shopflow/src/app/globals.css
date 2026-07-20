@@ -52,7 +52,7 @@
 }
 
 /*
- * Shopflow login/register: @multisystem/ui SCSS (.ui-card uses --card white; .ui-input uses a light surface)
+ * Shopflow login/register: @hubilee/ui SCSS (.ui-card uses --card white; .ui-input uses a light surface)
  * loads after Tailwind and was winning over AUTH_BRAND_* utilities — the screen looked like a light card on
  * a dark bg instead of Hub-style glass. These scoped rules restore the Hub visual (and 50/50 split at lg).
  */

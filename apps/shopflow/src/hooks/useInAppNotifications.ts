@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getInAppNotificationMeta } from '@multisystem/ui'
+import { getInAppNotificationMeta } from '@hubilee/ui'
 import {
   getUserNotifications,
   getUnreadCount,

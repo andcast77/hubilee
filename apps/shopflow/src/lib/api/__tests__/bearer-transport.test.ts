@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { ApiClient, ApiError } from '@multisystem/shared'
-import type { AuthTransport } from '@multisystem/shared'
+import { ApiClient, ApiError } from '@hubilee/shared'
+import type { AuthTransport } from '@hubilee/shared'
 
 /**
  * Transport-selection and refresh logic for the desktop Bearer auth path

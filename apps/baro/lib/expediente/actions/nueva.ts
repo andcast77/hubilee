@@ -9,7 +9,7 @@ import {
 import { buildExpedienteNuevaRaw } from '@/lib/expediente/validate-nueva-client'
 import { expedienteNuevaSchema } from '@/lib/expediente/schemas'
 import { serverBaroPost } from '@/lib/api/server'
-import type { ApiResponse, BaroExpedienteDto } from '@multisystem/contracts'
+import type { ApiResponse, BaroExpedienteDto } from '@hubilee/contracts'
 import type { DatosFields, OrdenanteRow } from '@/stores/expediente-store'
 
 export type ExpedienteNuevaState =

@@ -1,5 +1,5 @@
 {
-  "name": "@multisystem/shopflow",
+  "name": "@hubilee/shopflow",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -20,9 +20,9 @@
   "dependencies": {
     "@hookform/resolvers": "catalog:",
     "@marsidev/react-turnstile": "catalog:",
-    "@multisystem/contracts": "workspace:*",
-    "@multisystem/shared": "workspace:*",
-    "@multisystem/ui": "workspace:*",
+    "@hubilee/contracts": "workspace:*",
+    "@hubilee/shared": "workspace:*",
+    "@hubilee/ui": "workspace:*",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-router": "^1.170.18",
     "@tauri-apps/plugin-store": "^2.4.3",

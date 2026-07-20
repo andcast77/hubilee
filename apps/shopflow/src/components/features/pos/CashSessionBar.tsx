@@ -11,7 +11,7 @@ import {
   DialogTitle,
   Input,
   Label,
-} from '@multisystem/ui'
+} from '@hubilee/ui'
 import { toast } from 'sonner'
 import { useStoreContextOptional } from '@/components/providers/StoreContext'
 import { useStoreConfig } from '@/hooks/useStoreConfig'

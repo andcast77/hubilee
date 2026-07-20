@@ -28,7 +28,7 @@ const metadataBaseUrl = (() => {
 })();
 
 const defaultDescription =
-  "Balance: contabilidad y gestión financiera del ecosistema Multisystem.";
+  "Balance: contabilidad y gestión financiera del ecosistema Hubilee.";
 
 export const metadata: Metadata = {
   metadataBase: metadataBaseUrl,

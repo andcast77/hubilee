@@ -2,7 +2,7 @@
 
 ### Current State
 
-The multisystem monorepo is a pnpm + Turborepo workspace with **6 Next.js apps** (`hub`, `shopflow`, `workify`, `techservices`, `balance`, `baro`) and **shared packages** (`api`, `database`, `contracts`, `shared`, `ui`). Most product apps follow the `@multisystem/{app}` naming convention, extend `tsconfig.base.json`, use catalog deps, and talk to the shared Fastify API on port 3000.
+The hubilee monorepo is a pnpm + Turborepo workspace with **6 Next.js apps** (`hub`, `shopflow`, `workify`, `techservices`, `balance`, `baro`) and **shared packages** (`api`, `database`, `contracts`, `shared`, `ui`). Most product apps follow the `@hubilee/{app}` naming convention, extend `tsconfig.base.json`, use catalog deps, and talk to the shared Fastify API on port 3000.
 
 **Monorepo-unification (Fase 1, archived 2026-06-06)** delivered Caddy routing, a generic `docker/Dockerfile.nextjs`, and a baro-specific Docker stack. Canonical specs now live under `openspec/specs/` for `containerized-deployment` and `multi-domain-routing`.
 
@@ -19,7 +19,7 @@ The multisystem monorepo is a pnpm + Turborepo workspace with **6 Next.js apps**
 - `Caddyfile` — 6 domain blocks; 5 upstreams have no compose service (502 at runtime)
 - `docker/Dockerfile.nextjs` — generic pattern exists but only `apps/baro/Dockerfile` is wired
 - `apps/balance/` — new app scaffold; not integrated into root scripts, turbo env, or Docker
-- `apps/baro/package.json` — package name `baro` (not `@multisystem/baro`); separate Prisma/auth from shared stack
+- `apps/baro/package.json` — package name `baro` (not `@hubilee/baro`); separate Prisma/auth from shared stack
 - `packages/api/src/controllers/v1/index.ts` — balance routes not registered
 - `packages/api/src/core/modules.ts` — `MODULE_KEYS` lacks `balance`; `requireModuleAccess('balance')` would fail type/runtime checks
 - `packages/database/prisma/schema.prisma` — no Account/CostCenter/JournalEntry/FiscalYear models
@@ -54,14 +54,14 @@ The multisystem monorepo is a pnpm + Turborepo workspace with **6 Next.js apps**
 | **A — Balance product** | Prisma models + migration, module key in seed/RBAC, register routes, export contracts, wire frontend, tests per strict_tdd | High (WIP code is currently non-functional) |
 | **B — Infra parity** | Compose services for hub/shopflow/workify/techservices/balance using generic Dockerfile; align baro naming over time | Medium (spec debt from Fase 1) |
 
-Do **not** merge Balance API files until schema + route registration + module gating are complete — current files would fail typecheck/build against `@multisystem/database`.
+Do **not** merge Balance API files until schema + route registration + module gating are complete — current files would fail typecheck/build against `@hubilee/database`.
 
 ### Risks
 
 - **Broken API if merged as-is** — balance.service.ts references non-existent Prisma models; controller uses invalid module key
 - **Caddy 502 for 5/6 domains** — compose stack incomplete vs Caddyfile
-- **Naming inconsistency** — `baro` vs `@multisystem/*` complicates `pnpm --filter` and generic Docker ARG
-- **Dual-database confusion** — baro has isolated Prisma/Postgres; Balance correctly targets shared `@multisystem/database` but models missing
+- **Naming inconsistency** — `baro` vs `@hubilee/*` complicates `pnpm --filter` and generic Docker ARG
+- **Dual-database confusion** — baro has isolated Prisma/Postgres; Balance correctly targets shared `@hubilee/database` but models missing
 - **Spec vs reality gap** — archived verify-report marked PASS but proposal success criterion “all 6 apps in docker compose up” is unmet
 - **No tests** — strict_tdd requires tests before Balance API ships
 
@@ -71,6 +71,6 @@ Do **not** merge Balance API files until schema + route registration + module ga
 
 1. Is the primary goal **infra structure audit** (Docker/Caddy/compose parity) or **Balance module completion** (API + app)?
 2. Should Balance use **shared postgres** (like other product apps) — recommended given existing service code — or a dedicated DB (baro pattern)?
-3. Should baro naming (`baro` → `@multisystem/baro`) be in scope for this change or a follow-up?
+3. Should baro naming (`baro` → `@hubilee/baro`) be in scope for this change or a follow-up?
 
 Once confirmed, proceed to `sdd-propose` with change name `check-structure` (or split into `balance-module` + `docker-stack-completion` if scope is too broad).

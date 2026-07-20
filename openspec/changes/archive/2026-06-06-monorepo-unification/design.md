@@ -15,12 +15,12 @@ Move standalone `baro` into `apps/baro/` with zero code changes to baro's runtim
 
 **Rationale**: 6 fixed subdomains → no dynamic routing needed. Caddy's automatic TLS and minimal config reduce operational cost.
 
-### Decision: Path Aliases — Keep `@/*` vs Rewrite to `@multisystem/baro/*`
+### Decision: Path Aliases — Keep `@/*` vs Rewrite to `@hubilee/baro/*`
 
 | Option | Tradeoff | Verdict |
 |--------|----------|---------|
 | **Keep `@/*` → `./*`** | Zero import rewrites, consistent with all 5 existing apps (hub, shopflow, etc. all use `@/*`) | **Chosen** |
-| Rewrite to `@multisystem/baro/*` | Explicit namespace but diverges from monorepo convention, requires rewriting all baro imports | Rejected |
+| Rewrite to `@hubilee/baro/*` | Explicit namespace but diverges from monorepo convention, requires rewriting all baro imports | Rejected |
 
 **Rationale**: No root `tsconfig.json` exists — each app scopes `@/*` in its own `tsconfig.json`. Baro's `@/*` → `./*` works identically after move to `apps/baro/`. Zero runtime changes needed.
 
@@ -46,19 +46,19 @@ Move standalone `baro` into `apps/baro/` with zero code changes to baro's runtim
 | **Separate `baro-db` service** | Full deployment isolation, matches containerized-deployment spec, no schema collision risk | **Chosen** |
 | Reuse existing `postgres` service | Port/schema collision with existing apps, violates per-app isolation requirement | Rejected |
 
-**Rationale**: Each app needs its own Postgres per spec. The existing `postgres` service serves apps (like `@multisystem/api`) that are not getting their own DB in Fase 1. Baro gets `baro-db` mapped to host port 5433 (same as its current standalone `compose.yaml`).
+**Rationale**: Each app needs its own Postgres per spec. The existing `postgres` service serves apps (like `@hubilee/api`) that are not getting their own DB in Fase 1. Baro gets `baro-db` mapped to host port 5433 (same as its current standalone `compose.yaml`).
 
 ## Data Flow
 
 ```
 Internet ──→ Caddy (:80/:443)
                 │
-                ├── baro.multisystem.app ──→ baro:3000 ──→ baro-db:5432
-                ├── hub.multisystem.app   ──→ hub:3001
-                ├── shopflow.multisystem.app ──→ shopflow:3002
-                ├── workify.multisystem.app  ──→ workify:3003
-                ├── techservices.multisystem.app ──→ techservices:3004
-                └── balance.multisystem.app ──→ balance:3005
+                ├── baro.hubilee.app ──→ baro:3000 ──→ baro-db:5432
+                ├── hub.hubilee.app   ──→ hub:3001
+                ├── shopflow.hubilee.app ──→ shopflow:3002
+                ├── workify.hubilee.app  ──→ workify:3003
+                ├── techservices.hubilee.app ──→ techservices:3004
+                └── balance.hubilee.app ──→ balance:3005
                             │
                       caddy_network (internal bridge)
 ```
@@ -81,11 +81,11 @@ Internet ──→ Caddy (:80/:443)
 ### Caddyfile Structure
 
 ```
-baro.multisystem.app {
+baro.hubilee.app {
     reverse_proxy baro:3000
 }
 
-hub.multisystem.app {
+hub.hubilee.app {
     reverse_proxy hub:3001
 }
 # ... remaining 4 apps follow same pattern
@@ -161,7 +161,7 @@ No new `globalEnv` entries needed — baro's env vars overlap with existing entr
 
 | Layer | What to Test | Approach |
 |-------|-------------|----------|
-| Integration | Caddy proxies correctly | `curl -H "Host: baro.multisystem.app" http://localhost` → 200 from baro |
+| Integration | Caddy proxies correctly | `curl -H "Host: baro.hubilee.app" http://localhost` → 200 from baro |
 | Integration | `docker compose up` succeeds | `docker compose up --build -d` → all 8 services healthy |
 | Manual | Full stack smoke test | Vist each domain in browser/curl, verify per-app routing |
 | Unit | baro build in monorepo | `pnpm --filter baro build` succeeds from root |

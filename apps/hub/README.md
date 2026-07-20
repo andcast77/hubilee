@@ -1,4 +1,4 @@
-# Multisystem Hub (`@multisystem/hub`)
+# Hubilee Hub (`@hubilee/hub`)
 
 App **Next.js 16 (App Router) + React 19** en **`apps/hub`**: portal multi-empresa — landing pública, autenticación contra la API compartida y **dashboard** para ver empresa, módulos contratados y enlaces a **Workify**, **Shopflow** y **Techservices**.
 
@@ -11,13 +11,13 @@ Forma parte del **monorepo** (`pnpm` workspaces); no es un repo aislado.
 | Pública | `/` landing, `/login`, `/register`, `/verify-email`, `/forgot-password`, `/reset-password` |
 | Protegidas (sesión HTTP-only en API; comprobación vía `/v1/auth/me`) | `/dashboard` — resumen, tarjetas de módulos habilitados, stats; `/dashboard/members` — miembros; `/dashboard/settings` — empresa y módulos (según rol) |
 
-La API es **`@multisystem/api`** (Fastify). En desarrollo, **Next rewrites** envían `/v1/*` → `http://127.0.0.1:3000/v1/*` (misma idea que el proxy de Vite). Si `NEXT_PUBLIC_API_URL` está vacío, el cliente usa la misma origen (`/v1/...`) y evita CORS.
+La API es **`@hubilee/api`** (Fastify). En desarrollo, **Next rewrites** envían `/v1/*` → `http://127.0.0.1:3000/v1/*` (misma idea que el proxy de Vite). Si `NEXT_PUBLIC_API_URL` está vacío, el cliente usa la misma origen (`/v1/...`) y evita CORS.
 
 ## Stack
 
 - **Next.js 16** (App Router), **TanStack Query**, **react-hook-form** + **Zod**
 - **Tailwind CSS 4** (PostCSS `@tailwindcss/postcss`, escaneo de `packages/component-library` vía `@source` en `src/globals.css`)
-- **@multisystem/ui**, **@multisystem/contracts**, **@multisystem/shared** (reexport cookie auth en `src/lib/auth.ts`)
+- **@hubilee/ui**, **@hubilee/contracts**, **@hubilee/shared** (reexport cookie auth en `src/lib/auth.ts`)
 
 ## Scripts (desde `apps/hub` o con filter)
 
@@ -29,7 +29,7 @@ La API es **`@multisystem/api`** (Fastify). En desarrollo, **Next rewrites** env
 | `pnpm lint` | `next lint` |
 
 ```bash
-pnpm --filter @multisystem/hub dev
+pnpm --filter @hubilee/hub dev
 ```
 
 En la raíz del monorepo: **`pnpm run dev:hub`** (levanta Hub; la API suele ir en otro terminal con `pnpm run dev:api`).
@@ -67,7 +67,7 @@ Las vistas viven en **`src/views`** (no `src/pages`) para no chocar con la conve
 
 ## Despliegue
 
-- **`vercel.json`**: `framework: nextjs`, `outputDirectory: .next`, `turbo build` (filtrar `@multisystem/hub` en el proyecto Vercel).
+- **`vercel.json`**: `framework: nextjs`, `outputDirectory: .next`, `turbo build` (filtrar `@hubilee/hub` en el proyecto Vercel).
 - Variables `NEXT_PUBLIC_*` en el panel de Vercel para el build.
 
 ## Enlaces

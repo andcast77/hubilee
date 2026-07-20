@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import type { FastifyInstance } from 'fastify'
-import { prisma } from '@multisystem/database'
+import { prisma } from '@hubilee/database'
 import { Buffer } from 'node:buffer'
 import { randomUUID } from 'node:crypto'
 

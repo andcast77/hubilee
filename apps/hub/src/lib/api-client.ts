@@ -24,9 +24,9 @@ import type {
   CompaniesResponse,
   RegisterResponse,
   CompanyRow,
-} from "@multisystem/contracts";
+} from "@hubilee/contracts";
 
-import { ApiClient, type ApiResponse } from "@multisystem/shared";
+import { ApiClient, type ApiResponse } from "@hubilee/shared";
 
 import { getHubApiBaseUrl } from "@/lib/api-origin";
 

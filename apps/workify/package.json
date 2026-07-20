@@ -1,5 +1,5 @@
 {
-  "name": "@multisystem/workify",
+  "name": "@hubilee/workify",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -17,9 +17,9 @@
   "dependencies": {
     "@marsidev/react-turnstile": "catalog:",
     "@hookform/resolvers": "catalog:",
-    "@multisystem/contracts": "workspace:*",
-    "@multisystem/shared": "workspace:*",
-    "@multisystem/ui": "workspace:*",
+    "@hubilee/contracts": "workspace:*",
+    "@hubilee/shared": "workspace:*",
+    "@hubilee/ui": "workspace:*",
     "@tanstack/react-query": "catalog:",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",

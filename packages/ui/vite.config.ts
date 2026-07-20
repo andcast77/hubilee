@@ -9,7 +9,7 @@ const packageRoot = fileURLToPath(new URL(".", import.meta.url));
 
 /**
  * Vite library mode emits CSS as a separate file and does not leave `import './index.css'`
- * in the JS bundle. Prepending it lets consumers load styles by importing `@multisystem/ui` alone.
+ * in the JS bundle. Prepending it lets consumers load styles by importing `@hubilee/ui` alone.
  * Inlined here (no separate script) so CI/Vercel always has the logic even if `scripts/` is missing.
  */
 function prependCssImportToBundle(): void {

@@ -28,7 +28,7 @@ export function resolveDbUrls(target = resolveDbTarget()): {
     const databaseUrl = requiredEnv('DATABASE_URL_DEV')
     const shadowDatabaseUrl =
       optionalEnv('SHADOW_DATABASE_URL_DEV') ||
-      databaseUrl.replace(/\/[^/]*(\?.*)?$/, '/multisystem_shadow$1')
+      databaseUrl.replace(/\/[^/]*(\?.*)?$/, '/hubilee_shadow$1')
 
     return {
       target,

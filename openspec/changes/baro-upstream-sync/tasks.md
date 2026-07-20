@@ -42,7 +42,7 @@ Chain strategy: feature-branch-chain
 
 ## Phase 4: Verification
 
-- [x] 4.1 `pnpm --filter @multisystem/baro test`
+- [x] 4.1 `pnpm --filter @hubilee/baro test`
 - [x] 4.2 API baro tenant-isolation tests
 - [x] 4.3 Write `verify-report.md`
 

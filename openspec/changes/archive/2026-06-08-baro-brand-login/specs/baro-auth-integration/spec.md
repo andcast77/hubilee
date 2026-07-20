@@ -4,13 +4,13 @@
 
 ### Requirement: Branded login shell
 
-Baro login MUST use the shared multisystem auth shell pattern: `@multisystem/ui` auth layout/brand components, isolated auth-route CSS (no marketing `globals.css` on login), and a `views/LoginPage.tsx` view matching the Shopflow login structure (MFA step, Zod validation, Hub links for register/forgot password).
+Baro login MUST use the shared hubilee auth shell pattern: `@hubilee/ui` auth layout/brand components, isolated auth-route CSS (no marketing `globals.css` on login), and a `views/LoginPage.tsx` view matching the Shopflow login structure (MFA step, Zod validation, Hub links for register/forgot password).
 
 #### Scenario: Login page visual parity
 
 - GIVEN an unauthenticated visitor on `/login`
 - WHEN the page renders
-- THEN Baro uses `AuthLayout` and auth brand components from `@multisystem/ui`
+- THEN Baro uses `AuthLayout` and auth brand components from `@hubilee/ui`
 - AND auth-route styles come from `(auth)/auth-globals.css` only
 - AND marketing site styles from `(site)/globals.css` do not apply to the login route
 

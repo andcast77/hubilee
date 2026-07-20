@@ -17,7 +17,7 @@ import { mapExpedienteDocxErrorToHttp } from '@/lib/expediente/docx/errors'
 import { getExpedienteDocxDocumentDefinition } from '@/lib/expediente/docx/definitions'
 import { DYNAMIC_RENDERERS } from '@/lib/expediente/docx/renderer-registry'
 import { serverBaroGetData } from '@/lib/api/server'
-import type { BaroExpedienteDto } from '@multisystem/contracts'
+import type { BaroExpedienteDto } from '@hubilee/contracts'
 
 const PDF_RETIRADO_MSG =
   'El formato PDF ya no está disponible. Usá descarga en DOCX (format=docx o sin parámetro).'

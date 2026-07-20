@@ -37,7 +37,7 @@ export type AppConfig = {
   REGISTRATION_OTP_ENABLED: boolean
   /** Resend API key (https://resend.com/docs/api-reference/emails/send-email). */
   RESEND_API_KEY: string
-  /** Remitente verificado en el proveedor, p. ej. `Multisystem <noreply@tudominio.com>`. */
+  /** Remitente verificado en el proveedor, p. ej. `Hubilee <noreply@tudominio.com>`. */
   MAIL_FROM: string
   /** Base URL for post-registration email verification links (Hub). */
   HUB_PUBLIC_URL: string
@@ -103,7 +103,7 @@ export function getConfig(): AppConfig {
     ),
     TRUST_PROXY: (process.env.TRUST_PROXY ?? '').trim(),
     FIELD_ENCRYPTION_KEY: (process.env.FIELD_ENCRYPTION_KEY ?? '').trim(),
-    MFA_TOTP_ISSUER: (process.env.MFA_TOTP_ISSUER ?? '').trim() || 'Multisystem',
+    MFA_TOTP_ISSUER: (process.env.MFA_TOTP_ISSUER ?? '').trim() || 'Hubilee',
     TURNSTILE_SECRET_KEY: (process.env.TURNSTILE_SECRET_KEY ?? '').trim(),
     OTP_PEPPER: otpPepper,
     REGISTRATION_TICKET_SECRET: (process.env.REGISTRATION_TICKET_SECRET ?? '').trim(),

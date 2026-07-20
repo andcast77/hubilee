@@ -1,4 +1,4 @@
-# @multisystem/contracts
+# @hubilee/contracts
 
 Paquete **solo TypeScript**: tipos compartidos entre la **API** y las apps (**hub**, **shopflow**, **workify**, **techservices**). No incluye runtime ni dependencias de producción.
 
@@ -14,13 +14,13 @@ El entry **`index.ts`** reexporta todo.
 ## Uso
 
 ```ts
-import type { ApiResponse, LoginResponse, CompanyRow } from '@multisystem/contracts'
+import type { ApiResponse, LoginResponse, CompanyRow } from '@hubilee/contracts'
 ```
 
 Tras cambios, compilar el paquete para actualizar `dist/` (p. ej. vía `pnpm build` en el workspace o el pipeline de Turbo):
 
 ```bash
-pnpm --filter @multisystem/contracts build
+pnpm --filter @hubilee/contracts build
 ```
 
 ## Scripts

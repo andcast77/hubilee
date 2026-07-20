@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { baroApi } from '@/lib/api/client'
-import { ApiError } from '@multisystem/shared'
+import { ApiError } from '@hubilee/shared'
 import { ORDENANTE_SEXO_LABEL_SET, ORDENANTE_SEXO_OPTIONS } from '@/lib/expediente/catalogs'
 import { useAccount } from '@/components/app/account-context'
 import {

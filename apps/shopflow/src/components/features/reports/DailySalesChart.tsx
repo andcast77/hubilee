@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@multisystem/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@hubilee/ui'
 import { useDailySales } from '@/hooks/useReports'
 import {
   LineChart,

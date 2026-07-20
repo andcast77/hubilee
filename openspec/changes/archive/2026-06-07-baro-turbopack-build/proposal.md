@@ -2,7 +2,7 @@
 
 ## Intent
 
-Restore a **green Baro production build** with **Turbopack** (default Next 16 bundler, matching hub/shopflow/workify) and align edge auth + client fetch paths with multisystem API session model (`baro-auth-integration`, ADR-auth-token-storage).
+Restore a **green Baro production build** with **Turbopack** (default Next 16 bundler, matching hub/shopflow/workify) and align edge auth + client fetch paths with hubilee API session model (`baro-auth-integration`, ADR-auth-token-storage).
 
 ## Scope
 
@@ -11,14 +11,14 @@ Restore a **green Baro production build** with **Turbopack** (default Next 16 bu
 - Add `apps/baro/lib/auth/client.ts` with edge-safe `isAuthEnabled()` helper
 - Refactor `apps/baro/proxy.ts` to Hub/ADR pattern (no unreadable API cookie checks)
 - Remove `--webpack` from Baro build scripts; align `next` / `eslint-config-next` to pnpm catalog `16.2.3`
-- Migrate client `fetch('/api/auth/*')` calls to `@multisystem/api` via `lib/api/client.ts` (`/v1/auth/*`, `/v1/baro/*`)
+- Migrate client `fetch('/api/auth/*')` calls to `@hubilee/api` via `lib/api/client.ts` (`/v1/auth/*`, `/v1/baro/*`)
 - Register page: redirect to Hub per `baro-auth-integration`
 - Unit test for `isAuthEnabled()`
-- Verify `pnpm turbo run build --filter=@multisystem/baro...`
+- Verify `pnpm turbo run build --filter=@hubilee/baro...`
 
 ### Out of Scope
 
-- `@multisystem/balance` scaffold
+- `@hubilee/balance` scaffold
 - API password-change endpoint (`/api/auth/password` remains broken until API exists)
 - Baro full catalog/eslint/typescript alignment
 - Docker image rebuild for baro (optional manual verify)
@@ -27,7 +27,7 @@ Restore a **green Baro production build** with **Turbopack** (default Next 16 bu
 
 ### New Capabilities
 
-- `baro-turbopack-build`: Baro builds with default Turbopack; proxy and client auth paths match multisystem API model
+- `baro-turbopack-build`: Baro builds with default Turbopack; proxy and client auth paths match hubilee API model
 
 ### Modified Capabilities
 

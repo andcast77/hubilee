@@ -97,7 +97,7 @@ export function LandingHome() {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
               <span className="text-xs text-indigo-400 uppercase tracking-[0.2em] font-semibold mb-4 block">
-                Ecosistema Multisystem
+                Ecosistema Hubilee
               </span>
               <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">
                 Campo y taller, conectados al resto
@@ -140,7 +140,7 @@ export function LandingHome() {
                     "linear-gradient(135deg, #818cf8 0%, #a78bfa 50%, #6366f1 100%)",
                 }}
               >
-                Hub Multisystem
+                Hub Hubilee
               </span>
             </h2>
             <p className="text-white/40 text-lg mb-10 max-w-xl mx-auto">

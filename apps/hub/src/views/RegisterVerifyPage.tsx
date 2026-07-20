@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { ApiError, runRegisterVerifyDeduped } from "@multisystem/shared";
+import { ApiError, runRegisterVerifyDeduped } from "@hubilee/shared";
 import { authApi, accountApi } from "@/lib/api-client";
 import {
   AuthLayout,
@@ -17,7 +17,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@multisystem/ui";
+} from "@hubilee/ui";
 
 export function RegisterVerifyPage() {
   const router = useRouter();
@@ -78,7 +78,7 @@ export function RegisterVerifyPage() {
       badge={
         <>
           <span>Hub</span>
-          <span>Multisystem</span>
+          <span>Hubilee</span>
         </>
       }
       title="Confirmando tu registro"

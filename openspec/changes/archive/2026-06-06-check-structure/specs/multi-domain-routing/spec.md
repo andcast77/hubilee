@@ -16,7 +16,7 @@ Every domain block in the Caddyfile MUST have a corresponding Docker Compose ser
 #### Scenario: Missing service fails fast
 
 - GIVEN a domain block references service `balance` but compose omits it
-- WHEN a request arrives at `balance.multisystem.app`
+- WHEN a request arrives at `balance.hubilee.app`
 - THEN Caddy returns 502
 - AND compose parity check in CI MUST fail before merge
 
@@ -31,7 +31,7 @@ The Caddyfile MUST define one `{domain}` block per app, routing to `{service_nam
 #### Scenario: All apps served on their domains
 
 - GIVEN Caddy is running with all six app containers healthy
-- WHEN a request arrives at any configured `*.multisystem.app` app domain
+- WHEN a request arrives at any configured `*.hubilee.app` app domain
 - THEN Caddy proxies to the matching service and port
 - AND requests to other domains route to their respective containers
 

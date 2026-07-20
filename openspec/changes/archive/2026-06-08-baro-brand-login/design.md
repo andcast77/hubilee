@@ -19,7 +19,7 @@ apps/baro/app/
 
 ## Login view
 
-- `views/LoginPage.tsx` — client component; `loginSchema` with `email.trim()`; MFA step; uses `@multisystem/ui` auth primitives.
+- `views/LoginPage.tsx` — client component; `loginSchema` with `email.trim()`; MFA step; uses `@hubilee/ui` auth primitives.
 - `lib/landingUrls.ts` — Hub register/forgot-password URLs from env.
 
 ## Shared client

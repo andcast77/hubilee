@@ -57,26 +57,26 @@ baro#build pipeline resolves with full dependency graph:
 
 **Docker Compose Config (`docker compose config`)**: ✅ Passed
 ```
-name: multisystem
+name: hubilee
 services:
   baro:     (build context: ., dockerfile: apps/baro/Dockerfile, container_name: baro)
   baro-db:  (image: postgres:16-alpine, container_name: baro-db, port: 5433:5432)
   caddy:    (image: caddy:2-alpine, ports: 80:80, 443:443)
   postgres: (image: postgres:16-alpine, port: 5432:5432)
 networks:
-  caddy_network (bridge: multisystem-caddy-network)
+  caddy_network (bridge: hubilee-caddy-network)
 volumes:
   postgres_data, caddy_data, baro_pgdata
 ```
 
 **Caddyfile**: ✅ Validated at runtime (Caddy container accepted config and is serving)
 ```caddyfile
-baro.multisystem.app    { reverse_proxy baro:3000 }
-hub.multisystem.app     { reverse_proxy hub:3001 }
-shopflow.multisystem.app     { reverse_proxy shopflow:3002 }
-workify.multisystem.app      { reverse_proxy workify:3003 }
-techservices.multisystem.app { reverse_proxy techservices:3004 }
-balance.multisystem.app      { reverse_proxy balance:3005 }
+baro.hubilee.app    { reverse_proxy baro:3000 }
+hub.hubilee.app     { reverse_proxy hub:3001 }
+shopflow.hubilee.app     { reverse_proxy shopflow:3002 }
+workify.hubilee.app      { reverse_proxy workify:3003 }
+techservices.hubilee.app { reverse_proxy techservices:3004 }
+balance.hubilee.app      { reverse_proxy balance:3005 }
 ```
 
 **Coverage**: ➖ Not available (infrastructure files; no code coverage tool applicable)
@@ -88,8 +88,8 @@ balance.multisystem.app      { reverse_proxy balance:3005 }
 |-----------|--------|-------|
 | baro | Up 59 sec | `0.0.0.0:32786->3000/tcp` |
 | baro-db | Up 15 min | `0.0.0.0:5433->5432/tcp` |
-| multisystem-caddy | Up 15 min | `0.0.0.0:80->80/tcp, 443/tcp` |
-| multisystem-db | Up 15 min | `0.0.0.0:5432->5432/tcp` |
+| hubilee-caddy | Up 15 min | `0.0.0.0:80->80/tcp, 443/tcp` |
+| hubilee-db | Up 15 min | `0.0.0.0:5432->5432/tcp` |
 
 **Baro startup log**:
 ```
@@ -106,10 +106,10 @@ Entrypoint done — starting Next.js
 
 **Container images**:
 ```
-multisystem-baro  437MB  (Just built)
+hubilee-baro  437MB  (Just built)
 baro-db           110MB  (postgres:16-alpine)
-multisystem-caddy  24MB  (caddy:2-alpine)
-multisystem-db    110MB  (postgres:16-alpine)
+hubilee-caddy  24MB  (caddy:2-alpine)
+hubilee-db    110MB  (postgres:16-alpine)
 ```
 
 ### Spec Compliance Matrix
@@ -138,7 +138,7 @@ multisystem-db    110MB  (postgres:16-alpine)
 | Per-App Database Isolation | Dedicated database per app | `baro-db` uses separate Postgres 16-alpine, separate `POSTGRES_DB=baro`, separate port 5433 | ✅ COMPLIANT |
 | Per-App Database Isolation | Data persistence across restarts | Named volume `baro_pgdata` defined and mounted at `/var/lib/postgresql/data` | ✅ COMPLIANT |
 | Per-App Database Isolation | Port collision on host | `baro-db` uses host port **5433** (unique — main postgres uses **5432**) | ✅ COMPLIANT |
-| Network Isolation | Internal-only communication | `caddy_network` (bridge: `multisystem-caddy-network`); only Caddy exposes 80/443 to host | ✅ COMPLIANT |
+| Network Isolation | Internal-only communication | `caddy_network` (bridge: `hubilee-caddy-network`); only Caddy exposes 80/443 to host | ✅ COMPLIANT |
 | Environment-Based Configuration | Environment-driven config | `.env` file present (583 bytes); `docker-compose.yml` `env_file:` resolves correctly; vars injected into container (confirmed in `docker compose config` output) | ✅ COMPLIANT |
 
 **Compliance summary**: 7/8 fully compliant, 1/8 partial (selective rebuild untested)
@@ -152,7 +152,7 @@ multisystem-db    110MB  (postgres:16-alpine)
 | Dockerfile for baro exists | ✅ Implemented | `apps/baro/Dockerfile` with Prisma generate, deploy, entrypoint |
 | Generic Dockerfile.nextjs exists | ✅ Implemented | `docker/Dockerfile.nextjs` 4-stage: base → deps → builder → runner |
 | docker-compose.yml has 4 services | ✅ Implemented | postgres, caddy, baro, baro-db — all validated |
-| Network isolation (caddy_network) | ✅ Implemented | Bridge network `multisystem-caddy-network`; all services attached |
+| Network isolation (caddy_network) | ✅ Implemented | Bridge network `hubilee-caddy-network`; all services attached |
 | Environment config (`.env` + `.env.example`) | ✅ Implemented | Both `.env.example` (documented) and `.env` (active) present |
 | baro directory in monorepo | ✅ Implemented | `apps/baro/` with 22 entries — full app structure |
 | pnpm workspace covers baro | ✅ Implemented | `apps/*` glob; `pnpm install` resolves 12 projects including baro |

@@ -16,8 +16,8 @@ Date: 2026-06-07
 ## Commands
 
 ```bash
-pnpm --filter @multisystem/baro test          # 22 files, 146 passed
-pnpm turbo run build --filter=@multisystem/baro...  # exit 0, Turbopack, no NFT warnings
+pnpm --filter @hubilee/baro test          # 22 files, 146 passed
+pnpm turbo run build --filter=@hubilee/baro...  # exit 0, Turbopack, no NFT warnings
 cd apps/baro && npx tsc --noEmit -p tsconfig.json   # exit 0
 ```
 
@@ -30,4 +30,4 @@ cd apps/baro && npx tsc --noEmit -p tsconfig.json   # exit 0
 
 ## Rollback
 
-Revert `apps/baro/package.json` build script to `next build --webpack` and restore upstream `proxy.ts` cookie check if needed (not recommended for multisystem auth).
+Revert `apps/baro/package.json` build script to `next build --webpack` and restore upstream `proxy.ts` cookie check if needed (not recommended for hubilee auth).

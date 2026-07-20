@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useProducts, useDeleteProduct } from '@/hooks/useProducts'
-import { Button } from '@multisystem/ui'
-import { Input } from '@multisystem/ui'
+import { Button } from '@hubilee/ui'
+import { Input } from '@hubilee/ui'
 import {
   Table,
   TableBody,
@@ -12,15 +12,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@multisystem/ui'
+} from '@hubilee/ui'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@multisystem/ui'
-import { Skeleton } from '@multisystem/ui'
+} from '@hubilee/ui'
+import { Skeleton } from '@hubilee/ui'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,10 +31,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@multisystem/ui'
+} from '@hubilee/ui'
 import { Plus, Search, Package, AlertTriangle, Edit, Trash2, ChevronsUpDown, ChevronUp, ChevronDown } from 'lucide-react'
 import type { Product } from '@/types'
-import { Badge } from '@multisystem/ui'
+import { Badge } from '@hubilee/ui'
 
 interface ProductListProps {
   onProductClick?: (product: Product) => void

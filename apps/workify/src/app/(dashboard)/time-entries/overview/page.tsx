@@ -43,7 +43,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@multisystem/ui';
+} from '@hubilee/ui';
 
 // Types
 interface TimeEntry {

@@ -8,11 +8,11 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@multisystem/ui'
-import { Label } from '@multisystem/ui'
-import { Button } from '@multisystem/ui'
-import { Input } from '@multisystem/ui'
-import { Switch } from '@multisystem/ui'
+} from '@hubilee/ui'
+import { Label } from '@hubilee/ui'
+import { Button } from '@hubilee/ui'
+import { Input } from '@hubilee/ui'
+import { Switch } from '@hubilee/ui'
 import { Plus, Trash2, Printer, Info } from 'lucide-react'
 import {
   Dialog,
@@ -21,11 +21,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@multisystem/ui'
+} from '@hubilee/ui'
 import {
   Alert,
   AlertDescription,
-} from '@multisystem/ui'
+} from '@hubilee/ui'
 
 export function PrinterSelector() {
   const {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { workifyApi } from '@/lib/api/client';
-import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@multisystem/ui';
+import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@hubilee/ui';
 
 interface Employee {
   id: string;

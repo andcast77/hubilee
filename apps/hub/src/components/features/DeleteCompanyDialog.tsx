@@ -12,7 +12,7 @@ import {
   Button,
   Input,
   Label,
-} from "@multisystem/ui";
+} from "@hubilee/ui";
 import { companyApi } from "@/lib/api-client";
 import { clearTokenCookie } from "@/lib/auth";
 import { AlertTriangle } from "lucide-react";

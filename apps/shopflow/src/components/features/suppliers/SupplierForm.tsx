@@ -3,11 +3,11 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createSupplierSchema, type CreateSupplierInput, type UpdateSupplierInput } from '@/lib/validations/supplier'
-import { Button } from '@multisystem/ui'
-import { Input } from '@multisystem/ui'
-import { Label } from '@multisystem/ui'
-import { Textarea } from '@multisystem/ui'
-import { Checkbox } from '@multisystem/ui'
+import { Button } from '@hubilee/ui'
+import { Input } from '@hubilee/ui'
+import { Label } from '@hubilee/ui'
+import { Textarea } from '@hubilee/ui'
+import { Checkbox } from '@hubilee/ui'
 
 interface SupplierFormProps {
   initialData?: Partial<CreateSupplierInput>

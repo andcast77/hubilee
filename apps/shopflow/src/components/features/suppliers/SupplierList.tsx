@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useSuppliers, useDeleteSupplier } from '@/hooks/useSuppliers'
-import { Button } from '@multisystem/ui'
-import { Input } from '@multisystem/ui'
+import { Button } from '@hubilee/ui'
+import { Input } from '@hubilee/ui'
 import {
   Table,
   TableBody,
@@ -12,8 +12,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@multisystem/ui'
-import { Skeleton } from '@multisystem/ui'
+} from '@hubilee/ui'
+import { Skeleton } from '@hubilee/ui'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,9 +24,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@multisystem/ui'
+} from '@hubilee/ui'
 import { Plus, Search, Truck, Mail, Phone, Edit, Trash2, ChevronsUpDown, ChevronUp, ChevronDown } from 'lucide-react'
-import { Badge } from '@multisystem/ui'
+import { Badge } from '@hubilee/ui'
 
 type SortCol = 'name' | 'contact' | 'location' | 'active'
 type SortOrder = 'asc' | 'desc'

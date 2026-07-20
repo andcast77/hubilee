@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
     root: monorepoRoot,
   },
   
-  transpilePackages: ["@multisystem/ui"],
+  transpilePackages: ["@hubilee/ui"],
 
   // basePath eliminado - cada módulo tiene su propio dominio en Vercel
   // Configuraciones de seguridad críticas

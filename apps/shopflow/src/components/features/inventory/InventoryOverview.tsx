@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@multisystem/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@hubilee/ui'
 import { Package, AlertTriangle, TrendingUp, TrendingDown } from 'lucide-react'
 import { useInventoryStats } from '@/hooks/useReports'
 

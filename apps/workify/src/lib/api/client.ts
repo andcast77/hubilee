@@ -1,4 +1,4 @@
-import { ApiClient as SharedApiClient } from '@multisystem/shared'
+import { ApiClient as SharedApiClient } from '@hubilee/shared'
 
 // API Client for Workify Frontend
 // All data from central API (NEXT_PUBLIC_API_URL). No internal Next.js API routes for data.
@@ -49,7 +49,7 @@ export const companiesApi = {
 }
 
 // Generic API response types (from shared contracts)
-export type { ApiResponse } from '@multisystem/contracts'
+export type { ApiResponse } from '@hubilee/contracts'
 
 export interface PaginatedResponse<T> {
   data: T[]

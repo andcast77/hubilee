@@ -1,13 +1,13 @@
 'use client'
 
 import { Download, FileText, FileCode } from 'lucide-react'
-import { Button } from '@multisystem/ui'
+import { Button } from '@hubilee/ui'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@multisystem/ui'
+} from '@hubilee/ui'
 import { API_URL } from '@/lib/api/client'
 
 interface InvoiceActionsProps {

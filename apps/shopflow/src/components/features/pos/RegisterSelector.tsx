@@ -10,7 +10,7 @@ import {
   DialogTitle,
   Input,
   Label,
-} from '@multisystem/ui'
+} from '@hubilee/ui'
 import { toast } from 'sonner'
 import { useCashRegisters, useCreateCashRegister, useOpenCashSessionsByStore } from '@/hooks/useCashSession'
 import { useUser } from '@/hooks/useUser'

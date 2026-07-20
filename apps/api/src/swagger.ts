@@ -6,8 +6,8 @@ export async function setupSwagger(fastify: FastifyInstance) {
   await fastify.register(fastifySwagger, {
     openapi: {
       info: {
-        title: 'Multisystem API',
-        description: 'API documentation for Multisystem',
+        title: 'Hubilee API',
+        description: 'API documentation for Hubilee',
         version: '0.1.0',
       },
     },

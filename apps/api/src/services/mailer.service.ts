@@ -2,7 +2,7 @@ import { Resend } from 'resend'
 import { getConfig } from '../core/config.js'
 import { BadRequestError, ServiceUnavailableError } from '../common/errors/app-error.js'
 
-/** Parse `Multisystem <a@b.com>` or `a@b.com` for Resend `from` string. */
+/** Parse `Hubilee <a@b.com>` or `a@b.com` for Resend `from` string. */
 function parseMailFrom(from: string): { name?: string; email: string } {
   const m = from.match(/^(.+?)\s*<([^>]+)>$/s)
   if (m) {
@@ -100,7 +100,7 @@ export async function sendMail(opts: {
 export async function sendRegistrationOtpEmail(to: string, code: string): Promise<void> {
   await sendMail({
     to,
-    subject: 'Tu código de verificación — Multisystem',
+    subject: 'Tu código de verificación — Hubilee',
     text: `Tu código es: ${code}\n\nVálido unos minutos. Si no solicitaste este registro, ignora este mensaje.`,
     html: `<p>Tu código es: <strong>${code}</strong></p><p>Válido unos minutos. Si no solicitaste este registro, ignora este mensaje.</p>`,
   })
@@ -110,7 +110,7 @@ export async function sendRegistrationOtpEmail(to: string, code: string): Promis
 export async function sendRegistrationMagicLinkEmail(to: string, verifyUrl: string): Promise<void> {
   await sendMail({
     to,
-    subject: 'Confirma tu email para continuar el registro — Multisystem',
+    subject: 'Confirma tu email para continuar el registro — Hubilee',
     text: `Abre este enlace para continuar con el registro de tu empresa:\n\n${verifyUrl}\n\nVálido unos minutos. Si no solicitaste crear una cuenta, ignora este mensaje.`,
     html: `<p><a href="${verifyUrl}">Continuar registro</a></p><p>Válido unos minutos. Si no solicitaste crear una cuenta, ignora este mensaje.</p>`,
   })
@@ -119,7 +119,7 @@ export async function sendRegistrationMagicLinkEmail(to: string, verifyUrl: stri
 export async function sendEmailVerificationLink(to: string, verifyUrl: string): Promise<void> {
   await sendMail({
     to,
-    subject: 'Verifica tu email — Multisystem',
+    subject: 'Verifica tu email — Hubilee',
     text: `Abre este enlace para verificar tu cuenta:\n${verifyUrl}`,
     html: `<p><a href="${verifyUrl}">Verificar email</a></p>`,
   })

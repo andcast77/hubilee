@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, Badge } from "@multisystem/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, Badge } from "@hubilee/ui";
 import { LucideIcon, ArrowRight } from "lucide-react";
 
 type ModuleCardProps = {

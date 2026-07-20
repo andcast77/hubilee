@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ApiError } from "@multisystem/shared";
+import { ApiError } from "@hubilee/shared";
 import {
   AuthLayout,
   AuthBrandDecorativePanel,
@@ -17,7 +17,7 @@ import {
   Button,
   Input,
   Label,
-} from "@multisystem/ui";
+} from "@hubilee/ui";
 import { authApi } from "@/lib/api/client";
 import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
 import { RegistrationTurnstile } from "@/components/auth/RegistrationTurnstile";

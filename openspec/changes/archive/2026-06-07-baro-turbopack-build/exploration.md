@@ -2,13 +2,13 @@
 
 ### Problem
 
-`pnpm turbo run build --filter=@multisystem/baro...` fails because `apps/baro/proxy.ts` imports a missing module:
+`pnpm turbo run build --filter=@hubilee/baro...` fails because `apps/baro/proxy.ts` imports a missing module:
 
 ```ts
 import { ACCESS_COOKIE, isAuthenticatedRequest, isAuthEnabled } from '@/lib/auth/client'
 ```
 
-`apps/baro/lib/auth/client.ts` does not exist (removed during multisystem auth integration). Webpack and Turbopack both fail with the same unresolved import.
+`apps/baro/lib/auth/client.ts` does not exist (removed during hubilee auth integration). Webpack and Turbopack both fail with the same unresolved import.
 
 Baro is the only Next app forcing webpack (`"build": "next build --webpack"`) due to a historical ChunkLoadError workaround on Windows/IIS + `next start`. After `turborepo-conventions` Slice C, production uses **standalone** + `node apps/baro/server.js`, so the webpack override is no longer justified for Docker/Vercel.
 
@@ -28,7 +28,7 @@ Baro is the only Next app forcing webpack (`"build": "next build --webpack"`) du
 
 1. **Build:** incomplete auth migration left `proxy.ts` importing deleted upstream module.
 2. **Turbopack:** `--webpack` flag kept for obsolete `next start` deployment path.
-3. **Runtime (secondary):** UI still calls `/api/auth/*` instead of `@multisystem/api` endpoints — login/session/professionals broken even if build passes.
+3. **Runtime (secondary):** UI still calls `/api/auth/*` instead of `@hubilee/api` endpoints — login/session/professionals broken even if build passes.
 
 ### Risks
 

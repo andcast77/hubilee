@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@multisystem/ui';
+import { Button, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@hubilee/ui';
 import type { SalaryType, OvertimeType } from '@/types';
 
 const salaryTypes = [

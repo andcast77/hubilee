@@ -6,6 +6,6 @@
  *   buildTransactionalEmailHtml,
  *   escapeHtml,
  *   escapeHtmlAttr,
- * } from '@multisystem/ui/email'
+ * } from '@hubilee/ui/email'
  */
 export * from "./email/transactional-email-layout";

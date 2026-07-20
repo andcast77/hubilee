@@ -10,7 +10,7 @@
 - [x] 2.1 Add `views/LoginPage.tsx` (Shopflow pattern, Baro copy)
 - [x] 2.2 Create `(auth)/` route group with `auth-globals.css`
 - [x] 2.3 Move marketing pages to `(site)/`
-- [x] 2.4 Add `@multisystem/ui`, transpile, types
+- [x] 2.4 Add `@hubilee/ui`, transpile, types
 - [x] 2.5 Remove legacy `auth-form.tsx` and old login routes
 
 ## 3. Supporting fixes
@@ -21,4 +21,4 @@
 
 ## 4. Verify
 
-- [x] 4.1 `pnpm --filter @multisystem/baro build`
+- [x] 4.1 `pnpm --filter @hubilee/baro build`

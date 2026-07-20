@@ -31,12 +31,12 @@ Chain strategy: stacked-to-v2
 | 1 | DB schema + seed + legacy migration script | `v2` | No app breakage yet |
 | 2 | `/v1/baro/*` API + tests (strict TDD) | `v2` | After PR1 on `v2` |
 | 3 | Baro app: API client, Hub register, drop local auth/prisma | `v2` | After PR2 on `v2` |
-| 4 | Docker full stack + CORS + `@multisystem/baro` rename | `v2` | Final slice on `v2` |
+| 4 | Docker full stack + CORS + `@hubilee/baro` rename | `v2` | Final slice on `v2` |
 
 ## Phase 1: Database & RBAC Foundation
 
 - [x] 1.1 Add baro enums/models to `packages/database/prisma/schema.prisma` (`companyId`, `@@map("baro_*")`; no baro User/RefreshToken)
-- [x] 1.2 Create migration via `pnpm migrate:dev` in `@multisystem/database`
+- [x] 1.2 Create migration via `pnpm migrate:dev` in `@hubilee/database`
 - [x] 1.3 Add `baro` module + permissions in `packages/database/prisma/seed.ts`; wire sample company
 - [x] 1.4 Add `baro` to `MODULE_KEYS` / `CompanyModulesShape` in `packages/api/src/core/modules.ts`
 - [x] 1.5 Create `packages/database/scripts/migrate-baro-legacy.ts` — baro user → User+Company+CompanyMember+FK rewrite (dry-run flag)
@@ -53,16 +53,16 @@ Chain strategy: stacked-to-v2
 
 ## Phase 3: Baro App Integration
 
-- [x] 3.1 Rename package to `@multisystem/baro` in `apps/baro/package.json`; set dev port **3006** (avoid API :3000 clash)
-- [x] 3.2 Create `apps/baro/lib/api/client.ts` (`authApi`, `baroApi` via `@multisystem/shared` ApiClient)
+- [x] 3.1 Rename package to `@hubilee/baro` in `apps/baro/package.json`; set dev port **3006** (avoid API :3000 clash)
+- [x] 3.2 Create `apps/baro/lib/api/client.ts` (`authApi`, `baroApi` via `@hubilee/shared` ApiClient)
 - [x] 3.3 Replace login with API auth; register links to Hub (`NEXT_PUBLIC_HUB_URL/register` or existing Hub route)
 - [x] 3.4 Delete `apps/baro/app/api/auth/**`, `apps/baro/lib/auth/**`, `apps/baro/lib/prisma.ts`, `apps/baro/prisma/**`
 - [x] 3.5 Refactor pages/actions: remove direct Prisma; call `baroApi` (keep DOCX render local, fetch payload via API)
-- [x] 3.6 Update `apps/baro/next.config.ts`: `turbopack.root`, dev rewrites optional; add `@multisystem/shared`, `@multisystem/contracts` deps
+- [x] 3.6 Update `apps/baro/next.config.ts`: `turbopack.root`, dev rewrites optional; add `@hubilee/shared`, `@hubilee/contracts` deps
 
 ## Phase 4: Docker, CORS & Monorepo Wiring
 
-- [x] 4.1 Extend `CORS_ORIGIN` in `packages/api/.env.example`, `packages/api/.env`, compose API env: localhost **3000,3001–3006** + `https://*.multisystem.app` domains
+- [x] 4.1 Extend `CORS_ORIGIN` in `packages/api/.env.example`, `packages/api/.env`, compose API env: localhost **3000,3001–3006** + `https://*.hubilee.app` domains
 - [x] 4.2 Create `docker/Dockerfile.api`; thin `apps/{hub,shopflow,workify,techservices,balance,baro}/Dockerfile` from `docker/Dockerfile.nextjs`
 - [x] 4.3 Rewrite `docker-compose.yml`: `postgres`, `api`, `caddy`, 6 apps; **remove `baro-db`** / `baro_pgdata`
 - [x] 4.4 Simplify `apps/baro/docker-entrypoint.sh` — no prisma migrate

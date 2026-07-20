@@ -11,7 +11,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@multisystem/ui'
+} from '@hubilee/ui'
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react'
 
 export function VerifyEmailPage() {

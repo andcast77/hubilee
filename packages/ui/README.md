@@ -1,23 +1,23 @@
-# @multisystem/ui
+# @hubilee/ui
 
-Biblioteca de componentes React compartida para las apps Multisystem. **Carpeta del repo:** `packages/component-library`. **Nombre npm:** `@multisystem/ui`.
+Biblioteca de componentes React compartida para las apps Hubilee. **Carpeta del repo:** `packages/component-library`. **Nombre npm:** `@hubilee/ui`.
 
 ## En este monorepo
 
-Las apps **hub**, **shopflow**, **workify** y **techservices** declaran `"@multisystem/ui": "workspace:*"`. Tras clonar, `pnpm install` en la raíz enlaza el paquete local.
+Las apps **hub**, **shopflow**, **workify** y **techservices** declaran `"@hubilee/ui": "workspace:*"`. Tras clonar, `pnpm install` en la raíz enlaza el paquete local.
 
-En desarrollo, `pnpm run dev:hub` (Turbo) levanta **`@multisystem/ui` en watch** (`vite build --watch`) y el Hub a la vez; no hace falta un `build` manual previo salvo CI o primera vez.
+En desarrollo, `pnpm run dev:hub` (Turbo) levanta **`@hubilee/ui` en watch** (`vite build --watch`) y el Hub a la vez; no hace falta un `build` manual previo salvo CI o primera vez.
 
 ### Consumo externo (opcional)
 
-Fuera del monorepo se puede instalar desde releases GitHub (p. ej. `github:…/multisystem-components#v1.x`) o `file:../component-library`, según cómo publiques el paquete.
+Fuera del monorepo se puede instalar desde releases GitHub (p. ej. `github:…/hubilee-components#v1.x`) o `file:../component-library`, según cómo publiques el paquete.
 
 ## Uso
 
-Tras el build, `dist/index.js` incluye `import './index.css'` al inicio: **basta con importar componentes desde `@multisystem/ui`** para que el bundler cargue el CSS. Opcionalmente puedes seguir importando `@multisystem/ui/styles` o `@multisystem/ui/index.css` explícitamente (p. ej. orden de capas).
+Tras el build, `dist/index.js` incluye `import './index.css'` al inicio: **basta con importar componentes desde `@hubilee/ui`** para que el bundler cargue el CSS. Opcionalmente puedes seguir importando `@hubilee/ui/styles` o `@hubilee/ui/index.css` explícitamente (p. ej. orden de capas).
 
 ```tsx
-import { Button, Card, Input, Badge } from "@multisystem/ui";
+import { Button, Card, Input, Badge } from "@hubilee/ui";
 
 export function MyComponent() {
   return (
@@ -30,7 +30,7 @@ export function MyComponent() {
 }
 ```
 
-En **Next.js**, suele hacer falta `transpilePackages: ["@multisystem/ui"]` en `next.config`. Las apps que usan **Tailwind** pueden incluir `./node_modules/@multisystem/ui/dist/**/*.{js,ts,jsx,tsx}` en `content` si mezclas utilidades con la UI.
+En **Next.js**, suele hacer falta `transpilePackages: ["@hubilee/ui"]` en `next.config`. Las apps que usan **Tailwind** pueden incluir `./node_modules/@hubilee/ui/dist/**/*.{js,ts,jsx,tsx}` en `content` si mezclas utilidades con la UI.
 
 ## Componentes
 

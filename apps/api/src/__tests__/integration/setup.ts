@@ -60,7 +60,7 @@ beforeAll(async () => {
 
   // Keep DB state deterministic for authorization regression tests.
   try {
-    execSync('pnpm --filter @multisystem/database migrate:deploy', {
+    execSync('pnpm --filter @hubilee/database migrate:deploy', {
       cwd: repoRoot,
       // Capture output so we can detect specific Prisma migration errors (e.g. P3015).
       stdio: 'pipe',
@@ -98,7 +98,7 @@ beforeAll(async () => {
       }
 
       // Reconstruct schema via db push so the seed has tables to operate on.
-      execSync('pnpm --filter @multisystem/database db:push', {
+      execSync('pnpm --filter @hubilee/database db:push', {
         cwd: repoRoot,
         stdio: 'inherit',
       })
@@ -107,7 +107,7 @@ beforeAll(async () => {
     }
   }
   if (!skipSeed) {
-    execSync('pnpm --filter @multisystem/database db:seed', {
+    execSync('pnpm --filter @hubilee/database db:seed', {
       cwd: repoRoot,
       stdio: 'inherit',
     })
@@ -115,7 +115,7 @@ beforeAll(async () => {
 }, 120_000)
 
 afterAll(async () => {
-  const db = await import('@multisystem/database')
+  const db = await import('@hubilee/database')
   await db.prisma.$disconnect().catch(() => {
     // Best-effort cleanup; tests should not fail because of teardown.
   })

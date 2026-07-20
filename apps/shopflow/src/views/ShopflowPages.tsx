@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
-import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label } from "@multisystem/ui";
+import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label } from "@hubilee/ui";
 import { PageFrame } from "@/views/PageFrame";
 import { StatsCards } from "@/components/features/reports/StatsCards";
 import { DashboardBusinessMetrics } from "@/components/features/reports/DashboardBusinessMetrics";

@@ -45,7 +45,7 @@ export function FeaturesSection() {
         {/* Section label */}
         <div className="text-center mb-16">
           <span className="text-xs text-indigo-400 uppercase tracking-[0.2em] font-semibold mb-4 block">
-            Por qué Multisystem
+            Por qué Hubilee
           </span>
           <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">
             Todo lo que necesitas

@@ -60,7 +60,7 @@ export function LandingPage() {
       <header className="sticky top-0 z-50 bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-white/[0.06]">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="text-xl font-black text-white tracking-tight">
-            Multisystem
+            Hubilee
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm text-white/40">
             <a href="#modulos" className="hover:text-white transition-colors duration-150">
@@ -139,7 +139,7 @@ export function LandingPage() {
             </h2>
             <p className="text-white/40 text-lg mb-10 max-w-xl mx-auto">
               Únete a más de 500 empresas que ya gestionan sus operaciones con
-              Multisystem.
+              Hubilee.
             </p>
             <Link
               href="/register"

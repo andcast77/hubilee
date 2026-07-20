@@ -19,8 +19,8 @@
 
 | Suite | Result |
 |-------|--------|
-| `pnpm --filter @multisystem/baro test` | **144 passed**, 1 skipped |
-| `pnpm --filter @multisystem/api test -- baro-tenant-isolation` | **349 passed** (full API suite ran) |
+| `pnpm --filter @hubilee/baro test` | **144 passed**, 1 skipped |
+| `pnpm --filter @hubilee/api test -- baro-tenant-isolation` | **349 passed** (full API suite ran) |
 
 ## Manual / Deferred
 

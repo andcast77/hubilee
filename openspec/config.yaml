@@ -2,7 +2,7 @@ schema: spec-driven
 
 context: |
   Tech stack: pnpm monorepo (Turborepo), TypeScript, Next.js 16 apps, Vite apps,
-  Fastify API (@multisystem/api), Prisma (@multisystem/database), shared UI package.
+  Fastify API (@hubilee/api), Prisma (@hubilee/database), shared UI package.
   Architecture: REST API with controller/service/repository layers; multi-tenant by companyId.
   CI: GitHub Actions (lint, typecheck, turbo test with Postgres).
   Style: ESLint/Prettier in select apps; root typecheck via tsc.
@@ -27,7 +27,7 @@ testing:
       tool: —
   coverage:
     available: true
-    command: pnpm --filter @multisystem/api run test:coverage
+    command: pnpm --filter @hubilee/api run test:coverage
     note: Vitest v8 provider in apps/api/vitest.config.ts; @vitest/coverage-v8 is resolved in the workspace lockfile
   quality:
     linter:

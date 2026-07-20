@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { ApiError } from "@multisystem/shared";
+import { ApiError } from "@hubilee/shared";
 import { authApi } from "@/lib/api-client";
 
 export function useUser() {

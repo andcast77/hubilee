@@ -3,7 +3,7 @@ import { NuevaExpedienteForm } from '@/components/app/expedientes/nueva-expedien
 import type { ProfessionalForForm } from '@/components/app/expedientes/expediente-datos-generales-form'
 import { getSessionUserId } from '@/lib/auth/session'
 import { serverBaroGetData } from '@/lib/api/server'
-import type { BaroProfessionalDto } from '@multisystem/contracts'
+import type { BaroProfessionalDto } from '@hubilee/contracts'
 
 export const dynamic = 'force-dynamic'
 

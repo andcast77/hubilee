@@ -3,7 +3,7 @@
 import { useState, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { MeResponse } from "@multisystem/contracts";
+import type { MeResponse } from "@hubilee/contracts";
 import { useUser } from "@/hooks/useUser";
 import { clearTokenCookie } from "@/lib/auth";
 import { authApi, accountApi, shopflowNotificationsApi } from "@/lib/api-client";
@@ -18,7 +18,7 @@ import {
   Label,
   Button,
   Input,
-} from "@multisystem/ui";
+} from "@hubilee/ui";
 import { User, Mail, Shield, LogOut, Bell } from "lucide-react";
 
 const NOTIFICATION_TYPE_ROWS = [

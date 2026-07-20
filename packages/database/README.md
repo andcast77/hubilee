@@ -1,6 +1,6 @@
-# Multisystem Database
+# Hubilee Database
 
-Paquete **@multisystem/database**: schema Prisma (PostgreSQL), migraciones, seed y **PrismaClient** exportado desde `src/client.ts`.
+Paquete **@hubilee/database**: schema Prisma (PostgreSQL), migraciones, seed y **PrismaClient** exportado desde `src/client.ts`.
 
 - **Local:** adaptador **`@prisma/adapter-pg`** cuando `DATABASE_URL` apunta a `localhost` o `127.0.0.1`.
 - **Neon / cloud:** adaptador **`@prisma/adapter-neon`** en el resto de casos.
@@ -38,13 +38,13 @@ packages/database/
 ```json
 {
   "dependencies": {
-    "@multisystem/database": "workspace:*"
+    "@hubilee/database": "workspace:*"
   }
 }
 ```
 
 ```typescript
-import { prisma } from '@multisystem/database'
+import { prisma } from '@hubilee/database'
 
 const users = await prisma.user.findMany()
 ```
@@ -75,7 +75,7 @@ Variables requeridas:
 
 ```bash
 # Local (Docker) - usado por comandos :dev
-DATABASE_URL_DEV=postgresql://multisystem:multisystem@localhost:5432/multisystem
+DATABASE_URL_DEV=postgresql://hubilee:hubilee@localhost:5432/hubilee
 
 # Producción (Neon) - usado por comandos estándar
 DATABASE_URL=postgresql://user:pass@ep-xxx-pooler.region.aws.neon.tech/dbname?sslmode=require
@@ -118,7 +118,7 @@ El seed cubre **workify**, **shopflow** y **techservices** (registros `Module`, 
 ### Ejecutar Seeds
 
 ```bash
-pnpm --filter @multisystem/database db:seed
+pnpm --filter @hubilee/database db:seed
 # o: cd packages/database && pnpm db:seed
 ```
 
@@ -156,13 +156,13 @@ El seed incluye:
 
 ```bash
 # Local Docker (desarrollo)
-pnpm --filter @multisystem/database migrate:dev -- --name nombre_migracion
+pnpm --filter @hubilee/database migrate:dev -- --name nombre_migracion
 
 # Producción Neon (despliegue)
-pnpm --filter @multisystem/database migrate
+pnpm --filter @hubilee/database migrate
 
 # Regenerar cliente
-pnpm --filter @multisystem/database generate
+pnpm --filter @hubilee/database generate
 ```
 
 ## Referencias

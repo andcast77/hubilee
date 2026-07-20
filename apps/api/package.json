@@ -1,5 +1,5 @@
 {
-  "name": "@multisystem/api",
+  "name": "@hubilee/api",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -21,8 +21,8 @@
     "@fastify/cors": "catalog:",
     "@fastify/env": "catalog:",
     "@fastify/rate-limit": "catalog:",
-    "@multisystem/contracts": "workspace:*",
-    "@multisystem/database": "workspace:*",
+    "@hubilee/contracts": "workspace:*",
+    "@hubilee/database": "workspace:*",
     "@neondatabase/serverless": "catalog:",
     "@prisma/adapter-neon": "catalog:",
     "@prisma/adapter-pg": "catalog:",

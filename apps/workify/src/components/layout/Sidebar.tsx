@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { UserWithRelations } from '@/types';
 import { authApi, workifyApi } from '@/lib/api/client';
-import { Sidebar as SidebarComponent, type NavGroup, type SidebarUser } from '@multisystem/ui';
+import { Sidebar as SidebarComponent, type NavGroup, type SidebarUser } from '@hubilee/ui';
 import {
   LayoutDashboard,
   Users,

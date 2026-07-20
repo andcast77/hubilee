@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@multisystem/ui'
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@hubilee/ui'
 import { toast } from 'sonner'
 import { useSales, useCancelSale } from '@/hooks/useSales'
 import { SettleSaleModal, type PendingSaleSummary } from '@/components/features/pos/SettleSaleModal'

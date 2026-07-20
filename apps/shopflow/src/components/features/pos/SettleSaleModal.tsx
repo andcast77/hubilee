@@ -7,10 +7,10 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@multisystem/ui'
-import { Button } from '@multisystem/ui'
-import { Input } from '@multisystem/ui'
-import { Label } from '@multisystem/ui'
+} from '@hubilee/ui'
+import { Button } from '@hubilee/ui'
+import { Input } from '@hubilee/ui'
+import { Label } from '@hubilee/ui'
 import { toast } from 'sonner'
 import { useSettleSale } from '@/hooks/useSales'
 import { useStoreConfig } from '@/hooks/useStoreConfig'

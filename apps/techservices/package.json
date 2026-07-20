@@ -1,5 +1,5 @@
 {
-  "name": "@multisystem/techservices",
+  "name": "@hubilee/techservices",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,9 +10,9 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@multisystem/contracts": "workspace:*",
-    "@multisystem/shared": "workspace:*",
-    "@multisystem/ui": "workspace:*",
+    "@hubilee/contracts": "workspace:*",
+    "@hubilee/shared": "workspace:*",
+    "@hubilee/ui": "workspace:*",
     "clsx": "catalog:",
     "lucide-react": "catalog:",
     "next": "catalog:",

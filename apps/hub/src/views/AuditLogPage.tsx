@@ -17,7 +17,7 @@ import {
   CardHeader,
   CardTitle,
   Button,
-} from "@multisystem/ui";
+} from "@hubilee/ui";
 import { Shield, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
 
 const ENTITY_TYPE_LABELS: Record<string, string> = {

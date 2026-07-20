@@ -1,1 +1,1 @@
-export { prisma, Prisma } from '@multisystem/database'
+export { prisma, Prisma } from '@hubilee/database'

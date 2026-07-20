@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import type { ApiResponse, LoginResponse } from "@multisystem/contracts";
+import type { ApiResponse, LoginResponse } from "@hubilee/contracts";
 import {
   AuthLayout,
   AuthBrandDecorativePanel,
@@ -22,7 +22,7 @@ import {
   Button,
   Input,
   Label,
-} from "@multisystem/ui";
+} from "@hubilee/ui";
 import { authApi } from "@/lib/api/client";
 
 function hubBaseUrl(): string {

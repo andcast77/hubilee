@@ -1,4 +1,4 @@
-import type { CompanyModules } from "@multisystem/contracts";
+import type { CompanyModules } from "@hubilee/contracts";
 
 export type Company = {
   id: string;
@@ -80,7 +80,7 @@ export type UpdateCompanyInput = {
   phone?: string;
 };
 // Re-export for consumers
-export type { CompanyModules } from "@multisystem/contracts";
+export type { CompanyModules } from "@hubilee/contracts";
 
 /** Resolve whether a module is enabled (supports both modules.* and legacy workifyEnabled etc.) */
 export function isModuleEnabled(

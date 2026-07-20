@@ -26,7 +26,7 @@ import {
   BarChart,
   Tags,
 } from 'lucide-react'
-import { Sidebar as SidebarComponent } from '@multisystem/ui'
+import { Sidebar as SidebarComponent } from '@hubilee/ui'
 import {
   InAppNotificationBell,
   Select,
@@ -34,12 +34,12 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@multisystem/ui'
+} from '@hubilee/ui'
 import { useInAppNotifications } from '@/hooks/useInAppNotifications'
 import { Link, useLocation } from '@tanstack/react-router'
 
 /**
- * `@multisystem/ui`'s Sidebar already calls its injected `Link` with both
+ * `@hubilee/ui`'s Sidebar already calls its injected `Link` with both
  * `to` and `href` set to the same value (interop for either react-router or
  * `next/link`-style components), so TanStack's `Link` can be passed through
  * directly with no adapter.

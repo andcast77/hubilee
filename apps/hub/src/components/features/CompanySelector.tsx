@@ -6,7 +6,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@multisystem/ui";
+} from "@hubilee/ui";
 import { useCompanies } from "@/hooks/useCompanies";
 import { authApi } from "@/lib/api-client";
 import { Building2 } from "lucide-react";

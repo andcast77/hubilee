@@ -1,20 +1,20 @@
 # Baro Auth Integration Specification
 
-Canonical spec (merged from change `check-structure`). See `apps/baro/lib/api/client.ts` and `@multisystem/api` auth routes.
+Canonical spec (merged from change `check-structure`). See `apps/baro/lib/api/client.ts` and `@hubilee/api` auth routes.
 
 ## Purpose
 
-Baro MUST use the same authentication and session model as other multisystem product apps via `@multisystem/api` — no standalone baro auth tables or JWT implementation.
+Baro MUST use the same authentication and session model as other hubilee product apps via `@hubilee/api` — no standalone baro auth tables or JWT implementation.
 
 ## Requirements
 
 ### Requirement: API-Based Authentication
 
-Baro MUST authenticate users through `@multisystem/api` auth endpoints. Baro MUST NOT implement local login, register, refresh, or password BFF routes on the Baro origin; client flows MUST call `/v1/auth/*` and `/v1/baro/me` via `lib/api/client.ts`.
+Baro MUST authenticate users through `@hubilee/api` auth endpoints. Baro MUST NOT implement local login, register, refresh, or password BFF routes on the Baro origin; client flows MUST call `/v1/auth/*` and `/v1/baro/me` via `lib/api/client.ts`.
 
 #### Scenario: Login via API
 
-- GIVEN valid credentials for a multisystem user
+- GIVEN valid credentials for a hubilee user
 - WHEN the user logs in through baro
 - THEN baro calls the API auth endpoint
 - AND stores the session using shared httpOnly cookies (`ms_session`)
@@ -40,9 +40,9 @@ Baro-specific `User` and `RefreshToken` models MUST NOT exist in the database af
 
 #### Scenario: Schema inspection
 
-- GIVEN the merged `@multisystem/database` schema
+- GIVEN the merged `@hubilee/database` schema
 - WHEN inspecting auth-related models
-- THEN only multisystem `User`, `Session`, and related auth models exist
+- THEN only hubilee `User`, `Session`, and related auth models exist
 - AND no baro-specific user or refresh token tables remain
 
 ### Requirement: Module Access Control
@@ -64,11 +64,11 @@ Baro features MUST require the `baro` module to be enabled for the company (and 
 
 ### Requirement: Legacy User Migration
 
-Existing baro standalone users MUST be migratable to multisystem `User` + `Company` + `CompanyMember` without data loss of domain records.
+Existing baro standalone users MUST be migratable to hubilee `User` + `Company` + `CompanyMember` without data loss of domain records.
 
 #### Scenario: Migrated user login
 
-- GIVEN a baro user migrated to multisystem auth
+- GIVEN a baro user migrated to hubilee auth
 - WHEN logging in with the same email via API auth
 - THEN authentication succeeds
 - AND previously owned expedientes are accessible under the mapped company
@@ -86,13 +86,13 @@ New baro tenants MUST register through the Hub company registration flow, not ba
 
 ### Requirement: Branded login shell
 
-Baro login MUST use the shared multisystem auth shell pattern: `@multisystem/ui` auth layout/brand components, isolated auth-route CSS (no marketing `globals.css` on login), and a `views/LoginPage.tsx` view matching the Shopflow login structure (MFA step, Zod validation, Hub links for register/forgot password).
+Baro login MUST use the shared hubilee auth shell pattern: `@hubilee/ui` auth layout/brand components, isolated auth-route CSS (no marketing `globals.css` on login), and a `views/LoginPage.tsx` view matching the Shopflow login structure (MFA step, Zod validation, Hub links for register/forgot password).
 
 #### Scenario: Login page visual parity
 
 - GIVEN an unauthenticated visitor on `/login`
 - WHEN the page renders
-- THEN Baro uses `AuthLayout` and auth brand components from `@multisystem/ui`
+- THEN Baro uses `AuthLayout` and auth brand components from `@hubilee/ui`
 - AND auth-route styles come from `(auth)/auth-globals.css` only
 - AND marketing site styles from `(site)/globals.css` do not apply to the login route
 

@@ -1,7 +1,7 @@
 import type { ApiProfessionalListItem } from '@/components/app/professional-profile-form'
 import { getSessionUserId } from '@/lib/auth/session'
 import { serverBaroGetData } from '@/lib/api/server'
-import type { BaroProfessionalDto } from '@multisystem/contracts'
+import type { BaroProfessionalDto } from '@hubilee/contracts'
 import Client from './client'
 
 export type ProfessionalsListRow = ApiProfessionalListItem

@@ -2,10 +2,10 @@
 
 import { useStoreConfig } from '@/hooks/useStoreConfig'
 import { useCartStore } from '@/store/cartStore'
-import { Button } from '@multisystem/ui'
-import { Card, CardContent, CardHeader, CardTitle } from '@multisystem/ui'
-import { Input } from '@multisystem/ui'
-import { Separator } from '@multisystem/ui'
+import { Button } from '@hubilee/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@hubilee/ui'
+import { Input } from '@hubilee/ui'
+import { Separator } from '@hubilee/ui'
 import { formatCurrency } from '@/lib/utils/format'
 
 interface TotalsPanelProps {

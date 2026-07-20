@@ -1,4 +1,4 @@
-import type { BaroExpedienteDto } from '@multisystem/contracts'
+import type { BaroExpedienteDto } from '@hubilee/contracts'
 
 export type ExpedienteRow = {
   id: string

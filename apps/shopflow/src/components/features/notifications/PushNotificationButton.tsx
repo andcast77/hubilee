@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
-import { Button } from '@multisystem/ui'
+import { Button } from '@hubilee/ui'
 import { Bell, BellOff } from 'lucide-react'
 
 export function PushNotificationButton() {

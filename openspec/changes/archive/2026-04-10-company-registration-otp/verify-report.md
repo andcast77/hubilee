@@ -9,7 +9,7 @@
 |--------|---------------------|
 | OTP send limit (3) + verify lockout (3) + success path | `packages/api` Vitest `src/__tests__/unit/registration-otp.service.test.ts` |
 | Ticket email mismatch, reuse, invalid JWT, JWT claims | `src/__tests__/unit/registration-ticket.service.test.ts` |
-| Full API unit suite | `pnpm --filter @multisystem/api run test:unit` |
+| Full API unit suite | `pnpm --filter @hubilee/api run test:unit` |
 | Front typecheck | Hub / Workify / Shopflow `tsc --noEmit` (CI or local) |
 
 ## Spec scenario coverage (sdd-verify)

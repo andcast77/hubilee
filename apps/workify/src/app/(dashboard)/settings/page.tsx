@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Card } from '@multisystem/ui';
+import { Card } from '@hubilee/ui';
 import { workifyApi } from '@/lib/api/client';
 import { 
   Users, 

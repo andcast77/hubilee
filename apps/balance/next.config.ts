@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
     root: path.join(__dirname, "..", ".."),
   },
 
-  transpilePackages: ["@multisystem/ui", "@multisystem/shared"],
+  transpilePackages: ["@hubilee/ui", "@hubilee/shared"],
 
   poweredByHeader: false,
   compress: true,

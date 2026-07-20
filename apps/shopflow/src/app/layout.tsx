@@ -30,7 +30,7 @@ const metadataBaseUrl = (() => {
 })();
 
 const defaultDescription =
-  "Shopflow: punto de venta, inventario y operación retail del ecosistema Multisystem.";
+  "Shopflow: punto de venta, inventario y operación retail del ecosistema Hubilee.";
 
 export const metadata: Metadata = {
   metadataBase: metadataBaseUrl,

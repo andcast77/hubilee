@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { ExpedienteDescargarPanel } from '@/components/app/expedientes/expediente-descargar-panel'
 import { getSessionUserId } from '@/lib/auth/session'
 import { serverBaroGetData } from '@/lib/api/server'
-import type { BaroExpedienteDto } from '@multisystem/contracts'
+import type { BaroExpedienteDto } from '@hubilee/contracts'
 
 export default async function ExpedienteDescargarPage({
   params,

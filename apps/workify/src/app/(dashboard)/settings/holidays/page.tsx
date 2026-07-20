@@ -18,7 +18,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@multisystem/ui';
+} from '@hubilee/ui';
 import { 
   Plus, 
   Edit, 

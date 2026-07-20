@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-/** Hub / Multisystem marketing accent (indigo-500) — not Shopflow POS blue */
+/** Hub / Hubilee marketing accent (indigo-500) — not Shopflow POS blue */
 const WORKIFY_THEME = "#6366f1";
 
 const metadataBaseUrl = (() => {
@@ -30,7 +30,7 @@ const metadataBaseUrl = (() => {
 })();
 
 const defaultDescription =
-  "Workify: turnos, asistencia y personas para tu empresa. Módulo RRHH del ecosistema Multisystem.";
+  "Workify: turnos, asistencia y personas para tu empresa. Módulo RRHH del ecosistema Hubilee.";
 
 export const metadata: Metadata = {
   metadataBase: metadataBaseUrl,

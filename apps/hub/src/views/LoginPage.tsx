@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { authApi } from "@/lib/api-client";
 import { shouldCallMeForLoggedInCheck } from "@/lib/auth-session-probe";
-import { ApiError } from "@multisystem/shared";
+import { ApiError } from "@hubilee/shared";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 import {
   AuthLayout,
@@ -27,7 +27,7 @@ import {
   Button,
   Input,
   Label,
-} from "@multisystem/ui";
+} from "@hubilee/ui";
 
 function safeNextPath(raw: string | null): string | null {
   if (!raw || !raw.startsWith("/")) return null;
@@ -168,7 +168,7 @@ export function LoginPage() {
       badge={
         <>
           <span>✨</span>
-          <span>Multisystem Hub</span>
+          <span>Hubilee Hub</span>
         </>
       }
       title="Gestiona tus módulos"

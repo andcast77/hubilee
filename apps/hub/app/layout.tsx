@@ -3,9 +3,9 @@ import { Providers } from "./providers";
 import "../src/globals.css";
 
 export const metadata: Metadata = {
-  title: "Multisystem Hub",
+  title: "Hubilee Hub",
   description:
-    "Multisystem Hub — plataforma unificada para gestión de módulos",
+    "Hubilee Hub — plataforma unificada para gestión de módulos",
   icons: {
     icon: "/favicon.ico",
   },

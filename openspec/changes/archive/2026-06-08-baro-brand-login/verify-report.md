@@ -7,14 +7,14 @@
 
 | Scenario | Result | Evidence |
 |----------|--------|----------|
-| Login page visual parity | PASS | `(auth)/layout.tsx` + `auth-globals.css`; `LoginPage.tsx` uses `@multisystem/ui` AuthLayout/brand |
+| Login page visual parity | PASS | `(auth)/layout.tsx` + `auth-globals.css`; `LoginPage.tsx` uses `@hubilee/ui` AuthLayout/brand |
 | Login submits via API | PASS | `LoginPage` calls API via `lib/api/client.ts`; `api-client.ts` resolves validation `message` |
 | Register redirects to Hub | PASS | `(auth)/register/page.tsx` redirects to Hub URL |
 
 ## Commands
 
 ```bash
-pnpm --filter @multisystem/baro build
+pnpm --filter @hubilee/baro build
 ```
 
 **Result:** PASS (Turbopack production build)

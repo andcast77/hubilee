@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@multisystem/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@hubilee/ui'
 import { useDashboardBusinessMetrics } from '@/hooks/useReports'
 import { formatCurrency } from '@/lib/utils/format'
 import { Package, Percent, Receipt, RefreshCw } from 'lucide-react'

@@ -4,7 +4,7 @@
 
 ### Requirement: Shared Database
 
-All services requiring persistence MUST connect to a single shared Postgres service (`postgres`) using one `DATABASE_URL` targeting the `multisystem` database.
+All services requiring persistence MUST connect to a single shared Postgres service (`postgres`) using one `DATABASE_URL` targeting the `hubilee` database.
 
 #### Scenario: Single database connection
 
@@ -15,7 +15,7 @@ All services requiring persistence MUST connect to a single shared Postgres serv
 
 ### Requirement: API Service in Compose
 
-The docker-compose.yml MUST include an `@multisystem/api` service reachable by apps on the internal network.
+The docker-compose.yml MUST include an `@hubilee/api` service reachable by apps on the internal network.
 
 #### Scenario: App reaches API internally
 
@@ -26,7 +26,7 @@ The docker-compose.yml MUST include an `@multisystem/api` service reachable by a
 
 ### Requirement: Centralized Migration
 
-Database migrations MUST run from `@multisystem/database` at stack startup (typically via the API service), not from individual app containers.
+Database migrations MUST run from `@hubilee/database` at stack startup (typically via the API service), not from individual app containers.
 
 #### Scenario: Baro container startup
 
@@ -61,4 +61,4 @@ The docker-compose.yml MUST define one service per application, one shared Postg
 
 ### Requirement: Per-App Database Isolation
 
-(Reason: User confirmed single shared `multisystem` database; baro schema merges into `@multisystem/database`.)
+(Reason: User confirmed single shared `hubilee` database; baro schema merges into `@hubilee/database`.)

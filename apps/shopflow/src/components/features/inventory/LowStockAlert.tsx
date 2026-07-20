@@ -9,11 +9,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@multisystem/ui'
-import { Skeleton } from '@multisystem/ui'
+} from '@hubilee/ui'
+import { Skeleton } from '@hubilee/ui'
 import { AlertTriangle, Package } from 'lucide-react'
-import { Badge } from '@multisystem/ui'
-import { Button } from '@multisystem/ui'
+import { Badge } from '@hubilee/ui'
+import { Button } from '@hubilee/ui'
 
 export function LowStockAlert() {
   const { data: products, isLoading, error } = useLowStockProducts()

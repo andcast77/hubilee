@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { Badge, Button } from '@multisystem/ui'
+import { Badge, Button } from '@hubilee/ui'
 import { PageFrame } from '@/views/PageFrame'
 import { ProductPanel } from '@/components/features/pos/ProductPanel'
 import { ShoppingCart } from '@/components/features/pos/ShoppingCart'

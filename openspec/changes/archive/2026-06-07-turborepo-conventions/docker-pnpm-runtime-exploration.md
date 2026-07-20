@@ -1,26 +1,26 @@
-## Exploration: Docker / pnpm runtime in multisystem monorepo
+## Exploration: Docker / pnpm runtime in hubilee monorepo
 
 ### Current State
 
-The stack targets **6 Next.js apps + `@multisystem/api` + Postgres + Caddy** via root `docker-compose.yml`. Each app has a thin per-app Dockerfile under `apps/*/Dockerfile`; a generic `docker/Dockerfile.nextjs` also exists but is **not wired** into compose.
+The stack targets **6 Next.js apps + `@hubilee/api` + Postgres + Caddy** via root `docker-compose.yml`. Each app has a thin per-app Dockerfile under `apps/*/Dockerfile`; a generic `docker/Dockerfile.nextjs` also exists but is **not wired** into compose.
 
 **Build pattern (all Next.js app Dockerfiles):**
 
 1. `deps` — `pnpm fetch` from lockfile + workspace package.json stubs
-2. `builder` — full `COPY . .`, `pnpm install --offline`, `pnpm --filter @multisystem/{app}... build`
+2. `builder` — full `COPY . .`, `pnpm install --offline`, `pnpm --filter @hubilee/{app}... build`
 3. `runner` — copies app artifacts (`.next`, `public`, `package.json`, `next.config.ts`) + **root** `/app/node_modules`, sets `WORKDIR /app/apps/{app}`, runs `next start -p $PORT`
 
 **pnpm layout (verified locally and in built hub image):**
 
 - Root `node_modules/.bin` contains only monorepo tooling (`turbo`, `tsc`, `knip`) — **no `next` binary**
 - Each app has `apps/{app}/node_modules/.bin/next` and symlinks into root `node_modules/.pnpm/`
-- App `node_modules/@multisystem/*` symlinks point to `packages/*` (workspace packages)
+- App `node_modules/@hubilee/*` symlinks point to `packages/*` (workspace packages)
 
 **Runtime verification (2026-06-07):**
 
 ```text
-docker build -f apps/hub/Dockerfile -t multisystem-hub:explore .   # SUCCESS (~5.5 min)
-docker run --rm multisystem-hub:explore sh -c 'next start -p 3001'
+docker build -f apps/hub/Dockerfile -t hubilee-hub:explore .   # SUCCESS (~5.5 min)
+docker run --rm hubilee-hub:explore sh -c 'next start -p 3001'
 # → sh: next: not found
 # Image has /app/node_modules/.pnpm but NO /app/apps/hub/node_modules
 ```
@@ -29,7 +29,7 @@ The `next: not found` failure is **reproducible** and affects all six app Docker
 
 **API Dockerfile (`docker/Dockerfile.api`):**
 
-- Copies `packages/` + root `node_modules`; runs migrations via `pnpm --filter @multisystem/database migrate:deploy` then `node packages/api/dist/server.js`
+- Copies `packages/` + root `node_modules`; runs migrations via `pnpm --filter @hubilee/database migrate:deploy` then `node packages/api/dist/server.js`
 - Build reached compile success; image export failed on this host with **disk full** — environmental, not a logic error in the Dockerfile itself
 
 **Compose vs spec:**
@@ -93,7 +93,7 @@ The `next: not found` failure is **reproducible** and affects all six app Docker
    - Effort: Medium–High
 
 4. **`pnpm deploy` production directory**
-   - After build, `pnpm --filter @multisystem/{app} deploy --prod /app/deploy`
+   - After build, `pnpm --filter @hubilee/{app} deploy --prod /app/deploy`
    - Runner uses pruned deploy folder with resolved deps (no broken symlinks)
    - Pros: Purpose-built for containers; explicit prod dependency closure
    - Cons: Less common in this repo; still need Next standalone or `next start` wiring; learning curve
@@ -116,7 +116,7 @@ If speed matters more than image size, **Approach 1** unblocks today but should 
 
 - **P0 — All app containers crash on start** (`next: not found`) — confirmed on hub image
 - **P1 — Client API calls broken in Docker** — `NEXT_PUBLIC_*` baked at build with localhost fallback; compose runtime env ineffective for browser bundle
-- **P1 — Workspace symlinks** — copying only root `node_modules` leaves broken `@multisystem/*` resolution even after `next` binary fix
+- **P1 — Workspace symlinks** — copying only root `node_modules` leaves broken `@hubilee/*` resolution even after `next` binary fix
 - **P2 — Missing `outputFileTracingRoot`** on 4 apps may cause subtle missing-file errors at runtime after binary fix
 - **P2 — `.dockerignore` balance exclusions** may hide new API/contract files from API image builds
 - **P2 — Disk/build time** — full stack rebuild is slow; CI may need layer caching or per-service build matrix

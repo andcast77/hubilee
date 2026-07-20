@@ -10,8 +10,8 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { ApiError } from '@multisystem/shared'
-import type { ApiResponse, BaroMeResponse } from '@multisystem/contracts'
+import { ApiError } from '@hubilee/shared'
+import type { ApiResponse, BaroMeResponse } from '@hubilee/contracts'
 import { authApi, baroApi } from '@/lib/api/client'
 
 export type AccountProfileSummary = {

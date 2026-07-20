@@ -23,7 +23,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@multisystem/ui';
+} from '@hubilee/ui';
 import { Plus, Edit, Trash2, Users, DollarSign, Clock, Calendar, Shield, Heart } from 'lucide-react';
 
 interface Position {

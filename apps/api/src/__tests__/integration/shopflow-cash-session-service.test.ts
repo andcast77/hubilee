@@ -4,7 +4,7 @@
  * shopflow-cash-session-api.test.ts).
  */
 import { describe, it, expect, beforeAll } from 'vitest'
-import { prisma } from '@multisystem/database'
+import { prisma } from '@hubilee/database'
 
 import './setup'
 

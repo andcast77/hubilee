@@ -1,7 +1,7 @@
 import 'server-only'
 
 import { serverAuthGetData } from '@/lib/api/server'
-import type { MeResponse } from '@multisystem/contracts'
+import type { MeResponse } from '@hubilee/contracts'
 
 export async function getSessionUserId(): Promise<string | null> {
   const me = await serverAuthGetData<MeResponse>('/me')

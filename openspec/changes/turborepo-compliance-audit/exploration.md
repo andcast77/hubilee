@@ -24,8 +24,8 @@ The repo recently completed change `turborepo-conventions` (archived 2026-06-07)
 | UI folder `packages/ui/` | ✅ | Renamed from `component-library` |
 | Root `packageManager` only | ✅ | `package.json` `pnpm@10.28.0`; baro nested manager removed |
 | Root scripts delegate to Turbo | ✅ | `build`, `dev`, `lint`, `test`, `typecheck` → `turbo run` |
-| Filter closure `...` on dev/build | ✅ | e.g. `dev:hub` → `--filter=@multisystem/hub...` |
-| Uniform `turbo.json` tasks | ✅ | No `@multisystem/baro#*` overrides; `dependsOn: ["^build"]` |
+| Filter closure `...` on dev/build | ✅ | e.g. `dev:hub` → `--filter=@hubilee/hub...` |
+| Uniform `turbo.json` tasks | ✅ | No `@hubilee/baro#*` overrides; `dependsOn: ["^build"]` |
 | CI `--affected` + full history | ✅ | `.github/workflows/ci.yml` |
 | Internal libs build to `dist/` | ✅ Mostly | `shared`, `contracts`, `ui`, `database` export `dist/` |
 
@@ -78,7 +78,7 @@ The repo recently completed change `turborepo-conventions` (archived 2026-06-07)
 
 **Option 2 in two slices**, after product call on balance:
 
-1. **Slice 1 (compliance hygiene):** Update READMEs/scripts comments; add missing `typecheck`/`lint` to `@multisystem/api`, hub, techservices; align baro catalog or document exception; remove or track `apps/balance` from compose/scripts until product SDD.
+1. **Slice 1 (compliance hygiene):** Update READMEs/scripts comments; add missing `typecheck`/`lint` to `@hubilee/api`, hub, techservices; align baro catalog or document exception; remove or track `apps/balance` from compose/scripts until product SDD.
 2. **Slice 2 (optional strict):** Add `packages/typescript-config` (or document why `tsconfig.base.json` at root is sufficient); CI job `docker build` hub+api; upstream issue/workaround doc for `tsconfig.base.json` in prune output.
 
 Do **not** block on Turbopack vs Webpack for baro unless Docker/Vercel must use Turbopack — Turborepo Docker guide cares about **standalone output**, not bundler choice.

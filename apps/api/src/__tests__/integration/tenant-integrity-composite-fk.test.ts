@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest'
-import { prisma } from '@multisystem/database'
+import { prisma } from '@hubilee/database'
 
 import './setup'
 

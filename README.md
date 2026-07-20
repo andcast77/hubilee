@@ -1,4 +1,4 @@
-# Multisystem
+# Hubilee
 
 Plataforma modular multi-empresa para gestión de órdenes de trabajo, ventas y servicios técnicos.
 
@@ -7,18 +7,18 @@ Plataforma modular multi-empresa para gestión de órdenes de trabajo, ventas y 
 Este proyecto usa **pnpm** + **Turborepo** para gestionar múltiples apps y paquetes compartidos.
 
 ```
-multisystem/
+hubilee/
 ├── apps/
-│   ├── hub/              # @multisystem/hub — portal Next.js (login, dashboard, módulos)
-│   ├── shopflow/         # @multisystem/shopflow — POS, inventario, reportes (Next.js)
-│   ├── workify/          # @multisystem/workify — RRHH, fichajes, reportes (Next.js)
-│   └── techservices/     # @multisystem/techservices — órdenes, activos, agenda (Next.js)
+│   ├── hub/              # @hubilee/hub — portal Next.js (login, dashboard, módulos)
+│   ├── shopflow/         # @hubilee/shopflow — POS, inventario, reportes (Next.js)
+│   ├── workify/          # @hubilee/workify — RRHH, fichajes, reportes (Next.js)
+│   └── techservices/     # @hubilee/techservices — órdenes, activos, agenda (Next.js)
 ├── packages/
 │   ├── api/                  # API REST Fastify compartida
-│   ├── component-library/    # @multisystem/ui — componentes React compartidos
+│   ├── component-library/    # @hubilee/ui — componentes React compartidos
 │   ├── contracts/            # Tipos y contratos compartidos
-│   ├── database/           # @multisystem/database — Prisma, migraciones, cliente
-│   └── shared/               # @multisystem/shared — auth cookie + ApiClient (frontends)
+│   ├── database/           # @hubilee/database — Prisma, migraciones, cliente
+│   └── shared/               # @hubilee/shared — auth cookie + ApiClient (frontends)
 ├── package.json
 ├── pnpm-workspace.yaml
 └── turbo.json
@@ -37,11 +37,11 @@ multisystem/
 
 | Paquete | Descripción |
 |---------|-------------|
-| **@multisystem/api** | API Fastify: JWT, CORS, rate limit, Swagger (`/api/docs`); rutas por dominio (auth, usuarios, empresas, miembros, **shopflow**, **workify**, **techservices**); versión URL `/api/v1/*` → misma API que `/api/*` |
-| **@multisystem/contracts** | Tipos TS compartidos: respuestas auth (`LoginResponse`, `MeResponse`, …), `CompanyRow` / `CompanyModules`, envoltorio **`ApiResponse<T>`**; API + apps frontend |
-| **@multisystem/ui** | (`packages/component-library`) Componentes React (Radix), estilos SCSS → CSS; consumo en **hub**, **shopflow**, **workify**, **techservices** vía `workspace:*` |
-| **@multisystem/database** | Schema Prisma (workify, shopflow, techservices, hub), migraciones, `prisma` exportado; adaptador **pg** en local, **Neon** en cloud |
-| **@multisystem/shared** | (`packages/shared`) Cookie JWT + `ApiClient` / `createPrefixedApi` para **hub**, **shopflow**, **workify**, **techservices** (TS fuente, sin build) |
+| **@hubilee/api** | API Fastify: JWT, CORS, rate limit, Swagger (`/api/docs`); rutas por dominio (auth, usuarios, empresas, miembros, **shopflow**, **workify**, **techservices**); versión URL `/api/v1/*` → misma API que `/api/*` |
+| **@hubilee/contracts** | Tipos TS compartidos: respuestas auth (`LoginResponse`, `MeResponse`, …), `CompanyRow` / `CompanyModules`, envoltorio **`ApiResponse<T>`**; API + apps frontend |
+| **@hubilee/ui** | (`packages/component-library`) Componentes React (Radix), estilos SCSS → CSS; consumo en **hub**, **shopflow**, **workify**, **techservices** vía `workspace:*` |
+| **@hubilee/database** | Schema Prisma (workify, shopflow, techservices, hub), migraciones, `prisma` exportado; adaptador **pg** en local, **Neon** en cloud |
+| **@hubilee/shared** | (`packages/shared`) Cookie JWT + `ApiClient` / `createPrefixedApi` para **hub**, **shopflow**, **workify**, **techservices** (TS fuente, sin build) |
 
 ### Módulos de negocio
 
@@ -78,16 +78,16 @@ Con **Docker** instalado:
 docker compose up -d postgres
 
 # Configurar .env en packages/api/ con:
-DATABASE_URL=postgresql://multisystem:multisystem@localhost:5432/multisystem
+DATABASE_URL=postgresql://hubilee:hubilee@localhost:5432/hubilee
 
 # Aplicar migraciones
-pnpm --filter @multisystem/database migrate:deploy
+pnpm --filter @hubilee/database migrate:deploy
 
 # Opcional: cargar datos iniciales
-pnpm --filter @multisystem/database db:seed
+pnpm --filter @hubilee/database db:seed
 ```
 
-Credenciales por defecto: usuario `multisystem`, contraseña `multisystem`, base `multisystem`.
+Credenciales por defecto: usuario `hubilee`, contraseña `hubilee`, base `hubilee`.
 
 > **Nota:** Asegúrate de que `DATABASE_URL` esté en `packages/api/.env`. Si las migraciones no encuentran la variable, crea también `packages/database/.env` con el mismo `DATABASE_URL`.
 
@@ -111,11 +111,11 @@ pnpm install
 ## Desarrollo
 
 ```bash
-# Iniciar todos los servicios (API + apps + @multisystem/ui en watch) en paralelo
+# Iniciar todos los servicios (API + apps + @hubilee/ui en watch) en paralelo
 pnpm dev
 ```
 
-`turbo run dev` ejecuta el script `dev` de cada paquete que lo define; **`@multisystem/ui`** usa `vite build --watch` para recompilar `dist/` al cambiar `packages/component-library/src`.
+`turbo run dev` ejecuta el script `dev` de cada paquete que lo define; **`@hubilee/ui`** usa `vite build --watch` para recompilar `dist/` al cambiar `packages/component-library/src`.
 
 - **API:** http://localhost:3000  
 - **Swagger:** http://localhost:3000/api/docs  
@@ -128,8 +128,8 @@ pnpm dev
 
 1. Levantar PostgreSQL: `docker compose up -d postgres`
 2. Tener `.env` en `packages/api/` y opcionalmente en `packages/database/` (ver Base de datos local).
-3. Migraciones: `pnpm --filter @multisystem/database migrate:deploy`
-4. Levantar API y Hub (incluye `@multisystem/ui` en watch junto al Hub):
+3. Migraciones: `pnpm --filter @hubilee/database migrate:deploy`
+4. Levantar API y Hub (incluye `@hubilee/ui` en watch junto al Hub):
    ```bash
    pnpm run dev:hub
    ```
@@ -156,26 +156,26 @@ Si el puerto 3000 está en uso, cierra el proceso que lo use o ejecuta en otra t
 
 ```bash
 # API
-pnpm --filter @multisystem/api dev      # Solo API
-pnpm --filter @multisystem/api test     # Tests
+pnpm --filter @hubilee/api dev      # Solo API
+pnpm --filter @hubilee/api test     # Tests
 
 # UI compartida (antes de hub si hace falta dist fresco)
-pnpm --filter @multisystem/ui build
+pnpm --filter @hubilee/ui build
 
 # Base de datos (generar cliente tras cambios de schema)
-pnpm --filter @multisystem/database build
+pnpm --filter @hubilee/database build
 
 # Hub (puerto 3001; API en 3000)
-pnpm --filter @multisystem/hub dev
+pnpm --filter @hubilee/hub dev
 
 # Shopflow (puerto 3002)
-pnpm --filter @multisystem/shopflow dev
+pnpm --filter @hubilee/shopflow dev
 
 # Workify (puerto 3003)
-pnpm --filter @multisystem/workify dev
+pnpm --filter @hubilee/workify dev
 
 # Techservices
-pnpm --filter @multisystem/techservices dev
+pnpm --filter @hubilee/techservices dev
 ```
 
 ---
@@ -218,10 +218,10 @@ Las apps **hub**, **shopflow**, **workify** y **techservices** usan `NEXT_PUBLIC
 
 - **Monorepo:** pnpm workspaces, Turborepo. Versiones compartidas: bloque `catalog:` en [`pnpm-workspace.yaml`](./pnpm-workspace.yaml) y referencias `"paquete": "catalog:"` en cada `package.json` que consuma esa versión. Alineación semver entre workspaces: [PLAN-32](docs/plans/%5Bcompleted%5D%20PLAN-32-monorepo-dependency-alignment.md). Gobierno del catálogo pnpm: [PLAN-34](docs/plans/%5Bcompleted%5D%20PLAN-34-pnpm-catalog.md); procedimiento corto para añadir entradas: [SYNC.md — pnpm workspace catalog](./docs/plans/SYNC.md#pnpm-workspace-catalog).
 - **API:** Fastify 5, Zod, JWT, Swagger
-- **Frontend:** **hub**, **shopflow**, **workify** y **techservices** con Next.js (App Router donde aplica); Tailwind; **@multisystem/ui**
-- **BD:** Prisma (vía `@multisystem/database`)
-- **Contratos:** `@multisystem/contracts` (tipos API ↔ frontend)
-- **Front compartido:** `@multisystem/shared` (fetch + cookie token)
+- **Frontend:** **hub**, **shopflow**, **workify** y **techservices** con Next.js (App Router donde aplica); Tailwind; **@hubilee/ui**
+- **BD:** Prisma (vía `@hubilee/database`)
+- **Contratos:** `@hubilee/contracts` (tipos API ↔ frontend)
+- **Front compartido:** `@hubilee/shared` (fetch + cookie token)
 - **Lenguaje:** TypeScript (strict)
 
 ---
@@ -229,12 +229,12 @@ Las apps **hub**, **shopflow**, **workify** y **techservices** usan `NEXT_PUBLIC
 ## Documentación adicional
 
 - [API - README](./packages/api/README.md) — Estructura del paquete, Swagger, variables de entorno (incl. Redis opcional para caché de módulos), despliegue
-- [Component library - README](./packages/component-library/README.md) — `@multisystem/ui`: imports, estilos, build, lista de componentes
-- [Contracts - README](./packages/contracts/README.md) — `@multisystem/contracts`: tipos auth/empresa/API, build `tsc`
+- [Component library - README](./packages/component-library/README.md) — `@hubilee/ui`: imports, estilos, build, lista de componentes
+- [Contracts - README](./packages/contracts/README.md) — `@hubilee/contracts`: tipos auth/empresa/API, build `tsc`
 - [Database - README](./packages/database/README.md) — Prisma, migraciones, seed, variables `DATABASE_URL` / `DIRECT_URL`, cliente
 - [Prisma schema split (plan)](./packages/database/prisma/PRISMA_SCHEMA_SPLIT.md) — notas para dividir el schema por dominio
-- [Shared - README](./packages/shared/README.md) — `@multisystem/shared`: auth por cookie, cliente API
-- [Hub - README](./apps/hub/README.md) — `@multisystem/hub`: dashboard, variables `NEXT_PUBLIC_*`, rewrites `/v1`
+- [Shared - README](./packages/shared/README.md) — `@hubilee/shared`: auth por cookie, cliente API
+- [Hub - README](./apps/hub/README.md) — `@hubilee/hub`: dashboard, variables `NEXT_PUBLIC_*`, rewrites `/v1`
 - [Shopflow - README](./apps/shopflow/README.md) — POS, API `/v1/shopflow`, puerto 3002, `NEXT_PUBLIC_*`
 - [Workify - README](./apps/workify/README.md) — RRHH, `/api/workify`, puerto 3003
 - [Techservices - README](./apps/techservices/README.md) — Next.js, `/api/techservices`, puerto 3004

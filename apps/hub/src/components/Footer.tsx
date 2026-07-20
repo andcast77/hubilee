@@ -14,7 +14,7 @@ export function Footer() {
           {/* Brand */}
           <div className="max-w-xs">
             <span className="text-lg font-black text-white tracking-tight block mb-3">
-              Multisystem
+              Hubilee
             </span>
             <p className="text-sm text-white/30 leading-relaxed">
               Plataforma empresarial unificada. POS, RRHH y servicios técnicos
@@ -88,7 +88,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-10 pt-6 border-t border-white/[0.05] flex flex-col md:flex-row justify-between items-center gap-3">
           <p className="text-xs text-white/20">
-            © {currentYear} Multisystem. Todos los derechos reservados.
+            © {currentYear} Hubilee. Todos los derechos reservados.
           </p>
           <div className="flex gap-5 text-xs text-white/20">
             <a href="#" className="hover:text-white/50 transition-colors">

@@ -7,7 +7,7 @@
  * `sdd/web-desktop-vite-tauri/design`: a shared secure-token-storage
  * singleton and the `AuthTransport` `ApiClient` picks cookie-vs-Bearer from.
  */
-import type { ApiClientOptions, AuthTransport } from '@multisystem/shared'
+import type { ApiClientOptions, AuthTransport } from '@hubilee/shared'
 import { createInMemoryTokenStorage, createTauriTokenStorage, type TokenStorage } from './secure-storage'
 
 export function isDesktop(): boolean {

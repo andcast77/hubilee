@@ -8,8 +8,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@multisystem/ui'
-import { Button } from '@multisystem/ui'
+} from '@hubilee/ui'
+import { Button } from '@hubilee/ui'
 import { Download, Trash2, HardDrive } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'

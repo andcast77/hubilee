@@ -19,7 +19,7 @@ import {
   Badge,
   Button,
   AppBreadcrumb,
-} from "@multisystem/ui";
+} from "@hubilee/ui";
 import { Mail, Calendar, AlertCircle, Users, Shield } from "lucide-react";
 
 const roleColors = {

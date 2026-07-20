@@ -10,12 +10,12 @@ Baro MUST build with Next.js 16 Turbopack (no `--webpack`), use API-backed clien
 
 ### Requirement: Turbopack production build
 
-Baro MUST build with the default Next.js 16 bundler (Turbopack) without `--webpack`, consistent with other multisystem Next apps.
+Baro MUST build with the default Next.js 16 bundler (Turbopack) without `--webpack`, consistent with other hubilee Next apps.
 
 #### Scenario: Monorepo build succeeds
 
-- GIVEN the multisystem workspace with dependencies built
-- WHEN `pnpm turbo run build --filter=@multisystem/baro...` runs
+- GIVEN the hubilee workspace with dependencies built
+- WHEN `pnpm turbo run build --filter=@hubilee/baro...` runs
 - THEN the Baro build completes without module resolution errors
 - AND no `--webpack` flag is used in Baro package scripts
 - AND the build MUST NOT emit Turbopack NFT warnings caused by App Route filesystem tracing
@@ -39,7 +39,7 @@ Baro `proxy.ts` MUST NOT depend on reading `ms_session` from the Baro origin. Wh
 
 ### Requirement: Client auth uses API endpoints
 
-Baro client code MUST call `@multisystem/api` auth and baro routes via `lib/api/client.ts`. Baro MUST NOT fetch removed local `/api/auth/*` BFF paths for login, logout, refresh, session load, or password change.
+Baro client code MUST call `@hubilee/api` auth and baro routes via `lib/api/client.ts`. Baro MUST NOT fetch removed local `/api/auth/*` BFF paths for login, logout, refresh, session load, or password change.
 
 #### Scenario: Login via API
 

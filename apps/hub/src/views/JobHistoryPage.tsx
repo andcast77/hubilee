@@ -15,7 +15,7 @@ import {
   CardHeader,
   CardTitle,
   Badge,
-} from "@multisystem/ui";
+} from "@hubilee/ui";
 import { Timer } from "lucide-react";
 
 const STATUS_STYLES: Record<string, string> = {

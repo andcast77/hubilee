@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Printer } from 'lucide-react'
-import { Button } from '@multisystem/ui'
+import { Button } from '@hubilee/ui'
 import {
   generateReceiptCommands,
   printReceiptViaSerial,

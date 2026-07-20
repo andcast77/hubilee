@@ -1,13 +1,13 @@
 /**
- * Migrates data from a standalone baro Postgres database into multisystem schema.
+ * Migrates data from a standalone baro Postgres database into hubilee schema.
  *
  * Usage:
  *   BARO_LEGACY_DATABASE_URL=postgresql://baro:baro@localhost:5433/baro \
- *   DATABASE_URL=postgresql://multisystem:multisystem@localhost:5432/multisystem \
+ *   DATABASE_URL=postgresql://hubilee:hubilee@localhost:5432/hubilee \
  *   pnpm exec tsx packages/database/scripts/migrate-baro-legacy.ts [--dry-run]
  *
  * Requires baro tables in legacy DB (User, Professional, Expediente, …) and
- * baro_* tables already created in multisystem via Prisma migrate.
+ * baro_* tables already created in hubilee via Prisma migrate.
  */
 import 'dotenv/config'
 import pg from 'pg'
@@ -44,7 +44,7 @@ async function main() {
     for (const lu of users) {
       const existing = await target.query('SELECT id FROM users WHERE email = $1', [lu.email])
       if (existing.rowCount && existing.rowCount > 0) {
-        console.log(`Skip ${lu.email}: already in multisystem`)
+        console.log(`Skip ${lu.email}: already in hubilee`)
         continue
       }
 

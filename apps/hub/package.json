@@ -1,5 +1,5 @@
 {
-  "name": "@multisystem/hub",
+  "name": "@hubilee/hub",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,9 +11,9 @@
   "dependencies": {
     "@marsidev/react-turnstile": "catalog:",
     "@hookform/resolvers": "catalog:",
-    "@multisystem/contracts": "workspace:*",
-    "@multisystem/shared": "workspace:*",
-    "@multisystem/ui": "workspace:*",
+    "@hubilee/contracts": "workspace:*",
+    "@hubilee/shared": "workspace:*",
+    "@hubilee/ui": "workspace:*",
     "@tanstack/react-query": "catalog:",
     "clsx": "catalog:",
     "lucide-react": "catalog:",

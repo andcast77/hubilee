@@ -13,7 +13,7 @@ import { parseActaNotarialFechaToDate } from '@/lib/expediente/acta-notarial-fec
 import type { ColindanteNotifica } from '@/lib/expediente/schemas'
 import { getSessionUserId } from '@/lib/auth/session'
 import { serverBaroGetData } from '@/lib/api/server'
-import type { BaroExpedienteDetailDto, BaroProfessionalDto } from '@multisystem/contracts'
+import type { BaroExpedienteDetailDto, BaroProfessionalDto } from '@hubilee/contracts'
 import type { OrdenanteRow } from '@/stores/expediente-store'
 
 function mapNotificaColindanteDb(raw: string): ColindanteNotifica {

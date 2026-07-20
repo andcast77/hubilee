@@ -1,16 +1,16 @@
-# Shopflow (`@multisystem/shopflow`)
+# Shopflow (`@hubilee/shopflow`)
 
-Módulo **POS e inventario** del ecosistema Multisystem: ventas, productos, categorías, clientes, proveedores, inventario, reportes y administración (usuarios del módulo, fidelidad, backup, ajustes de tienda/ticket).
+Módulo **POS e inventario** del ecosistema Hubilee: ventas, productos, categorías, clientes, proveedores, inventario, reportes y administración (usuarios del módulo, fidelidad, backup, ajustes de tienda/ticket).
 
 ## Stack
 
 - **Next.js 16** (App Router) + **React 19**
 - **TanStack Query**, **Zustand**, **react-hook-form** + **Zod**
-- **Tailwind CSS 4**, **@multisystem/ui**, **@multisystem/shared**, **@multisystem/contracts**
+- **Tailwind CSS 4**, **@hubilee/ui**, **@hubilee/shared**, **@hubilee/contracts**
 - **Recharts**, **ExcelJS**, **jsPDF**, **react-to-print** (tickets/recibos)
 - **Vitest** (tests en validaciones y similares)
 
-La API es **`@multisystem/api`**, consumida por HTTP (cliente en `src/lib/api/client.ts`).
+La API es **`@hubilee/api`**, consumida por HTTP (cliente en `src/lib/api/client.ts`).
 
 ## Puerto y desarrollo
 
@@ -22,7 +22,7 @@ La API es **`@multisystem/api`**, consumida por HTTP (cliente en `src/lib/api/cl
 | `pnpm test` / `pnpm test:run` | Vitest |
 
 ```bash
-pnpm --filter @multisystem/shopflow dev
+pnpm --filter @hubilee/shopflow dev
 ```
 
 Incluir **`http://localhost:3002`** en **`CORS_ORIGIN`** de la API. El **Hub** puede enlazar aquí con **`NEXT_PUBLIC_SHOPFLOW_URL=http://localhost:3002`**.

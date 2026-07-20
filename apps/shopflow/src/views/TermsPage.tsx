@@ -1,7 +1,7 @@
 "use client";
 
 import { Link } from "@tanstack/react-router";
-import { Button, Card, CardContent } from "@multisystem/ui";
+import { Button, Card, CardContent } from "@hubilee/ui";
 
 export function TermsPage() {
   return (

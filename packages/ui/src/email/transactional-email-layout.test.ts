@@ -90,6 +90,6 @@ describe("transactional-email-layout", () => {
       brandLogoUrl: "https://cdn.example.com/logo.png",
     });
     expect(html).toContain("https://cdn.example.com/logo.png");
-    expect(html).toContain('alt="Multisystem"');
+    expect(html).toContain('alt="Hubilee"');
   });
 });

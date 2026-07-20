@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@multisystem/database'
+import type { PrismaClient } from '@hubilee/database'
 import type { TransactionClient } from '../common/database/index.js'
 import { prisma } from '../db/index.js'
 import { ProductRepository } from './product.repository.js'

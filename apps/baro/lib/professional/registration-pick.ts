@@ -1,4 +1,4 @@
-import type { BaroProfessionalTitle, BaroTitleGrammarGender } from '@multisystem/contracts'
+import type { BaroProfessionalTitle, BaroTitleGrammarGender } from '@hubilee/contracts'
 
 type ProfessionalTitle = BaroProfessionalTitle
 type TitleGrammarGender = BaroTitleGrammarGender

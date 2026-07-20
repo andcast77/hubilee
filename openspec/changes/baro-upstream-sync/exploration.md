@@ -9,8 +9,8 @@
 - ~184 TS/TSX source files; build runs `prisma migrate deploy && prisma generate && next build`.
 
 **Monorepo `apps/baro` (post `check-structure`, branch `v2`)**:
-- Integrated product app (`@multisystem/baro`, port **3006**); **no local Prisma or auth routes**.
-- Data access via `lib/api/client.ts` + `lib/api/server.ts` → `@multisystem/api` `/v1/baro/*` and `/v1/auth/*`.
+- Integrated product app (`@hubilee/baro`, port **3006**); **no local Prisma or auth routes**.
+- Data access via `lib/api/client.ts` + `lib/api/server.ts` → `@hubilee/api` `/v1/baro/*` and `/v1/auth/*`.
 - Baro domain models live in `packages/database/prisma/schema.prisma` (`Baro*` models with `companyId`, `@@map("baro_*")`).
 - Canonical constraints in `openspec/specs/baro-data-model/` and `openspec/specs/baro-auth-integration/` (API cookies, no standalone auth tables).
 - Server actions consolidated: `update-all`, `nueva`, `delete` call API; upstream granular actions (`colindantes.ts`, `datos-generales.ts`, `publicacion-acta.ts`, `titulo-relacion.ts`) were removed in favor of `PUT /expedientes/:id/full`.

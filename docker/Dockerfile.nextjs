@@ -2,12 +2,12 @@
 #
 # Example:
 #   docker build -f docker/Dockerfile.nextjs \
-#     --build-arg PACKAGE=@multisystem/hub \
+#     --build-arg PACKAGE=@hubilee/hub \
 #     --build-arg APP_DIR=hub \
 #     --build-arg PORT=3001 \
 #     --build-arg NEXT_PUBLIC_API_URL=http://api:3000 \
 #     --build-arg NEXT_PUBLIC_HUB_URL=http://localhost:3001 \
-#     -t multisystem-hub .
+#     -t hubilee-hub .
 
 ARG NODE_VERSION=22-alpine
 

@@ -1,5 +1,5 @@
 {
-  "name": "@multisystem/balance",
+  "name": "@hubilee/balance",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,9 +10,9 @@
   },
   "dependencies": {
     "@hookform/resolvers": "catalog:",
-    "@multisystem/contracts": "workspace:*",
-    "@multisystem/shared": "workspace:*",
-    "@multisystem/ui": "workspace:*",
+    "@hubilee/contracts": "workspace:*",
+    "@hubilee/shared": "workspace:*",
+    "@hubilee/ui": "workspace:*",
     "@tanstack/react-query": "catalog:",
     "clsx": "catalog:",
     "date-fns": "catalog:",

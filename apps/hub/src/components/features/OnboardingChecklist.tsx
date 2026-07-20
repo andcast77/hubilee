@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@multisystem/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@hubilee/ui";
 import { CheckCircle2, Circle } from "lucide-react";
 import type { Company, CompanyStats } from "@/types/company";
 import { isModuleEnabled } from "@/types/company";

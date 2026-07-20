@@ -15,7 +15,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@multisystem/ui'
+} from '@hubilee/ui'
 import { Mail, ArrowLeft } from 'lucide-react'
 
 const forgotPasswordSchema = z.object({

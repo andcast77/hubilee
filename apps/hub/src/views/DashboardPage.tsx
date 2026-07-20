@@ -8,7 +8,7 @@ import { usePresence } from "@/hooks/usePresence";
 import { StatsCard } from "@/components/features/StatsCard";
 import { ModuleCard } from "@/components/features/ModuleCard";
 import { OnboardingChecklist } from "@/components/features/OnboardingChecklist";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge } from "@multisystem/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge } from "@hubilee/ui";
 import { Users, UserCheck, Shield, User, Calendar, Settings, Briefcase, ShoppingCart, Wrench, Wifi } from "lucide-react";
 
 export function DashboardPage() {

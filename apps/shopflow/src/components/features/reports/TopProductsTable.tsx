@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@multisystem/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@hubilee/ui'
 import { useTopProducts } from '@/hooks/useReports'
 import { formatCurrency } from '@/lib/utils/format'
 import {
@@ -10,7 +10,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@multisystem/ui'
+} from '@hubilee/ui'
 
 interface TopProductsTableProps {
   storeId?: string | null

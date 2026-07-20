@@ -11,8 +11,8 @@ import type {
   BalanceSheetEntry,
   IncomeStatementEntry,
   FiscalYearDto,
-} from "@multisystem/contracts";
-import { ApiClient } from "@multisystem/shared";
+} from "@hubilee/contracts";
+import { ApiClient } from "@hubilee/shared";
 import { getBalanceApiBaseUrl } from "@/lib/api-origin";
 
 const API_URL = getBalanceApiBaseUrl();

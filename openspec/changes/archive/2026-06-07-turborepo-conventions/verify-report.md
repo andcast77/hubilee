@@ -23,7 +23,7 @@
 
 - **`sdd-archive`**: pending user confirmation (do not archive automatically).
 - **Push to remote**: not performed.
-- **Balance product**: excluded; compose references `@multisystem/balance` for future work.
+- **Balance product**: excluded; compose references `@hubilee/balance` for future work.
 
 ## Verdict
 

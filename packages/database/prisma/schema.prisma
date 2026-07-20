@@ -1549,7 +1549,7 @@ model BaroProfessional {
   id                 String                @id @default(uuid())
   companyId          String
   company            Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  /// Titular multisystem user when this professional is the account holder
+  /// Titular hubilee user when this professional is the account holder
   userId             String?               @unique
   user               User?                 @relation("BaroTitularUser", fields: [userId], references: [id], onDelete: SetNull)
 

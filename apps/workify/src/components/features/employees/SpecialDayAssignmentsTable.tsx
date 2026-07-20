@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { workifyApi } from '@/lib/api/client';
-import { Badge, Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@multisystem/ui';
+import { Badge, Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@hubilee/ui';
 import SpecialDayAssignmentModal from './SpecialDayAssignmentModal';
 
 interface SpecialDayAssignment {

@@ -1,4 +1,4 @@
-import { ApiClient as SharedApiClient } from "@multisystem/shared";
+import { ApiClient as SharedApiClient } from "@hubilee/shared";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
@@ -21,4 +21,4 @@ export const authApi = {
     apiClient.post<T>(`/v1/auth${endpoint}`, data, options),
 };
 
-export type { ApiResponse } from "@multisystem/contracts";
+export type { ApiResponse } from "@hubilee/contracts";

@@ -3,9 +3,9 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createCustomerSchema, type CreateCustomerInput, type UpdateCustomerInput } from '@/lib/validations/customer'
-import { Button } from '@multisystem/ui'
-import { Input } from '@multisystem/ui'
-import { Label } from '@multisystem/ui'
+import { Button } from '@hubilee/ui'
+import { Input } from '@hubilee/ui'
+import { Label } from '@hubilee/ui'
 
 interface CustomerFormProps {
   initialData?: Partial<CreateCustomerInput>

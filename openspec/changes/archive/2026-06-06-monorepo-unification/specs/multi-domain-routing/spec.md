@@ -13,7 +13,7 @@ The Caddyfile MUST define one `{domain}` block per app, routing to `{service_nam
 #### Scenario: All apps served on their domains
 
 - GIVEN Caddy is running with all app containers healthy
-- WHEN a request arrives at `baro.multisystem.app`
+- WHEN a request arrives at `baro.hubilee.app`
 - THEN Caddy proxies the request to `baro:3000`
 - AND requests to other domains route to their respective containers
 
@@ -46,7 +46,7 @@ Caddy MUST return 502 Bad Gateway when an upstream container is unreachable and 
 #### Scenario: Unreachable upstream container
 
 - GIVEN `baro` container is stopped or crashed
-- WHEN a request arrives at `baro.multisystem.app`
+- WHEN a request arrives at `baro.hubilee.app`
 - THEN Caddy returns HTTP 502
 - AND Caddy logs the upstream connection failure
 

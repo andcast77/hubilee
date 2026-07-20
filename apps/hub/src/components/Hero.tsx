@@ -48,7 +48,7 @@ export function Hero({ hasToken }: HeroProps) {
 
         {/* Subheading */}
         <p className="text-lg md:text-xl text-white/50 mb-10 max-w-2xl mx-auto leading-relaxed">
-          Multisystem centraliza tu punto de venta, recursos humanos y servicios
+          Hubilee centraliza tu punto de venta, recursos humanos y servicios
           técnicos en una sola plataforma. Decisiones más rápidas, operaciones
           más simples.
         </p>

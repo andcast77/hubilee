@@ -2,20 +2,20 @@
 
 ## Purpose
 
-Baro MUST use the same authentication and session model as other multisystem product apps via `@multisystem/api` — no standalone baro auth tables or JWT implementation.
+Baro MUST use the same authentication and session model as other hubilee product apps via `@hubilee/api` — no standalone baro auth tables or JWT implementation.
 
 ## Requirements
 
 ### Requirement: API-Based Authentication
 
-Baro MUST authenticate users through `@multisystem/api` auth endpoints. Baro MUST NOT implement local login, register, refresh, or password routes.
+Baro MUST authenticate users through `@hubilee/api` auth endpoints. Baro MUST NOT implement local login, register, refresh, or password routes.
 
 #### Scenario: Login via API
 
-- GIVEN valid credentials for a multisystem user
+- GIVEN valid credentials for a hubilee user
 - WHEN the user logs in through baro
 - THEN baro calls the API auth endpoint
-- AND stores the session using `@multisystem/shared` cookie utilities
+- AND stores the session using `@hubilee/shared` cookie utilities
 - AND no baro-local auth handler processes the request
 
 #### Scenario: Unauthenticated access blocked
@@ -31,9 +31,9 @@ Baro-specific `User` and `RefreshToken` models MUST NOT exist in the database af
 
 #### Scenario: Schema inspection
 
-- GIVEN the merged `@multisystem/database` schema
+- GIVEN the merged `@hubilee/database` schema
 - WHEN inspecting auth-related models
-- THEN only multisystem `User`, `Session`, and related auth models exist
+- THEN only hubilee `User`, `Session`, and related auth models exist
 - AND no `baro_users` or baro refresh token tables remain
 
 ### Requirement: Module Access Control
@@ -55,11 +55,11 @@ Baro features MUST require the `baro` module to be enabled for the company (and 
 
 ### Requirement: Legacy User Migration
 
-Existing baro standalone users MUST be migratable to multisystem `User` + `Company` + `CompanyMember` without data loss of domain records.
+Existing baro standalone users MUST be migratable to hubilee `User` + `Company` + `CompanyMember` without data loss of domain records.
 
 #### Scenario: Migrated user login
 
-- GIVEN a baro user migrated to multisystem auth
+- GIVEN a baro user migrated to hubilee auth
 - WHEN logging in with the same email via API auth
 - THEN authentication succeeds
 - AND previously owned expedientes are accessible under the mapped company

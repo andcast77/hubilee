@@ -47,7 +47,7 @@ export function LandingFooter({ urls, registerHref = "/register", moduleName, mo
           </div>
         </div>
         <div className="mt-10 pt-6 border-t border-white/[0.05] flex flex-col md:flex-row justify-between items-center gap-3">
-          <p className="text-xs text-white/20">© {currentYear} {moduleName} · Multisystem</p>
+          <p className="text-xs text-white/20">© {currentYear} {moduleName} · Hubilee</p>
           <div className="flex gap-5 text-xs text-white/20">
             <Link href="/terms" className="hover:text-white/50 transition-colors">Términos</Link>
             <a href="#" className="hover:text-white/50 transition-colors">Privacidad</a>

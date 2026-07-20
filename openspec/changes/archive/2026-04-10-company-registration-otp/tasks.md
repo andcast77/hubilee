@@ -7,7 +7,7 @@ Alineado con [`docs/plans/[completed] PLAN-39-company-registration-otp.md`](../.
 ## Phase 1: Infrastructure / config
 
 - [x] 1.1 Añadir variables a `env.plugin.ts`, `getConfig()` y `.env.example` (Turnstile, correo transaccional, pepper/ticket, TTL si aplica).
-- [x] 1.2 Envío de correo en `@multisystem/api` vía Resend; sin SMTP en apps.
+- [x] 1.2 Envío de correo en `@hubilee/api` vía Resend; sin SMTP en apps.
 
 ## Phase 2: Core API
 

@@ -1,14 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Card } from '@multisystem/ui'
+import { Card } from '@hubilee/ui'
 import { DailyWorkKPIs } from '@/components/dashboard/DailyWorkKPIs'
 import { DailyAlerts } from '@/components/dashboard/DailyAlerts'
 import { AttendanceTrendChart } from '@/components/dashboard/AttendanceTrendChart'
 import { useDashboardStats } from '@/hooks/useDashboardStats'
 import { useWorkifyDashboardSSE } from '@/hooks/useWorkifyDashboardSSE'
 import { workifyApi } from '@/lib/api/client'
-import { Badge } from '@multisystem/ui'
+import { Badge } from '@hubilee/ui'
 import { Calendar, Users, Clock, TrendingUp, Activity, BarChart3, UserCheck, Loader2 } from 'lucide-react'
 
 export default function DashboardPage() {

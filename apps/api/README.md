@@ -1,6 +1,6 @@
-# Multisystem API
+# Hubilee API
 
-API compartida **Fastify 5** para Multisystem: JWT, multi-empresa (contexto de compañía/miembro) y rutas agrupadas por módulo (**shopflow**, **workify**, **techservices**). Acceso a datos con **@multisystem/database** (Prisma).
+API compartida **Fastify 5** para Hubilee: JWT, multi-empresa (contexto de compañía/miembro) y rutas agrupadas por módulo (**shopflow**, **workify**, **techservices**). Acceso a datos con **@hubilee/database** (Prisma).
 
 **Producción / preview:** el camino oficial es **Vercel** (esta API) + **Neon** (PostgreSQL). Otros hosts (p. ej. Render) y **`.env.render.example`** se documentan como **legado**; no sustituyen esa historia de despliegue.
 
@@ -215,7 +215,7 @@ Alternativa PaaS documentada solo por compatibilidad. Desde la raíz del monorep
 ## 📝 Notas
 
 - **Fastify 5**, TypeScript, **Zod** donde aplica.
-- **Prisma** vía `@multisystem/database`; adaptadores Neon/pg según entorno.
+- **Prisma** vía `@hubilee/database`; adaptadores Neon/pg según entorno.
 - **Rate limit:** ver sección arriba.
 - CORS desde `CORS_ORIGIN` (lista separada por comas).
 

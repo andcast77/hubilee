@@ -19,9 +19,9 @@ import {
   Button,
   Input,
   Label,
-} from "@multisystem/ui";
+} from "@hubilee/ui";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import type { ApiResponse, LoginResponse } from "@multisystem/contracts";
+import type { ApiResponse, LoginResponse } from "@hubilee/contracts";
 import { loginSchema } from "@/lib/validations/auth";
 import { authApi } from "@/lib/api/client";
 import { getLandingUrls } from "@/lib/landingUrls";

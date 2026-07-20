@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { getSessionUserId } from '@/lib/auth/session'
 import { serverBaroDelete } from '@/lib/api/server'
-import type { ApiResponse } from '@multisystem/contracts'
+import type { ApiResponse } from '@hubilee/contracts'
 
 const deleteExpedienteSchema = z.object({ id: z.string().min(1) })
 

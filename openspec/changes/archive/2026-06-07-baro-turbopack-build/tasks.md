@@ -26,8 +26,8 @@
 ## Phase 4 — Testing & verify
 
 - [x] 4.1 Unit test `lib/auth/client.test.ts`
-- [x] 4.2 `pnpm --filter @multisystem/baro test`
-- [x] 4.3 `pnpm turbo run build --filter=@multisystem/baro...`
+- [x] 4.2 `pnpm --filter @hubilee/baro test`
+- [x] 4.3 `pnpm turbo run build --filter=@hubilee/baro...`
 - [x] 4.4 `verify-report.md`
 
 ## Follow-ups (out of scope)

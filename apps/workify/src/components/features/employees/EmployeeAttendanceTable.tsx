@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge, Card } from '@multisystem/ui';
+import { Badge, Card } from '@hubilee/ui';
 import { 
   Calendar, 
   Clock, 

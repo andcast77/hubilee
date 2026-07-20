@@ -1,4 +1,4 @@
-## Exploration: Realign multisystem with official Turborepo conventions
+## Exploration: Realign hubilee with official Turborepo conventions
 
 Reference docs (canonical):
 - https://turbo.build/repo/docs/crafting-your-repository/structuring-a-repository
@@ -13,11 +13,11 @@ Reference docs (canonical):
 **Layout (partially aligned)**
 
 ```
-multisystem/
-├── apps/           # 6 Next.js deployables (@multisystem/hub … baro)
+hubilee/
+├── apps/           # 6 Next.js deployables (@hubilee/hub … baro)
 ├── packages/
 │   ├── api/        # deployable Fastify API (non-standard location)
-│   ├── component-library/  # @multisystem/ui (folder name ≠ package name)
+│   ├── component-library/  # @hubilee/ui (folder name ≠ package name)
 │   ├── contracts/, database/, shared/
 ├── package.json, turbo.json, pnpm-workspace.yaml (catalog)
 ```
@@ -38,16 +38,16 @@ multisystem/
 
 | # | Official convention | Current state | Impact |
 |---|---------------------|---------------|--------|
-| 1 | **Deployables live in `apps/`** (web, docs, api) | `@multisystem/api` is under `packages/api/` | Mental model split; filters/Docker/Vercel treat API differently from frontends |
-| 2 | **Libraries in `packages/` build to `dist/`** with `exports` | `@multisystem/shared` exports raw `./src/*.ts` (no `build` script) | Apps consume TS source; breaks “library package” contract; weak cache boundaries |
-| 3 | **Folder name ≈ package name** | `packages/component-library` → `@multisystem/ui` | Navigation friction; prune/filter docs assume `apps/web` not `packages/component-library` |
+| 1 | **Deployables live in `apps/`** (web, docs, api) | `@hubilee/api` is under `packages/api/` | Mental model split; filters/Docker/Vercel treat API differently from frontends |
+| 2 | **Libraries in `packages/` build to `dist/`** with `exports` | `@hubilee/shared` exports raw `./src/*.ts` (no `build` script) | Apps consume TS source; breaks “library package” contract; weak cache boundaries |
+| 3 | **Folder name ≈ package name** | `packages/component-library` → `@hubilee/ui` | Navigation friction; prune/filter docs assume `apps/web` not `packages/component-library` |
 | 4 | **Root scripts only delegate** (`turbo run <task>`) | 20+ root scripts: per-app dev/build, `knip:*`, `api:bundle`, db helpers | Many bypass Turbo or duplicate filter logic |
 | 5 | **Filters use `…` for closure** | e.g. `dev:hub` uses `--filter=ui --filter=hub` instead of `--filter=hub...` | Works but non-idiomatic; easy to miss transitive deps |
 | 6 | **Deploy = pruned artifact per app** (`turbo prune --docker`) | Docker copies full repo + root `node_modules`; runtime fails (`next: not found`) | See `docker-pnpm-runtime` exploration |
 | 7 | **Vercel/API deploy via Turbo graph** | `api:bundle` manually `cp -r packages/database → packages/api/node_modules/…` | Fragile; not prune-based |
 | 8 | **CI runs `--affected` on PRs** | CI runs full `turbo lint`, `turbo test`, `turbo build` every time | Slower CI; remote cache underused for scoped runs |
 | 9 | **Shared config packages** (`packages/typescript-config`, `eslint-config`) | Single root `tsconfig.base.json`; per-app tsconfig; baro has own ESLint/TS versions | Inconsistent tooling; baro isolated from catalog |
-| 10 | **Uniform task graph per package** | `@multisystem/baro#build` special-cased in `turbo.json`; baro has `test`, others vary; hub `lint` = `tsc --noEmit` only | Uneven pipeline; extra maintenance |
+| 10 | **Uniform task graph per package** | `@hubilee/baro#build` special-cased in `turbo.json`; baro has `test`, others vary; hub `lint` = `tsc --noEmit` only | Uneven pipeline; extra maintenance |
 | 11 | **Package boundaries** (optional Turborepo 2.x) | Not configured | No enforcement apps→packages only |
 | 12 | **Next.js Docker runner** | `next start` + partial `node_modules` | Should be `output: 'standalone'` + `node server.js` after prune (official Docker guide) |
 
@@ -55,8 +55,8 @@ multisystem/
 
 - `.github/workflows/ci.yml`: full monorepo build on every PR; no `turbo run … --affected`
 - Vercel staging/production jobs reference a **single** `VERCEL_PROJECT_ID` — unclear multi-app mapping vs one project per app (Turborepo + Vercel expects per-app project or monorepo project settings)
-- `apps/hub/vercel.json`: `turbo run build --filter=@multisystem/hub` (should prefer `@multisystem/hub...` or rely on `^build` — likely OK but non-documented)
-- `packages/api/vercel.json`: `pnpm run api:bundle` — custom script, not `turbo build --filter=@multisystem/api...`
+- `apps/hub/vercel.json`: `turbo run build --filter=@hubilee/hub` (should prefer `@hubilee/hub...` or rely on `^build` — likely OK but non-documented)
+- `packages/api/vercel.json`: `pnpm run api:bundle` — custom script, not `turbo build --filter=@hubilee/api...`
 
 **Baro as outlier (absorbed standalone app)**
 
@@ -68,7 +68,7 @@ multisystem/
 ### Target state (official Turborepo pattern)
 
 ```
-multisystem/
+hubilee/
 ├── apps/
 │   ├── hub/, shopflow/, workify/, techservices/, balance/, baro/
 │   └── api/                    # moved from packages/api
@@ -81,8 +81,8 @@ multisystem/
 ├── turbo.json                  # uniform tasks, no baro-only overrides
 ├── pnpm-workspace.yaml
 ├── docker/
-│   ├── Dockerfile.nextjs       # ARG PACKAGE=@multisystem/hub
-│   └── Dockerfile.api          # turbo prune @multisystem/api --docker
+│   ├── Dockerfile.nextjs       # ARG PACKAGE=@hubilee/hub
+│   └── Dockerfile.api          # turbo prune @hubilee/api --docker
 └── .github/workflows/ci.yml    # turbo run … --affected on PR
 ```
 
@@ -90,12 +90,12 @@ multisystem/
 
 | Phase | Official command |
 |-------|------------------|
-| Dev one app | `turbo dev --filter=@multisystem/hub...` |
-| Build one app | `turbo build --filter=@multisystem/hub...` |
+| Dev one app | `turbo dev --filter=@hubilee/hub...` |
+| Build one app | `turbo build --filter=@hubilee/hub...` |
 | CI (PR) | `turbo run lint typecheck test build --affected` |
-| Docker image | `turbo prune @multisystem/hub --docker` → install → build → standalone runner |
-| Vercel app | Root install + `turbo build --filter=@multisystem/hub...` |
-| Vercel API | Root install + `turbo build --filter=@multisystem/api...` (drop `api:bundle` cp) |
+| Docker image | `turbo prune @hubilee/hub --docker` → install → build → standalone runner |
+| Vercel app | Root install + `turbo build --filter=@hubilee/hub...` |
+| Vercel API | Root install + `turbo build --filter=@hubilee/api...` (drop `api:bundle` cp) |
 
 ### Affected Areas
 
@@ -103,7 +103,7 @@ multisystem/
 - `turbo.json` — remove baro-specific overrides; add build `env` for `NEXT_PUBLIC_*`; optional boundaries
 - `pnpm-workspace.yaml` — unchanged globs; catalog alignment for baro
 - `packages/api/` → `apps/api/` — move deployable (high churn: imports, Docker, Vercel, docs)
-- `packages/component-library/` → `packages/ui/` — rename directory to match `@multisystem/ui`
+- `packages/component-library/` → `packages/ui/` — rename directory to match `@hubilee/ui`
 - `packages/shared/package.json` — add `build` → `dist/`, update `exports`
 - `apps/baro/package.json` — catalog alignment, drop nested `packageManager`, unify lint/typecheck
 - `apps/*/vercel.json`, `packages/api/vercel.json` — standardize build commands
@@ -115,7 +115,7 @@ multisystem/
 ### Approaches
 
 1. **Phased realignment (recommended)** — Structure and conventions first, deploy second.
-   - **Phase A — Workspace conventions (low risk):** shared build for `@multisystem/shared`; root scripts → `--filter=…...`; remove baro `turbo.json` overrides; CI `--affected`; optional `packages/typescript-config`
+   - **Phase A — Workspace conventions (low risk):** shared build for `@hubilee/shared`; root scripts → `--filter=…...`; remove baro `turbo.json` overrides; CI `--affected`; optional `packages/typescript-config`
    - **Phase B — Layout (medium risk):** rename `component-library` → `ui`; move `packages/api` → `apps/api`; update all path references
    - **Phase C — Deploy (medium–high risk):** turbo prune Dockerfiles; Next `standalone`; replace `api:bundle`; verify full compose + Vercel per app
    - Pros: Reviewable slices; matches Turborepo docs without big-bang; 400-line PR budget friendly
@@ -154,8 +154,8 @@ multisystem/
 ### Risks
 
 - **Moving `packages/api` → `apps/api`** touches Docker, Vercel, docs, OpenSpec paths, and mental models — highest churn item
-- **Renaming `component-library` → `ui`** breaks deep links and import paths if any tooling references folder name (package name already `@multisystem/ui`)
-- **`@multisystem/shared` build step** may require app tsconfig / transpilePackages updates
+- **Renaming `component-library` → `ui`** breaks deep links and import paths if any tooling references folder name (package name already `@hubilee/ui`)
+- **`@hubilee/shared` build step** may require app tsconfig / transpilePackages updates
 - **Baro version drift** (next/eslint/typescript off catalog) may surface latent type or lint failures when aligned
 - **CI `--affected`** needs `fetch-depth: 0` and correct base branch (`v2` vs `main` — workflow currently targets `main`)
 - **Vercel multi-app** — single project ID in CI may not match Turborepo’s one-project-per-app model; needs inventory before Phase C

@@ -2,7 +2,7 @@
 
 ## Intent
 
-Bring `apps/baro` up to date with upstream product code on **`main`** (`https://github.com/andcast77/baro`) while **preserving monorepo integration** from `check-structure` (API auth, shared `@multisystem/database`, tenant scoping). Close UI/test/feature drift without reverting to standalone Prisma/JWT.
+Bring `apps/baro` up to date with upstream product code on **`main`** (`https://github.com/andcast77/baro`) while **preserving monorepo integration** from `check-structure` (API auth, shared `@hubilee/database`, tenant scoping). Close UI/test/feature drift without reverting to standalone Prisma/JWT.
 
 ## Scope
 
@@ -70,6 +70,6 @@ Revert sync commits on branch. If DB migration applied, add down migration or re
 ## Success Criteria
 
 - [ ] Upstream `main` product delta (post-integration baseline) applied to `apps/baro` without local Prisma/auth
-- [ ] `pnpm --filter @multisystem/baro test` and API baro integration tests pass
+- [ ] `pnpm --filter @hubilee/baro test` and API baro integration tests pass
 - [ ] No violations of `baro-auth-integration` or `baro-data-model` specs
 - [ ] `baro-upstream-sync` spec documents denylist and sync workflow for future runs

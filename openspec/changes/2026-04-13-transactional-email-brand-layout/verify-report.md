@@ -7,7 +7,7 @@
 ## Tests run
 
 - `pnpm exec vitest run src/__tests__/unit/transactional-email-layout.test.ts` (from `packages/api`) — **pass** (6 tests).
-- Full `pnpm --filter @multisystem/api test` — run in CI / locally before merge.
+- Full `pnpm --filter @hubilee/api test` — run in CI / locally before merge.
 
 ## Manual / Outlook
 

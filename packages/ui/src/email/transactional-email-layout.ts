@@ -1,5 +1,5 @@
 /**
- * Plantilla canónica Multisystem para correos transaccionales.
+ * Plantilla canónica Hubilee para correos transaccionales.
  * Estilos inline (sin `<style>`, sin clases). Lienzo neutro; card blanco con borde índigo; CTA índigo.
  */
 
@@ -32,7 +32,7 @@ export type TransactionalEmailLayoutProps = {
   /** CTA principal opcional (label + href del botón). */
   primaryButton?: TransactionalEmailPrimaryButton
   /**
-   * HTML opcional bajo el botón, antes de la firma "— Multisystem"
+   * HTML opcional bajo el botón, antes de la firma "— Hubilee"
    * (p. ej. pie `AuthBrandFooterCenter`).
    */
   cardFooterHtml?: string
@@ -129,7 +129,7 @@ export function buildTransactionalEmailHtml(
     props.brandLogoUrl != null && props.brandLogoUrl.trim() !== ''
       ? `<tr>
  <td style="padding:0 0 16px 0;text-align:center;background-color:${CARD_BG};">
-    <img src="${escapeHtmlAttr(props.brandLogoUrl.trim())}" alt="Multisystem" width="140" style="display:block;margin:0 auto;max-width:140px;width:140px;height:auto;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;" />
+    <img src="${escapeHtmlAttr(props.brandLogoUrl.trim())}" alt="Hubilee" width="140" style="display:block;margin:0 auto;max-width:140px;width:140px;height:auto;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;" />
   </td>
 </tr>`
       : ''
@@ -210,7 +210,7 @@ ${preview}
               ${cardFooter}
               <tr>
                 <td style="padding:26px 28px 28px 28px;font-family:${FONT};font-size:12px;line-height:1.5;color:${MUTED};border-top:1px solid ${CARD_INNER_RULE};text-align:center;word-wrap:break-word;overflow-wrap:break-word;-webkit-text-size-adjust:100%;background-color:${CARD_BG};">
-                  <p style="margin:0;">— Multisystem</p>
+                  <p style="margin:0;">— Hubilee</p>
                 </td>
               </tr>
             </table>

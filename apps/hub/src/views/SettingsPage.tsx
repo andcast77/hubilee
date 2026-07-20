@@ -25,7 +25,7 @@ import {
   Switch,
   AlertDescription,
   Alert,
-} from "@multisystem/ui";
+} from "@hubilee/ui";
 import { updateCompanySchema, companyFiscalSchema, type UpdateCompanyInput, type CompanyFiscalInput } from "@/lib/validations/company";
 import { companyApi, sessionsApi } from "@/lib/api-client";
 import { DeleteCompanyDialog } from "@/components/features/DeleteCompanyDialog";

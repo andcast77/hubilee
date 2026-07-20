@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd ../.. && pnpm exec turbo run build --filter=@multisystem/api...",
+  "buildCommand": "cd ../.. && pnpm exec turbo run build --filter=@hubilee/api...",
   "installCommand": "cd ../.. && pnpm install",
   "functions": {
     "api/index.ts": {

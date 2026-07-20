@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { workifyApi } from '@/lib/api/client';
-import { Badge, Button, Card } from '@multisystem/ui';
+import { Badge, Button, Card } from '@hubilee/ui';
 import { 
   Plus, 
   Clock, 

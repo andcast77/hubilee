@@ -7,8 +7,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@multisystem/ui'
-import { Label } from '@multisystem/ui'
+} from '@hubilee/ui'
+import { Label } from '@hubilee/ui'
 import { SUPPORTED_LANGUAGES_LIST } from '@/lib/validations/userPreferences'
 
 const LANGUAGE_LABELS: Record<string, string> = {

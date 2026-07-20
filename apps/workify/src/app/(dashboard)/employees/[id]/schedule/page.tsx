@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { workifyApi } from '@/lib/api/client';
-import { Badge, Button, Card } from '@multisystem/ui';
+import { Badge, Button, Card } from '@hubilee/ui';
 import { 
   Edit, 
   Save,

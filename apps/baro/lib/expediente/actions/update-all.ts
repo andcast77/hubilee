@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { getSessionUserId } from '@/lib/auth/session'
 import { serverBaroPut } from '@/lib/api/server'
-import type { ApiResponse } from '@multisystem/contracts'
+import type { ApiResponse } from '@hubilee/contracts'
 import type { DatosFields, PublicacionFields } from '@/stores/expediente-store'
 
 export type UpdateExpedienteFullState =

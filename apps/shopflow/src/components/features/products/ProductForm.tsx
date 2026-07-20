@@ -4,18 +4,18 @@ import { useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createProductSchema, updateProductSchema, type CreateProductInput, type UpdateProductInput } from '@/lib/validations/product'
-import { Button } from '@multisystem/ui'
-import { Input } from '@multisystem/ui'
-import { Label } from '@multisystem/ui'
-import { Textarea } from '@multisystem/ui'
-import { Checkbox } from '@multisystem/ui'
+import { Button } from '@hubilee/ui'
+import { Input } from '@hubilee/ui'
+import { Label } from '@hubilee/ui'
+import { Textarea } from '@hubilee/ui'
+import { Checkbox } from '@hubilee/ui'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@multisystem/ui'
+} from '@hubilee/ui'
 import type { Category } from '@/types'
 import { useCategories } from '@/hooks/useCategories'
 

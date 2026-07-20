@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Define baro domain persistence inside `@multisystem/database`, tenant-scoped by `companyId`, replacing the standalone baro Prisma project.
+Define baro domain persistence inside `@hubilee/database`, tenant-scoped by `companyId`, replacing the standalone baro Prisma project.
 
 ## Requirements
 
@@ -48,7 +48,7 @@ The shared schema MUST include baro domain entities: Professional, ProfessionalR
 
 ### Requirement: User Reference
 
-Baro entities MUST reference multisystem `User` (not a baro-specific user table) for audit fields such as creator where applicable.
+Baro entities MUST reference hubilee `User` (not a baro-specific user table) for audit fields such as creator where applicable.
 
 #### Scenario: Creator linkage
 

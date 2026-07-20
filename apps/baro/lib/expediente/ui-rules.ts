@@ -3,7 +3,7 @@
 import 'server-only'
 
 import { serverBaroGetData } from '@/lib/api/server'
-import type { BaroProfessionalDto } from '@multisystem/contracts'
+import type { BaroProfessionalDto } from '@hubilee/contracts'
 import { principalSecondFromActuantes } from '@/lib/expediente/ui-shell'
 import type { ExpedienteActuantesInput } from '@/lib/expediente/ui-shell'
 

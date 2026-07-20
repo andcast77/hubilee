@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { Button } from '@multisystem/ui';
+import { Button } from '@hubilee/ui';
 import { EmployeeAttendanceKPIs } from '@/components/features/employees/EmployeeAttendanceKPIs';
 import { EmployeeAttendanceTable } from '@/components/features/employees/EmployeeAttendanceTable';
 import { useEmployeeAttendance } from '@/hooks/api/useEmployeeAttendance';

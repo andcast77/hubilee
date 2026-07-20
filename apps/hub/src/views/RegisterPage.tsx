@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ApiError } from "@multisystem/shared";
+import { ApiError } from "@hubilee/shared";
 import { authApi } from "@/lib/api-client";
 import { shouldCallMeForLoggedInCheck } from "@/lib/auth-session-probe";
 import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
@@ -35,7 +35,7 @@ import {
   DialogHeader,
   DialogTitle,
   ScrollArea,
-} from "@multisystem/ui";
+} from "@hubilee/ui";
 
 type RegisterStep = "form" | "link-pending";
 
@@ -135,7 +135,7 @@ export function RegisterPage() {
       badge={
         <>
           <span>🚀</span>
-          <span>Multisystem Hub</span>
+          <span>Hubilee Hub</span>
         </>
       }
       title="Tu negocio listo para crecer"
@@ -392,7 +392,7 @@ export function RegisterPage() {
               <section>
                 <h3 className="font-semibold text-slate-900 mb-2">1. Uso del Servicio</h3>
                 <p>
-                  Al usar Multisystem Hub, aceptas cumplir con estos términos y todas las
+                  Al usar Hubilee Hub, aceptas cumplir con estos términos y todas las
                   leyes y regulaciones aplicables. No debes usar esta plataforma de manera
                   que viole leyes, derechos de terceros, o que afecte negativamente nuestra
                   operación.
@@ -469,7 +469,7 @@ export function RegisterPage() {
               <section>
                 <h3 className="font-semibold text-slate-900 mb-2">1. Responsable del Tratamiento</h3>
                 <p>
-                  Multisystem Hub es el responsable del tratamiento de tus datos personales,
+                  Hubilee Hub es el responsable del tratamiento de tus datos personales,
                   en cumplimiento del RGPD (UE 2016/679), la Ley Argentina 25.326 y la
                   LFPDPPP mexicana.
                 </p>

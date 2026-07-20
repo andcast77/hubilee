@@ -2,8 +2,8 @@
 
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { ApiError, runRegisterVerifyDeduped } from "@multisystem/shared";
-import type { ApiResponse, RegisterResponse } from "@multisystem/contracts";
+import { ApiError, runRegisterVerifyDeduped } from "@hubilee/shared";
+import type { ApiResponse, RegisterResponse } from "@hubilee/contracts";
 import { accountApi, authApi } from "@/lib/api/client";
 import {
   AuthLayout,
@@ -12,7 +12,7 @@ import {
   AuthBrandErrorAlert,
   AuthBrandCard,
   AUTH_BRAND_PRIMARY_BUTTON_CLASS,
-} from "@multisystem/ui";
+} from "@hubilee/ui";
 
 function RegisterVerifyInner() {
   const navigate = useNavigate();

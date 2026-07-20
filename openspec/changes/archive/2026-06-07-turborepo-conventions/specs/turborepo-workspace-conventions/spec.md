@@ -8,31 +8,31 @@ Define monorepo workspace layout, internal package contracts, task orchestration
 
 ### Requirement: Deployable vs Library Layout
 
-Deployable applications MUST live under `apps/`. Shared libraries MUST live under `packages/`. `@multisystem/api` MUST reside at `apps/api/`. Package folder names MUST match npm scope names where applicable (e.g. `packages/ui` for `@multisystem/ui`).
+Deployable applications MUST live under `apps/`. Shared libraries MUST live under `packages/`. `@hubilee/api` MUST reside at `apps/api/`. Package folder names MUST match npm scope names where applicable (e.g. `packages/ui` for `@hubilee/ui`).
 
 #### Scenario: API deployable location
 
 - GIVEN the monorepo workspace
-- WHEN locating `@multisystem/api` source
+- WHEN locating `@hubilee/api` source
 - THEN it MUST be under `apps/api/`
 - AND MUST NOT remain under `packages/api/`
 
 #### Scenario: UI package folder name
 
-- GIVEN the `@multisystem/ui` package
+- GIVEN the `@hubilee/ui` package
 - WHEN navigating the repository
 - THEN its directory MUST be `packages/ui/`
 
 ### Requirement: Internal Library Build Contract
 
-Internal library packages (`@multisystem/shared`, `@multisystem/contracts`, `@multisystem/ui`, `@multisystem/database`) MUST expose production entrypoints from built artifacts (`dist/` or documented generated output). Libraries MUST NOT export raw TypeScript source as the primary runtime entry for dependent apps.
+Internal library packages (`@hubilee/shared`, `@hubilee/contracts`, `@hubilee/ui`, `@hubilee/database`) MUST expose production entrypoints from built artifacts (`dist/` or documented generated output). Libraries MUST NOT export raw TypeScript source as the primary runtime entry for dependent apps.
 
 #### Scenario: Shared package builds before apps
 
 - GIVEN a clean checkout
-- WHEN `pnpm turbo run build --filter=@multisystem/hub...` runs
-- THEN `@multisystem/shared` MUST build to `dist/` before `@multisystem/hub` builds
-- AND hub MUST resolve `@multisystem/shared` via workspace package exports
+- WHEN `pnpm turbo run build --filter=@hubilee/hub...` runs
+- THEN `@hubilee/shared` MUST build to `dist/` before `@hubilee/hub` builds
+- AND hub MUST resolve `@hubilee/shared` via workspace package exports
 
 ### Requirement: Root Script Delegation
 
@@ -52,7 +52,7 @@ Per-app convenience scripts MUST use Turborepo filter closure (`--filter=<packag
 
 - GIVEN root script `dev:hub`
 - WHEN executed
-- THEN it MUST run `turbo run dev --filter=@multisystem/hub...`
+- THEN it MUST run `turbo run dev --filter=@hubilee/hub...`
 - AND MUST NOT rely on listing multiple unrelated filters without closure
 
 ### Requirement: Uniform Task Graph
@@ -63,7 +63,7 @@ Per-app convenience scripts MUST use Turborepo filter closure (`--filter=<packag
 
 - GIVEN `turbo.json` after realignment
 - WHEN inspecting task definitions
-- THEN `@multisystem/baro#build` package-specific overrides MUST NOT exist
+- THEN `@hubilee/baro#build` package-specific overrides MUST NOT exist
 - AND baro MUST use the shared `build` task definition
 
 ### Requirement: CI Affected Runs
@@ -91,5 +91,5 @@ Each app `vercel.json` MUST install from monorepo root and build with `turbo run
 
 - GIVEN `apps/api/vercel.json`
 - WHEN the build runs on Vercel
-- THEN it MUST use `turbo run build --filter=@multisystem/api...`
-- AND MUST NOT invoke `api:bundle` or equivalent manual `cp` of `@multisystem/database`
+- THEN it MUST use `turbo run build --filter=@hubilee/api...`
+- AND MUST NOT invoke `api:bundle` or equivalent manual `cp` of `@hubilee/database`

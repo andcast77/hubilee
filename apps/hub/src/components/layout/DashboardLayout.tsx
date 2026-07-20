@@ -4,7 +4,7 @@ import { useEffect, type ComponentProps } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { Sidebar as SidebarComponent } from "@multisystem/ui";
+import { Sidebar as SidebarComponent } from "@hubilee/ui";
 import {
   LayoutDashboard,
   Settings,
@@ -17,7 +17,7 @@ import { useUser } from "@/hooks/useUser";
 import { CompanySelector } from "@/components/features/CompanySelector";
 import { clearTokenCookie } from "@/lib/auth";
 import { authApi } from "@/lib/api-client";
-import { InAppNotificationBell } from "@multisystem/ui";
+import { InAppNotificationBell } from "@hubilee/ui";
 import { useInAppNotifications } from "@/hooks/useInAppNotifications";
 
 type SidebarComponentProps = ComponentProps<typeof SidebarComponent>;
@@ -107,7 +107,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         navGroups={navGroups}
         user={sidebarUser}
         branding={{
-          name: "Multisystem Hub",
+          name: "Hubilee Hub",
           shortName: "HUB",
           logo: <Building2 className="h-6 w-6" />,
         }}

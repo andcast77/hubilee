@@ -19,10 +19,10 @@ import {
   Button,
   Input,
   Label,
-} from '@multisystem/ui'
+} from '@hubilee/ui'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import type { ApiResponse, LoginResponse } from '@multisystem/contracts'
+import type { ApiResponse, LoginResponse } from '@hubilee/contracts'
 import { loginSchema } from '@/lib/validations/auth'
 import { authApi } from '@/lib/api/client'
 import { hubForgotPasswordUrl, hubRegisterUrl } from '@/lib/landingUrls'

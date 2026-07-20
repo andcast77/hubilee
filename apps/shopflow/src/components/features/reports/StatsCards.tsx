@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@multisystem/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@hubilee/ui'
 import { useSalesStats } from '@/hooks/useReports'
 import { formatCurrency } from '@/lib/utils/format'
 import { DollarSign, ShoppingCart, TrendingDown, TrendingUp } from 'lucide-react'

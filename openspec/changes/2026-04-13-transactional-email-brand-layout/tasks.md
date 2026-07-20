@@ -9,7 +9,7 @@
 
 ## 2. Verification
 
-- [x] 2.1 `pnpm --filter @multisystem/api test` — layout + existing suites.
+- [x] 2.1 `pnpm --filter @hubilee/api test` — layout + existing suites.
 - [ ] 2.2 Manual: open HTML in Outlook or webmail (operator checklist / PLAN-41).
 
 ## 3. Docs

@@ -20,7 +20,7 @@ import {
   Button,
   Input,
   Label,
-} from '@multisystem/ui';
+} from '@hubilee/ui';
 import { authApi } from '@/lib/api/client';
 
 function hubForgotPasswordUrl(): string {
@@ -32,7 +32,7 @@ const workifyPanel = (
   <AuthBrandDecorativePanel
     badge="Workify"
     title="Recursos humanos"
-    description="Turnos, asistencia y equipos con la misma identidad visual que el resto de Multisystem."
+    description="Turnos, asistencia y equipos con la misma identidad visual que el resto de Hubilee."
     quote={<>Personas y equipos, en un solo flujo.</>}
   />
 );

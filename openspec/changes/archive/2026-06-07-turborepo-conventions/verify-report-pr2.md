@@ -9,7 +9,7 @@
 
 | Requirement | Status | Evidence |
 |-------------|--------|----------|
-| API at `apps/api/` | PASS | `git mv packages/api → apps/api`; `@multisystem/api` builds from `apps/api` |
+| API at `apps/api/` | PASS | `git mv packages/api → apps/api`; `@hubilee/api` builds from `apps/api` |
 | UI at `packages/ui/` | PASS | `git mv packages/component-library → packages/ui` |
 | Tailwind `@source` / content paths | PASS | hub, shopflow, workify, techservices updated to `packages/ui` |
 | Shared builds before apps | PASS | (from PR1; hub build still passes) |
@@ -18,9 +18,9 @@
 
 | Suite | Result |
 |-------|--------|
-| `pnpm turbo run build --filter=@multisystem/api...` | **PASS** |
-| `pnpm turbo run build --filter=@multisystem/hub...` | **PASS** |
-| `pnpm turbo run test --filter=@multisystem/api...` | **SKIP locally** — no `DATABASE_URL` in env (CI provides Postgres) |
+| `pnpm turbo run build --filter=@hubilee/api...` | **PASS** |
+| `pnpm turbo run build --filter=@hubilee/hub...` | **PASS** |
+| `pnpm turbo run test --filter=@hubilee/api...` | **SKIP locally** — no `DATABASE_URL` in env (CI provides Postgres) |
 
 ## Path Updates
 

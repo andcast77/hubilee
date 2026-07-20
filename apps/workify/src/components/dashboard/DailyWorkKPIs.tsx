@@ -1,7 +1,7 @@
 'use client';
 
 import { useAttendanceStats } from '@/hooks/api/useAttendanceStats';
-import { Badge, Card } from '@multisystem/ui';
+import { Badge, Card } from '@hubilee/ui';
 import { 
   Users, 
   UserX, 

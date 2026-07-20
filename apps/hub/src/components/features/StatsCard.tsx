@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@multisystem/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@hubilee/ui";
 import { LucideIcon } from "lucide-react";
 
 type StatsCardProps = {

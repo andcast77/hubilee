@@ -4,7 +4,7 @@ Canonical spec (merged from changes `monorepo-unification`, `check-structure`, `
 
 ## Purpose
 
-Define the Docker-based deployment infrastructure: shared Dockerfiles for Next.js apps and `@multisystem/api`, a docker-compose.yml orchestrating all services (six Next.js apps, shared Postgres, central API, Caddy reverse proxy), and the networking/storage contracts required for local and CI reproducibility.
+Define the Docker-based deployment infrastructure: shared Dockerfiles for Next.js apps and `@hubilee/api`, a docker-compose.yml orchestrating all services (six Next.js apps, shared Postgres, central API, Caddy reverse proxy), and the networking/storage contracts required for local and CI reproducibility.
 
 ## Requirements
 
@@ -15,19 +15,19 @@ Production Docker images MUST be built using `turbo prune <package> --docker` to
 #### Scenario: Next.js image uses prune
 
 - GIVEN the monorepo root
-- WHEN `docker build -f docker/Dockerfile.nextjs` runs with `PACKAGE=@multisystem/hub`
-- THEN the build MUST execute `turbo prune @multisystem/hub --docker`
+- WHEN `docker build -f docker/Dockerfile.nextjs` runs with `PACKAGE=@hubilee/hub`
+- THEN the build MUST execute `turbo prune @hubilee/hub --docker`
 - AND MUST install dependencies only from the pruned `out/json` and `out/full` artifacts
 
 #### Scenario: API image uses prune
 
 - GIVEN the monorepo root
 - WHEN `docker build -f docker/Dockerfile.api` runs
-- THEN the build MUST execute `turbo prune @multisystem/api --docker`
+- THEN the build MUST execute `turbo prune @hubilee/api --docker`
 
 ### Requirement: Shared Dockerfiles (No Per-App Dockerfile)
 
-Production images MUST be built from shared Dockerfiles at `docker/Dockerfile.nextjs` (Next.js apps) and `docker/Dockerfile.api` (`@multisystem/api`). Dockerfiles MUST NOT exist under individual `apps/{app}/` directories. All Dockerfiles MUST pin base image versions for deterministic builds.
+Production images MUST be built from shared Dockerfiles at `docker/Dockerfile.nextjs` (Next.js apps) and `docker/Dockerfile.api` (`@hubilee/api`). Dockerfiles MUST NOT exist under individual `apps/{app}/` directories. All Dockerfiles MUST pin base image versions for deterministic builds.
 
 #### Scenario: Full application build
 
@@ -41,7 +41,7 @@ Production images MUST be built from shared Dockerfiles at `docker/Dockerfile.ne
 - GIVEN the monorepo root
 - WHEN `docker build -f docker/Dockerfile.api` runs
 - THEN the image contains the compiled API at `apps/api/dist/server.js`
-- AND the entrypoint MUST run `@multisystem/database` migrations before serving
+- AND the entrypoint MUST run `@hubilee/database` migrations before serving
 
 ### Requirement: Next.js Standalone Runtime
 
@@ -73,7 +73,7 @@ Next.js product apps in Docker MUST use `output: 'standalone'` and `outputFileTr
 
 ### Requirement: Shared Database
 
-All services requiring persistence MUST connect to a single shared Postgres service (`postgres`) using one `DATABASE_URL` targeting the `multisystem` database.
+All services requiring persistence MUST connect to a single shared Postgres service (`postgres`) using one `DATABASE_URL` targeting the `hubilee` database.
 
 #### Scenario: Single database connection
 
@@ -91,7 +91,7 @@ All services requiring persistence MUST connect to a single shared Postgres serv
 
 ### Requirement: API Service in Compose
 
-The docker-compose.yml MUST include an `@multisystem/api` service reachable by apps on the internal network.
+The docker-compose.yml MUST include an `@hubilee/api` service reachable by apps on the internal network.
 
 #### Scenario: App reaches API internally
 
@@ -102,7 +102,7 @@ The docker-compose.yml MUST include an `@multisystem/api` service reachable by a
 
 ### Requirement: Centralized Migration
 
-Database migrations MUST run from `@multisystem/database` at stack startup via the API service entrypoint, not from individual app containers.
+Database migrations MUST run from `@hubilee/database` at stack startup via the API service entrypoint, not from individual app containers.
 
 #### Scenario: Baro container startup
 

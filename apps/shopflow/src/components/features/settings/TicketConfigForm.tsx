@@ -7,18 +7,18 @@ import {
   updateTicketConfigSchema,
   type UpdateTicketConfigInput,
 } from '@/lib/validations/ticketConfig'
-import { Button } from '@multisystem/ui'
-import { Input } from '@multisystem/ui'
-import { Label } from '@multisystem/ui'
-import { Textarea } from '@multisystem/ui'
-import { Switch } from '@multisystem/ui'
+import { Button } from '@hubilee/ui'
+import { Input } from '@hubilee/ui'
+import { Label } from '@hubilee/ui'
+import { Textarea } from '@hubilee/ui'
+import { Switch } from '@hubilee/ui'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@multisystem/ui'
+} from '@hubilee/ui'
 import { TicketType } from '@/types'
 import type { TicketConfig } from '@/types'
 import { X, Printer } from 'lucide-react'

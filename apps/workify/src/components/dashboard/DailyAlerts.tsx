@@ -2,7 +2,7 @@
 
 import { useAttendanceStats } from '@/hooks/api/useAttendanceStats'
 import { useDashboardAlerts } from '@/hooks/useDashboardAlerts'
-import { Badge, Card } from '@multisystem/ui'
+import { Badge, Card } from '@hubilee/ui'
 import { AlertTriangle, Loader2, CheckCircle, PartyPopper } from 'lucide-react'
 
 export function DailyAlerts() {

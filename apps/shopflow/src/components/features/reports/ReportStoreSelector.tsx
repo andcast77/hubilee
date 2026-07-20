@@ -6,7 +6,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@multisystem/ui'
+} from '@hubilee/ui'
 import { useStoreContextOptional } from '@/components/providers/StoreContext'
 import { useUser } from '@/hooks/useUser'
 import { BarChart2 } from 'lucide-react'
