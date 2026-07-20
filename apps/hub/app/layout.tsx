@@ -3,9 +3,9 @@ import { Providers } from "./providers";
 import "../src/globals.css";
 
 export const metadata: Metadata = {
-  title: "Hubilee Hub",
+  title: "Hubilee",
   description:
-    "Hubilee Hub — plataforma unificada para gestión de módulos",
+    "Hubilee — plataforma unificada para gestión de módulos",
   icons: {
     icon: "/favicon.ico",
   },

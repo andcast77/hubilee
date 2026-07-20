@@ -168,7 +168,7 @@ export function LoginPage() {
       badge={
         <>
           <span>✨</span>
-          <span>Hubilee Hub</span>
+          <span>Hubilee</span>
         </>
       }
       title="Gestiona tus módulos"

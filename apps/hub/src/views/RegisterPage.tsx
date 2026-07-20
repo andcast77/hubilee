@@ -135,7 +135,7 @@ export function RegisterPage() {
       badge={
         <>
           <span>🚀</span>
-          <span>Hubilee Hub</span>
+          <span>Hubilee</span>
         </>
       }
       title="Tu negocio listo para crecer"
@@ -392,7 +392,7 @@ export function RegisterPage() {
               <section>
                 <h3 className="font-semibold text-slate-900 mb-2">1. Uso del Servicio</h3>
                 <p>
-                  Al usar Hubilee Hub, aceptas cumplir con estos términos y todas las
+                  Al usar Hubilee, aceptas cumplir con estos términos y todas las
                   leyes y regulaciones aplicables. No debes usar esta plataforma de manera
                   que viole leyes, derechos de terceros, o que afecte negativamente nuestra
                   operación.
@@ -469,7 +469,7 @@ export function RegisterPage() {
               <section>
                 <h3 className="font-semibold text-slate-900 mb-2">1. Responsable del Tratamiento</h3>
                 <p>
-                  Hubilee Hub es el responsable del tratamiento de tus datos personales,
+                  Hubilee es el responsable del tratamiento de tus datos personales,
                   en cumplimiento del RGPD (UE 2016/679), la Ley Argentina 25.326 y la
                   LFPDPPP mexicana.
                 </p>

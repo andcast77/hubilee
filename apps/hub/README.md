@@ -1,4 +1,4 @@
-# Hubilee Hub (`@hubilee/hub`)
+# Hubilee (`@hubilee/hub`)
 
 App **Next.js 16 (App Router) + React 19** en **`apps/hub`**: portal multi-empresa — landing pública, autenticación contra la API compartida y **dashboard** para ver empresa, módulos contratados y enlaces a **Hr**, **Pos** y **Tech**.
 

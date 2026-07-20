@@ -107,7 +107,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         navGroups={navGroups}
         user={sidebarUser}
         branding={{
-          name: "Hubilee Hub",
+          name: "Hubilee",
           shortName: "HUB",
           logo: <Building2 className="h-6 w-6" />,
         }}
