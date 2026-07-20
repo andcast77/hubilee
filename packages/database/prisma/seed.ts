@@ -90,17 +90,6 @@ async function main() {
   await clear('companyMemberModule', () => prisma.companyMemberModule.deleteMany())
   await clear('companyModule', () => prisma.companyModule.deleteMany())
   await clear('module', () => prisma.module.deleteMany())
-  // Baro (before company — FK to company)
-  await clear('baroExpedienteActuante', () => prisma.baroExpedienteActuante.deleteMany())
-  await clear('baroExpedienteTituloRelacion', () => prisma.baroExpedienteTituloRelacion.deleteMany())
-  await clear('baroExpedienteOrdenante', () => prisma.baroExpedienteOrdenante.deleteMany())
-  await clear('baroExpedienteLinderoPunto', () => prisma.baroExpedienteLinderoPunto.deleteMany())
-  await clear('baroExpedienteLinderos', () => prisma.baroExpedienteLinderos.deleteMany())
-  await clear('baroExpedienteColindanteNomenclatura', () => prisma.baroExpedienteColindanteNomenclatura.deleteMany())
-  await clear('baroExpedienteColindante', () => prisma.baroExpedienteColindante.deleteMany())
-  await clear('baroExpediente', () => prisma.baroExpediente.deleteMany())
-  await clear('baroProfessionalRegistration', () => prisma.baroProfessionalRegistration.deleteMany())
-  await clear('baroProfessional', () => prisma.baroProfessional.deleteMany())
   await clear('companyMember', () => prisma.companyMember.deleteMany())
   await clear('company', () => prisma.company.deleteMany())
   await clear('user', () => prisma.user.deleteMany())
@@ -135,14 +124,6 @@ async function main() {
       key: 'tech',
       name: 'Tech Services',
       description: 'Módulo de servicios técnicos',
-    },
-  })
-
-  const moduleBaro = await prisma.module.create({
-    data: {
-      key: 'baro',
-      name: 'Baro',
-      description: 'Módulo de agrimensura y expedientes',
     },
   })
 
@@ -300,19 +281,6 @@ async function main() {
       action: 'close',
       description: 'Cerrar órdenes de servicio técnico',
     },
-    // Baro
-    {
-      name: 'baro.access',
-      resource: 'baro',
-      action: 'access',
-      description: 'Acceder al módulo Baro',
-    },
-    {
-      name: 'baro.expedientes.manage',
-      resource: 'baro.expedientes',
-      action: 'manage',
-      description: 'Gestionar expedientes en Baro',
-    },
     // Pos — ventas granulares
     {
       name: 'pos.sales.read',
@@ -432,7 +400,6 @@ async function main() {
       { companyId: company.id, moduleId: moduleHr.id, enabled: true },
       { companyId: company.id, moduleId: modulePos.id, enabled: true },
       { companyId: company.id, moduleId: moduleTech.id, enabled: true },
-      { companyId: company.id, moduleId: moduleBaro.id, enabled: true },
     ],
   })
 
@@ -492,7 +459,6 @@ async function main() {
       { companyMemberId: acmeOwnerMember.id, moduleId: moduleHr.id, enabled: true },
       { companyMemberId: acmeOwnerMember.id, moduleId: modulePos.id, enabled: true },
       { companyMemberId: acmeOwnerMember.id, moduleId: moduleTech.id, enabled: true },
-      { companyMemberId: acmeOwnerMember.id, moduleId: moduleBaro.id, enabled: true },
       // Usuario estándar: Hr + Pos por defecto
       { companyMemberId: acmeUserMember.id, moduleId: moduleHr.id, enabled: true },
       { companyMemberId: acmeUserMember.id, moduleId: modulePos.id, enabled: true },
@@ -606,8 +572,6 @@ async function main() {
       'pos.inventory.write',
       'tech.access',
       'tech.visits.close',
-      'baro.access',
-      'baro.expedientes.manage',
     ].map((name) => ({
       roleId: ownerRole.id,
       permissionId: permissionsByName[name]!.id,
@@ -641,8 +605,6 @@ async function main() {
       'pos.inventory.write',
       'tech.access',
       'tech.visits.close',
-      'baro.access',
-      'baro.expedientes.manage',
     ].map((name) => ({
       roleId: adminRole.id,
       permissionId: permissionsByName[name]!.id,
@@ -681,7 +643,6 @@ async function main() {
       'hr.access',
       'pos.access',
       'tech.access',
-      'baro.access',
     ].map((name) => ({
       roleId: basicUserRole.id,
       permissionId: permissionsByName[name]!.id,
@@ -1451,7 +1412,6 @@ async function main() {
       { companyId: company2.id, moduleId: moduleHr.id, enabled: true },
       { companyId: company2.id, moduleId: modulePos.id, enabled: true },
       { companyId: company2.id, moduleId: moduleTech.id, enabled: true },
-      { companyId: company2.id, moduleId: moduleBaro.id, enabled: true },
     ],
   })
 
@@ -1500,7 +1460,6 @@ async function main() {
       { companyMemberId: betaOwnerMember.id, moduleId: moduleHr.id, enabled: true },
       { companyMemberId: betaOwnerMember.id, moduleId: modulePos.id, enabled: true },
       { companyMemberId: betaOwnerMember.id, moduleId: moduleTech.id, enabled: true },
-      { companyMemberId: betaOwnerMember.id, moduleId: moduleBaro.id, enabled: true },
       { companyMemberId: betaUserMember.id, moduleId: moduleHr.id, enabled: true },
       { companyMemberId: betaUserMember.id, moduleId: modulePos.id, enabled: true },
     ],
@@ -1673,7 +1632,6 @@ async function main() {
       'pos.users.manage',
       'pos.sales.refund',
       'tech.access',
-      'baro.access',
     ].map((name) => ({
       roleId: betaOwnerRole.id,
       permissionId: permissionsByName[name]!.id,
@@ -1700,7 +1658,6 @@ async function main() {
       'pos.users.manage',
       'pos.sales.refund',
       'tech.access',
-      'baro.access',
     ].map((name) => ({
       roleId: betaAdminRole.id,
       permissionId: permissionsByName[name]!.id,
@@ -1736,7 +1693,6 @@ async function main() {
       'hr.access',
       'pos.access',
       'tech.access',
-      'baro.access',
     ].map((name) => ({
       roleId: betaBasicUserRole.id,
       permissionId: permissionsByName[name]!.id,

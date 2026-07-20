@@ -160,7 +160,7 @@ export function SettingsPage() {
       const updateData: UpdateCompanyInput = {};
       if (moduleName === "hr") updateData.hrEnabled = enabled;
       else if (moduleName === "pos") updateData.posEnabled = enabled;
-      else if (moduleName === "techServices") updateData.technicalServicesEnabled = enabled;
+      else if (moduleName === "tech") updateData.technicalServicesEnabled = enabled;
 
       const response = await companyApi.updateCompany(company.id, updateData);
       if (response.success) {
@@ -320,7 +320,7 @@ export function SettingsPage() {
                   </div>
                   <Switch
                     checked={company.modules?.tech ?? company.technicalServicesEnabled ?? false}
-                    onCheckedChange={(checked: boolean) => handleModulesChange("techServices", checked)}
+                    onCheckedChange={(checked: boolean) => handleModulesChange("tech", checked)}
                     disabled={!isOwner}
                   />
                 </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { techServicesApi, type ApiResponse } from "@/lib/api/client";
+import { techApi, type ApiResponse } from "@/lib/api/client";
 
 type WorkOrder = { id: string; title: string };
 type Visit = {
@@ -28,7 +28,7 @@ export default function SchedulePage() {
   });
 
   const loadOrders = async () => {
-    const response = await techServicesApi.get<
+    const response = await techApi.get<
       ApiResponse<WorkOrder[]> & { pagination?: { total: number } }
     >("/work-orders?page=1&limit=100");
     if (!response.success) {
@@ -45,7 +45,7 @@ export default function SchedulePage() {
       setVisits([]);
       return;
     }
-    const response = await techServicesApi.get<ApiResponse<Visit[]>>(
+    const response = await techApi.get<ApiResponse<Visit[]>>(
       `/work-orders/${orderId}/visits`
     );
     if (!response.success) {
@@ -84,7 +84,7 @@ export default function SchedulePage() {
     }
 
     try {
-      const response = await techServicesApi.post<ApiResponse<Visit>>(
+      const response = await techApi.post<ApiResponse<Visit>>(
         `/work-orders/${selectedOrderId}/visits`,
         {
           scheduledStartAt: new Date(form.scheduledStartAt).toISOString(),

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { techServicesApi, authApi } from "@/lib/api/client";
+import { techApi, authApi } from "@/lib/api/client";
 import { useTechDashboardSSE } from "@/hooks/useTechDashboardSSE";
 import {
   Bar,
@@ -46,7 +46,7 @@ export default function DashboardPage() {
   const load = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await techServicesApi.get<DashboardStats & { success?: boolean }>("/dashboard/stats");
+      const res = await techApi.get<DashboardStats & { success?: boolean }>("/dashboard/stats");
       setStats({
         openOrders: res.openOrders ?? 0,
         closedThisWeek: res.closedThisWeek ?? 0,

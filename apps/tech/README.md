@@ -19,7 +19,7 @@ El usuario debe tener el módulo activo para la empresa (`technicalServicesEnabl
 
 - **Next.js 16**, **React 19**, **Tailwind CSS 4**
 - **@hubilee/ui**, **@hubilee/shared**, **@hubilee/contracts**
-- Cliente HTTP en **`src/lib/api/client.ts`**: `techServicesApi` (prefijo `/api/tech`), `authApi` (`/api/auth`)
+- Cliente HTTP en **`src/lib/api/client.ts`**: `techApi` (prefijo `/api/tech`), `authApi` (`/api/auth`)
 
 `next.config.ts` fija **`turbopack.root`** y **`outputFileTracingRoot`** en la raíz del monorepo para desarrollo/build desde el workspace.
 

@@ -4,7 +4,7 @@ export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000
 
 const apiClient = new SharedApiClient(API_URL);
 
-export const techServicesApi = {
+export const techApi = {
   get: <T>(endpoint: string, options?: RequestInit) =>
     apiClient.get<T>(`/v1/tech${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`, options),
   post: <T>(endpoint: string, data?: unknown, options?: RequestInit) =>

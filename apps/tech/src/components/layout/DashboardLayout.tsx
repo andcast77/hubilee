@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { authApi, techServicesApi } from "@/lib/api/client";
+import { authApi, techApi } from "@/lib/api/client";
 
 type TechUser = {
   id: string;
@@ -25,7 +25,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
 
   useEffect(() => {
-    techServicesApi
+    techApi
       .get<{ success: boolean; user?: TechUser }>("/me")
       .then((data) => {
         if (!data?.user) {

@@ -6,15 +6,11 @@
     reverse_proxy api:3000
 }
 
-{$BARO_DOMAIN:forms.baroconstruccionessrl.com.ar} {
-    reverse_proxy baro:3006
-}
-
-{$HR_DOMAIN:rrhh.baroconstruccionessrl.com.ar} {
+{$HR_DOMAIN:rrhh.hubilee.app} {
     reverse_proxy hr:3003
 }
 
-{$POS_DOMAIN:pos.baroconstruccionessrl.com.ar} {
+{$POS_DOMAIN:pos.hubilee.app} {
     reverse_proxy pos:3002
 }
 
@@ -24,10 +20,6 @@
 
 {$TECH_DOMAIN:tech.hubilee.app} {
     reverse_proxy tech:3004
-}
-
-{$BALANCE_DOMAIN:balance.hubilee.app} {
-    reverse_proxy balance:3005
 }
 
 {$UPDATE_DOMAIN:update.hubilee.app} {

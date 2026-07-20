@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { techServicesApi, type ApiResponse } from "@/lib/api/client";
+import { techApi, type ApiResponse } from "@/lib/api/client";
 
 type WorkOrder = {
   id: string;
@@ -32,7 +32,7 @@ export default function WorkOrdersPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await techServicesApi.get<
+      const response = await techApi.get<
         ApiResponse<WorkOrder[]> & { pagination?: { total: number } }
       >("/work-orders?page=1&limit=50");
       if (!response.success) {
@@ -59,7 +59,7 @@ export default function WorkOrdersPage() {
       return;
     }
     try {
-      const response = await techServicesApi.post<ApiResponse<{ id: string }>>("/work-orders", {
+      const response = await techApi.post<ApiResponse<{ id: string }>>("/work-orders", {
         title: form.title.trim(),
         description: form.description.trim() || null,
         priority: form.priority,

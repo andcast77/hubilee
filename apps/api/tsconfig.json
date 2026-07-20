@@ -19,9 +19,6 @@
   "exclude": [
     "node_modules",
     "dist",
-    "src/__tests__",
-    "src/controllers/v1/balance.controller.ts",
-    "src/services/balance.service.ts",
-    "src/dto/balance.dto.ts"
+    "src/__tests__"
   ]
 }

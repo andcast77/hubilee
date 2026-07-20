@@ -30,7 +30,7 @@ export async function getUserCompanies(
     return companies.map((c: { id: string; name: string }) => ({
       id: c.id,
       name: c.name,
-      modules: modulesMap.get(c.id) ?? { hr: false, pos: false, tech: false, baro: false },
+      modules: modulesMap.get(c.id) ?? { hr: false, pos: false, tech: false },
       membershipRole: null,
     }))
   }
@@ -48,7 +48,7 @@ export async function getUserCompanies(
     return activeMembers.map((m: MemberWithCompany) => ({
       id: m.company.id,
       name: m.company.name,
-      modules: modulesMap.get(m.company.id) ?? { hr: false, pos: false, tech: false, baro: false },
+      modules: modulesMap.get(m.company.id) ?? { hr: false, pos: false, tech: false },
       membershipRole: m.membershipRole,
     }))
   }
@@ -65,7 +65,7 @@ export async function getUserCompanies(
   return activeRoles.map((r: RoleWithCompany) => ({
     id: r.company.id,
     name: r.company.name,
-    modules: modulesMap.get(r.company.id) ?? { hr: false, pos: false, tech: false, baro: false },
+    modules: modulesMap.get(r.company.id) ?? { hr: false, pos: false, tech: false },
     membershipRole: null,
   }))
 }

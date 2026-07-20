@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { techServicesApi, type ApiResponse } from "@/lib/api/client";
+import { techApi, type ApiResponse } from "@/lib/api/client";
 
 type Asset = {
   id: string;
@@ -34,7 +34,7 @@ export default function AssetsPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await techServicesApi.get<ApiResponse<Asset[]>>("/assets");
+      const response = await techApi.get<ApiResponse<Asset[]>>("/assets");
       if (!response.success) {
         setError(response.error || "Error al cargar activos");
         return;
@@ -59,7 +59,7 @@ export default function AssetsPage() {
       return;
     }
     try {
-      const response = await techServicesApi.post<ApiResponse<Asset>>("/assets", {
+      const response = await techApi.post<ApiResponse<Asset>>("/assets", {
         name: form.name.trim(),
         serialNumber: form.serialNumber.trim() || null,
         customerName: form.customerName.trim() || null,
