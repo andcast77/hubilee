@@ -63,7 +63,7 @@ export async function getMe(ctx: CompanyContext): Promise<{ user: WorkifyMeUser 
         id: companyRow.id,
         name: companyRow.name,
         workifyEnabled: modules?.workify ?? false,
-        shopflowEnabled: modules?.shopflow ?? false,
+        posEnabled: modules?.pos ?? false,
         technicalServicesEnabled: modules?.techservices ?? false,
       })
     }

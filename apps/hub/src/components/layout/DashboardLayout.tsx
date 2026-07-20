@@ -57,8 +57,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { data: user, isLoading, error } = useUser();
 
   /** Must run every render (before any early return) — hook count must stay stable (React #310). */
-  const shopflowEnabled = user?.company?.modules?.shopflow === true;
-  const notif = useInAppNotifications(user?.id, user?.companyId, shopflowEnabled);
+  const posEnabled = user?.company?.modules?.pos === true;
+  const notif = useInAppNotifications(user?.id, user?.companyId, posEnabled);
 
   useEffect(() => {
     if (!isLoading && (error || !user)) {
@@ -127,7 +127,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         onLogout={handleLogout}
       />
       <main className="flex-1 overflow-y-auto">
-        {shopflowEnabled ? (
+        {posEnabled ? (
           <div className="sticky top-0 z-30 flex justify-end border-b border-slate-100 bg-white/90 px-4 py-2 backdrop-blur-sm">
             <InAppNotificationBell
               unreadCount={notif.unreadCount}

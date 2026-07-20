@@ -20,7 +20,7 @@ ALTER TYPE "NotificationType" ADD VALUE 'SYSTEM';
 DROP INDEX "user_permissions_userId_permissionId_key";
 
 -- AlterTable
-ALTER TABLE "companies" DROP COLUMN "shopflowEnabled",
+ALTER TABLE "companies" DROP COLUMN "posEnabled",
 DROP COLUMN "technicalServicesEnabled",
 DROP COLUMN "workifyEnabled",
 ADD COLUMN     "address" TEXT,

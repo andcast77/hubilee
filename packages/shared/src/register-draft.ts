@@ -15,7 +15,7 @@ export type RegisterDraftV1 = {
   /** Hub exige ambos checkboxes; otras apps pueden omitir y se asume true al registrar. */
   privacyAccepted?: boolean
   workifyEnabled?: boolean
-  shopflowEnabled?: boolean
+  posEnabled?: boolean
   technicalServicesEnabled?: boolean
 }
 
@@ -47,7 +47,7 @@ export function parseRegisterDraftV1(raw: string | null): RegisterDraftV1 | null
       termsAccepted: true,
       privacyAccepted: d.privacyAccepted,
       workifyEnabled: d.workifyEnabled,
-      shopflowEnabled: d.shopflowEnabled,
+      posEnabled: d.posEnabled,
       technicalServicesEnabled: d.technicalServicesEnabled,
     }
   } catch {

@@ -92,7 +92,7 @@ export default function NewUserPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Agregar usuario</h1>
-        <p className="text-gray-600">Crea un nuevo usuario de la empresa (misma lista en Workify y Shopflow).</p>
+        <p className="text-gray-600">Crea un nuevo usuario de la empresa (misma lista en Workify y Pos).</p>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 max-w-md">

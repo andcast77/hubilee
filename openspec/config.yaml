@@ -38,7 +38,7 @@ testing:
       command: pnpm typecheck
     formatter:
       available: true
-      command: Prettier (shopflow/workify; not unified at root)
+      command: Prettier (pos/workify; not unified at root)
 
 rules:
   proposal:

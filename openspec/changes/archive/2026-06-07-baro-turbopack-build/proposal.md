@@ -2,7 +2,7 @@
 
 ## Intent
 
-Restore a **green Baro production build** with **Turbopack** (default Next 16 bundler, matching hub/shopflow/workify) and align edge auth + client fetch paths with hubilee API session model (`baro-auth-integration`, ADR-auth-token-storage).
+Restore a **green Baro production build** with **Turbopack** (default Next 16 bundler, matching hub/pos/workify) and align edge auth + client fetch paths with hubilee API session model (`baro-auth-integration`, ADR-auth-token-storage).
 
 ## Scope
 

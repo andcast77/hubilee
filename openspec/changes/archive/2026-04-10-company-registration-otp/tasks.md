@@ -25,7 +25,7 @@ Alineado con [`docs/plans/[completed] PLAN-39-company-registration-otp.md`](../.
 
 - [x] 3.1 Hub: `RegisterPage` + `api-client` (send/verify/register con ticket); widget Turnstile.
 - [x] 3.2 Workify: mismo flujo.
-- [x] 3.3 Shopflow: mismo flujo.
+- [x] 3.3 Pos: mismo flujo.
 - [x] 3.4 `NEXT_PUBLIC_*` Turnstile por app.
 
 ## Phase 4: Post-registro / deuda Hub

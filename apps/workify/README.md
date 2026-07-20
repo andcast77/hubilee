@@ -9,7 +9,7 @@ Módulo **RRHH y asistencia** del monorepo Hubilee: empleados, cargos, turnos, f
 - **@hubilee/ui** (`transpilePackages`), **@hubilee/shared**, **@hubilee/contracts**
 - **Recharts**, **ExcelJS**, **jsPDF**, **react-to-print**, **Vitest**
 
-Cliente HTTP: **`src/lib/api/client.ts`** — `workifyApi` (`/api/workify`), `authApi` (`/api/auth`), `companiesApi` (miembros `/api/companies/:id/members`). Cookie **`token`** (JWT), alineada con Hub / Shopflow.
+Cliente HTTP: **`src/lib/api/client.ts`** — `workifyApi` (`/api/workify`), `authApi` (`/api/auth`), `companiesApi` (miembros `/api/companies/:id/members`). Cookie **`token`** (JWT), alineada con Hub / Pos.
 
 ## Puerto y scripts
 
@@ -26,24 +26,24 @@ pnpm --filter @hubilee/workify dev
 
 Añadir **`http://localhost:3003`** a **`CORS_ORIGIN`** en la API. En el Hub: **`VITE_WORKIFY_URL=http://localhost:3003`**.
 
-### No confundir con Shopflow
+### No confundir con Pos
 
 | App | Puerto | URL local típica |
 |-----|--------|------------------|
 | **Workify** (esta app) | **3003** | `http://localhost:3003` |
-| **Shopflow** (POS) | **3002** | `http://localhost:3002` |
+| **Pos** (POS) | **3002** | `http://localhost:3002` |
 
-Si en el navegador ves branding **ShopFlow POS** o landing de tienda, casi seguro estás en **:3002**, no en Workify.
+Si en el navegador ves branding **POS POS** o landing de tienda, casi seguro estás en **:3002**, no en Workify.
 
 ### Verificación local (rápida)
 
 1. Arranca el dev de Workify (`pnpm dev:workify` desde la raíz del monorepo o `pnpm dev` dentro de `apps/workify`).
-2. Abre **`http://localhost:3003`**. En `/`, el header debe decir **Workify** (no ShopFlow POS). El título de pestaña debe ser **Workify** (metadata en `src/app/layout.tsx`).
+2. Abre **`http://localhost:3003`**. En `/`, el header debe decir **Workify** (no POS POS). El título de pestaña debe ser **Workify** (metadata en `src/app/layout.tsx`).
 3. Si tras cambiar código la raíz no se actualiza, borra la caché de Next: elimina el directorio **`apps/workify/.next`** y reinicia el servidor de desarrollo.
 
 ### Deploy (Vercel u otro host)
 
-- El proyecto debe construir y servir el paquete **`@hubilee/workify`** (directorio **`apps/workify`**). Si el proyecto de Vercel apunta por error a **`apps/shopflow`**, desplegarás el POS, no RRHH.
+- El proyecto debe construir y servir el paquete **`@hubilee/workify`** (directorio **`apps/workify`**). Si el proyecto de Vercel apunta por error a **`apps/pos`**, desplegarás el POS, no RRHH.
 - En monorepos, suele configurarse **Root Directory** `apps/workify` o build desde la raíz con **Turborepo** filtrando `@hubilee/workify` (coherente con [`vercel.json`](vercel.json) y el resto de apps).
 - En producción, define **`NEXT_PUBLIC_APP_URL`** con la URL pública de Workify (para `metadataBase` y Open Graph en `layout.tsx`).
 

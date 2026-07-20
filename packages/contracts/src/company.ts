@@ -1,6 +1,6 @@
 export type CompanyModules = {
   workify: boolean
-  shopflow: boolean
+  pos: boolean
   techservices: boolean
 }
 

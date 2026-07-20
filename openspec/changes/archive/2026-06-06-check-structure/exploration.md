@@ -2,7 +2,7 @@
 
 ### Current State
 
-The hubilee monorepo is a pnpm + Turborepo workspace with **6 Next.js apps** (`hub`, `shopflow`, `workify`, `techservices`, `balance`, `baro`) and **shared packages** (`api`, `database`, `contracts`, `shared`, `ui`). Most product apps follow the `@hubilee/{app}` naming convention, extend `tsconfig.base.json`, use catalog deps, and talk to the shared Fastify API on port 3000.
+The hubilee monorepo is a pnpm + Turborepo workspace with **6 Next.js apps** (`hub`, `pos`, `workify`, `techservices`, `balance`, `baro`) and **shared packages** (`api`, `database`, `contracts`, `shared`, `ui`). Most product apps follow the `@hubilee/{app}` naming convention, extend `tsconfig.base.json`, use catalog deps, and talk to the shared Fastify API on port 3000.
 
 **Monorepo-unification (Fase 1, archived 2026-06-06)** delivered Caddy routing, a generic `docker/Dockerfile.nextjs`, and a baro-specific Docker stack. Canonical specs now live under `openspec/specs/` for `containerized-deployment` and `multi-domain-routing`.
 
@@ -52,7 +52,7 @@ The hubilee monorepo is a pnpm + Turborepo workspace with **6 Next.js apps** (`h
 | Track | Scope | Priority |
 |-------|-------|----------|
 | **A — Balance product** | Prisma models + migration, module key in seed/RBAC, register routes, export contracts, wire frontend, tests per strict_tdd | High (WIP code is currently non-functional) |
-| **B — Infra parity** | Compose services for hub/shopflow/workify/techservices/balance using generic Dockerfile; align baro naming over time | Medium (spec debt from Fase 1) |
+| **B — Infra parity** | Compose services for hub/pos/workify/techservices/balance using generic Dockerfile; align baro naming over time | Medium (spec debt from Fase 1) |
 
 Do **not** merge Balance API files until schema + route registration + module gating are complete — current files would fail typecheck/build against `@hubilee/database`.
 

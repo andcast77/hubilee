@@ -9,7 +9,7 @@ Align hubilee with **official Turborepo conventions** for workspace layout, task
 ### In Scope
 - **Phase A — Workspace:** `@hubilee/shared` builds to `dist/`; root scripts use `turbo run … --filter=<pkg>...`; remove baro-only `turbo.json` overrides; CI `--affected` + `fetch-depth: 0` (base `v2` + `main`)
 - **Phase B — Layout:** move `packages/api` → `apps/api`; rename `packages/component-library` → `packages/ui`; update path refs (Tailwind `@source`, cursor rules, scripts)
-- **Phase C — Deploy:** one `docker/Dockerfile.nextjs` + `docker/Dockerfile.api` using `turbo prune --docker`; Next `output: 'standalone'` + `outputFileTracingRoot` on hub/shopflow/workify/techservices/baro; remove per-app Dockerfiles; drop `api:bundle`; standardize `vercel.json` build commands; compose build-args for `NEXT_PUBLIC_*`
+- **Phase C — Deploy:** one `docker/Dockerfile.nextjs` + `docker/Dockerfile.api` using `turbo prune --docker`; Next `output: 'standalone'` + `outputFileTracingRoot` on hub/pos/workify/techservices/baro; remove per-app Dockerfiles; drop `api:bundle`; standardize `vercel.json` build commands; compose build-args for `NEXT_PUBLIC_*`
 - Update canonical **`containerized-deployment`** spec deltas
 
 ### Out of Scope

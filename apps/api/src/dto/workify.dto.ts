@@ -184,7 +184,7 @@ export const workifyMeCompanySchema = z.object({
   id: uuid,
   name: z.string(),
   workifyEnabled: z.boolean(),
-  shopflowEnabled: z.boolean(),
+  posEnabled: z.boolean(),
   technicalServicesEnabled: z.boolean(),
 })
 export type WorkifyMeCompany = z.infer<typeof workifyMeCompanySchema>

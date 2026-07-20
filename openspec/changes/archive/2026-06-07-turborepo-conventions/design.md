@@ -61,7 +61,7 @@ turbo prune @hubilee/api --docker → install → build
 | `docker/Dockerfile.nextjs` | Rewrite | prune + standalone runner |
 | `docker/Dockerfile.api` | Rewrite | prune; `apps/api/dist/server.js` |
 | `docker-compose.yml` | Modify | `docker/Dockerfile.nextjs` + build-args per service |
-| `apps/{hub,shopflow,workify,techservices,baro}/next.config.ts` | Modify | `standalone` + `outputFileTracingRoot` |
+| `apps/{hub,pos,workify,techservices,baro}/next.config.ts` | Modify | `standalone` + `outputFileTracingRoot` |
 | `apps/*/vercel.json`, `apps/api/vercel.json` | Modify | root install + `turbo build --filter=…...` |
 | `apps/*/Dockerfile` (6 files) | Delete | Replaced by generic Dockerfile |
 | `apps/baro/docker-entrypoint.sh` | Delete | No-op; standalone CMD only |

@@ -82,7 +82,7 @@ export default function UsersPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Usuarios de la empresa</h1>
-          <p className="text-gray-600">Misma lista que en Shopflow. Owner y admin pueden crear usuarios.</p>
+          <p className="text-gray-600">Misma lista que en Pos. Owner y admin pueden crear usuarios.</p>
         </div>
         <Link
           href="/users/new"

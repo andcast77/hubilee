@@ -1,6 +1,0 @@
-{
-  "buildCommand": "cd ../.. && pnpm exec turbo run build --filter=@hubilee/shopflow...",
-  "outputDirectory": ".next",
-  "installCommand": "cd ../.. && pnpm install",
-  "framework": "nextjs"
-}

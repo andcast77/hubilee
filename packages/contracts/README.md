@@ -1,13 +1,13 @@
 # @hubilee/contracts
 
-Paquete **solo TypeScript**: tipos compartidos entre la **API** y las apps (**hub**, **shopflow**, **workify**, **techservices**). No incluye runtime ni dependencias de producción.
+Paquete **solo TypeScript**: tipos compartidos entre la **API** y las apps (**hub**, **pos**, **workify**, **techservices**). No incluye runtime ni dependencias de producción.
 
 ## Contenido (`src/`)
 
 | Módulo | Exporta (resumen) |
 |--------|-------------------|
 | `auth.ts` | `LoginResponse`, `RegisterResponse`, `MeResponse`, `ContextResponse`, `CompaniesResponse`, **`ApiResponse<T>`** |
-| `company.ts` | `CompanyModules` (flags `workify` / `shopflow` / `techservices`), `CompanyRow` |
+| `company.ts` | `CompanyModules` (flags `workify` / `pos` / `techservices`), `CompanyRow` |
 
 El entry **`index.ts`** reexporta todo.
 

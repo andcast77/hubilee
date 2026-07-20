@@ -4,20 +4,20 @@ import { cacheThrough, cacheDel } from '../common/cache/index.js'
 import { ForbiddenError } from '../common/errors/app-error.js'
 
 /** Keys de módulos conocidos (según seed) */
-export const MODULE_KEYS = ['workify', 'shopflow', 'techservices', 'baro'] as const
+export const MODULE_KEYS = ['workify', 'pos', 'techservices', 'baro'] as const
 export type ModuleKeys = (typeof MODULE_KEYS)[number]
 
 /** Shape de módulos habilitados por empresa/miembro */
 export type CompanyModulesShape = {
   workify: boolean
-  shopflow: boolean
+  pos: boolean
   techservices: boolean
   baro: boolean
 }
 
 const DEFAULT_MODULES: CompanyModulesShape = {
   workify: false,
-  shopflow: false,
+  pos: false,
   techservices: false,
   baro: false,
 }
@@ -112,7 +112,7 @@ export async function getMemberModules(
 }
 
 /**
- * Obtiene los IDs de módulos por keys (workify, shopflow, techservices).
+ * Obtiene los IDs de módulos por keys (workify, pos, techservices).
  * Útil para evitar N consultas separadas.
  */
 export async function findModulesByKeys(
@@ -137,7 +137,7 @@ export async function findModulesByKeys(
  * When companyMemberId is present, enforces per-member module access (Nivel 2).
  * Falls back to company-level module check when no member context is available (e.g. superuser).
  *
- * Usage: `preHandler: [requireAuth, requireShopflowContext, requireModuleAccess('shopflow')]`
+ * Usage: `preHandler: [requireAuth, requirePosContext, requireModuleAccess('pos')]`
  */
 export function requireModuleAccess(moduleKey: ModuleKeys) {
   return async function checkModuleAccess(request: FastifyRequest, _reply: FastifyReply): Promise<void> {

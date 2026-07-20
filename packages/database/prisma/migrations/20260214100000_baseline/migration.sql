@@ -80,7 +80,7 @@ CREATE TABLE "users" (
     "isSuperuser" BOOLEAN NOT NULL DEFAULT false,
     "twoFactorEnabled" BOOLEAN NOT NULL DEFAULT false,
     "twoFactorSecret" TEXT,
-    "shopflowPreferredCompanyId" TEXT,
+    "posPreferredCompanyId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -94,7 +94,7 @@ CREATE TABLE "companies" (
     "parentId" TEXT,
     "ownerUserId" TEXT,
     "workifyEnabled" BOOLEAN NOT NULL DEFAULT false,
-    "shopflowEnabled" BOOLEAN NOT NULL DEFAULT false,
+    "posEnabled" BOOLEAN NOT NULL DEFAULT false,
     "technicalServicesEnabled" BOOLEAN NOT NULL DEFAULT false,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -835,7 +835,7 @@ CREATE UNIQUE INDEX "user_preferences_userId_companyId_key" ON "user_preferences
 CREATE UNIQUE INDEX "notification_preferences_userId_key" ON "notification_preferences"("userId");
 
 -- AddForeignKey
-ALTER TABLE "users" ADD CONSTRAINT "users_shopflowPreferredCompanyId_fkey" FOREIGN KEY ("shopflowPreferredCompanyId") REFERENCES "companies"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "users" ADD CONSTRAINT "users_posPreferredCompanyId_fkey" FOREIGN KEY ("posPreferredCompanyId") REFERENCES "companies"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "companies" ADD CONSTRAINT "companies_ownerUserId_fkey" FOREIGN KEY ("ownerUserId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;

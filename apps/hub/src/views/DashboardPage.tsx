@@ -51,11 +51,11 @@ export function DashboardPage() {
       color: "purple",
     },
     {
-      title: "Shopflow",
+      title: "Pos",
       description: "Punto de venta y gestión de inventario",
       icon: ShoppingCart,
-      href: process.env.NEXT_PUBLIC_SHOPFLOW_URL || "http://localhost:3002",
-      enabled: company.modules?.shopflow ?? company.shopflowEnabled ?? false,
+      href: process.env.NEXT_PUBLIC_POS_URL || "http://localhost:3002",
+      enabled: company.modules?.pos ?? company.posEnabled ?? false,
       color: "blue",
     },
     {
@@ -69,8 +69,8 @@ export function DashboardPage() {
   ];
 
   const enabledModulesCount = modules.filter((m) => m.enabled).length;
-  const shopflowUrl =
-    process.env.NEXT_PUBLIC_SHOPFLOW_URL || "http://localhost:3002";
+  const posUrl =
+    process.env.NEXT_PUBLIC_POS_URL || "http://localhost:3002";
 
   return (
     <div className="p-6 space-y-6">
@@ -99,7 +99,7 @@ export function DashboardPage() {
         </div>
       </div>
 
-      <OnboardingChecklist company={company} stats={stats} shopflowUrl={shopflowUrl} />
+      <OnboardingChecklist company={company} stats={stats} posUrl={posUrl} />
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

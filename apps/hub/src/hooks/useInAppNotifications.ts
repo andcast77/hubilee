@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getInAppNotificationMeta } from "@hubilee/ui";
-import { shopflowNotificationsApi, type InAppNotificationDto } from "@/lib/api-client";
+import { posNotificationsApi, type InAppNotificationDto } from "@/lib/api-client";
 import { getHubApiBaseUrl } from "@/lib/api-origin";
 const SSE_SUPPORTED = typeof EventSource !== "undefined";
 
@@ -32,7 +32,7 @@ export function useInAppNotifications(
     queryKey: ["hubInAppNotifications", userId, companyId],
     queryFn: async () => {
       if (!userId) throw new Error("userId");
-      const res = await shopflowNotificationsApi.list(userId);
+      const res = await posNotificationsApi.list(userId);
       if (!res.success || !res.data) throw new Error(res.error || "notifications");
       return res.data;
     },
@@ -44,7 +44,7 @@ export function useInAppNotifications(
     queryKey: ["hubInAppNotificationsUnread", userId, companyId],
     queryFn: async () => {
       if (!userId) throw new Error("userId");
-      const res = await shopflowNotificationsApi.unreadCount(userId);
+      const res = await posNotificationsApi.unreadCount(userId);
       if (!res.success || !res.data) throw new Error(res.error || "unread");
       return res.data.count;
     },
@@ -78,7 +78,7 @@ export function useInAppNotifications(
   const markReadMut = useMutation({
     mutationFn: async (id: string) => {
       if (!userId) return;
-      await shopflowNotificationsApi.markRead(id, userId);
+      await posNotificationsApi.markRead(id, userId);
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["hubInAppNotifications", userId, companyId] });
@@ -89,7 +89,7 @@ export function useInAppNotifications(
   const markAllMut = useMutation({
     mutationFn: async () => {
       if (!userId) return;
-      await shopflowNotificationsApi.markAllRead(userId);
+      await posNotificationsApi.markAllRead(userId);
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["hubInAppNotifications", userId, companyId] });

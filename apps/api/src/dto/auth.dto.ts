@@ -35,7 +35,7 @@ export const registerBodySchema = z
     companyName: z.string().optional(),
     registrationTicket: z.string().min(1).optional(),
     workifyEnabled: z.boolean().optional(),
-    shopflowEnabled: z.boolean().optional(),
+    posEnabled: z.boolean().optional(),
     technicalServicesEnabled: z.boolean().optional(),
   })
   .superRefine((data, ctx) => {
@@ -78,7 +78,7 @@ export const registerLinkSendBodySchema = z.object({
   lastName: z.string().optional(),
   companyName: z.string().min(1, 'El nombre de la empresa es requerido'),
   workifyEnabled: z.boolean().optional(),
-  shopflowEnabled: z.boolean().optional(),
+  posEnabled: z.boolean().optional(),
   technicalServicesEnabled: z.boolean().optional(),
 })
 
@@ -174,5 +174,5 @@ export type AuthUserResponse = {
 export type AuthCompanyResponse = {
   id: string
   name: string
-  modules: { workify: boolean; shopflow: boolean; techservices: boolean }
+  modules: { workify: boolean; pos: boolean; techservices: boolean }
 }

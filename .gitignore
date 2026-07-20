@@ -55,3 +55,4 @@ context/
 .codegraph/
 opencode.json
 .github/
+openspec/

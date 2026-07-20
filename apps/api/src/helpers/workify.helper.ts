@@ -146,14 +146,14 @@ export function toWorkifyMeCompany(row: {
   id: string
   name: string
   workifyEnabled: boolean
-  shopflowEnabled: boolean
+  posEnabled: boolean
   technicalServicesEnabled: boolean
 }): WorkifyMeCompany {
   return {
     id: row.id,
     name: row.name,
     workifyEnabled: row.workifyEnabled,
-    shopflowEnabled: row.shopflowEnabled,
+    posEnabled: row.posEnabled,
     technicalServicesEnabled: row.technicalServicesEnabled,
   }
 }

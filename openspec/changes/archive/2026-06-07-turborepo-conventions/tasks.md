@@ -38,7 +38,7 @@ Chain strategy: feature-branch-chain
 
 - [x] 2.1 `git mv packages/api apps/api`
 - [x] 2.2 `git mv packages/component-library packages/ui`
-- [x] 2.3 Update Tailwind `@source` / `tailwind.config.js` paths to `packages/ui` in hub, shopflow, workify, techservices, balance
+- [x] 2.3 Update Tailwind `@source` / `tailwind.config.js` paths to `packages/ui` in hub, pos, workify, techservices, balance
 - [x] 2.4 Update `.cursor/rules/*.mdc` globs: `apps/api/src/**`, `packages/ui/src/**`
 - [x] 2.5 Update `scripts/vercel-api-skip-if-unchanged.sh` to watch `apps/api`
 - [x] 2.6 Grep-fix remaining `packages/api` / `component-library` path references in code/scripts
@@ -49,8 +49,8 @@ Chain strategy: feature-branch-chain
 - [x] 3.1 Rewrite `docker/Dockerfile.nextjs`: `turbo prune`, builder ENV for `NEXT_PUBLIC_*`, standalone runner `node apps/${APP_DIR}/server.js`
 - [x] 3.2 Rewrite `docker/Dockerfile.api`: `turbo prune @hubilee/api`; CMD `node apps/api/dist/server.js`
 - [x] 3.3 Update `docker-compose.yml`: all Next services use `docker/Dockerfile.nextjs` + build-args (`PACKAGE`, `APP_DIR`, `PORT`, `NEXT_PUBLIC_*`)
-- [x] 3.4 Delete `apps/{hub,shopflow,workify,techservices,balance,baro}/Dockerfile` and `apps/baro/docker-entrypoint.sh`
-- [x] 3.5 Add `output: 'standalone'` + `outputFileTracingRoot` to hub, shopflow, workify, techservices, baro `next.config.ts`
+- [x] 3.4 Delete `apps/{hub,pos,workify,techservices,balance,baro}/Dockerfile` and `apps/baro/docker-entrypoint.sh`
+- [x] 3.5 Add `output: 'standalone'` + `outputFileTracingRoot` to hub, pos, workify, techservices, baro `next.config.ts`
 - [x] 3.6 Update `apps/*/vercel.json` and `apps/api/vercel.json`: root install + `turbo run build --filter=…...`
 - [x] 3.7 Update `.env.example` with Docker build-time `NEXT_PUBLIC_*` notes; clean stale `.dockerignore` entries
 - [x] 3.8 `docker build -f docker/Dockerfile.nextjs` (hub args) — container starts without `next: not found`

@@ -17,7 +17,7 @@ datasource db {
 // ENUMS COMPARTIDOS
 // ========================================
 
-/// Rol a nivel plataforma/legacy (Shopflow). Para control por empresa usar MembershipRole en CompanyMember.
+/// Rol a nivel plataforma/legacy (Pos). Para control por empresa usar MembershipRole en CompanyMember.
 enum UserRole {
   USER
   ADMIN
@@ -135,7 +135,7 @@ enum LicenseStatus {
 }
 
 // ========================================
-// ENUMS SHOPFLOW
+// ENUMS POS
 // ========================================
 
 enum TransferStatus {
@@ -233,8 +233,8 @@ model User {
   // Password reset
   passwordResetTokenHash String? @unique
   passwordResetTokenExpiry DateTime?
-  /// Empresa preferida/por defecto en Shopflow; se asigna automáticamente si es null (primera por nombre).
-  shopflowPreferredCompanyId String?
+  /// Empresa preferida/por defecto en Pos; se asigna automáticamente si es null (primera por nombre).
+  posPreferredCompanyId String?
   /// Timestamp de aceptación explícita de la política de privacidad (GDPR Art. 7 / LFPDPPP).
   privacyAcceptedAt DateTime?
   /// Intentos fallidos de contraseña consecutivos (PLAN-26 lockout).
@@ -246,7 +246,7 @@ model User {
 
   // Empresas que posee (registrante / owner)
   companiesOwned    Company[]       @relation("CompanyOwner")
-  shopflowPreferredCompany Company?  @relation("ShopflowPreferredCompany", fields: [shopflowPreferredCompanyId], references: [id], onDelete: SetNull)
+  posPreferredCompany Company?  @relation("PosPreferredCompany", fields: [posPreferredCompanyId], references: [id], onDelete: SetNull)
   // Pertenencia a empresas (owner/admin/user por empresa)
   companyMemberships CompanyMember[]
 
@@ -257,7 +257,7 @@ model User {
   workOrdersCreated WorkOrder[] @relation("WorkOrderCreatedBy")
   invoicesCreated   Invoice[]   @relation("InvoiceCreatedBy")
 
-  // Relaciones Shopflow
+  // Relaciones Pos
   sales             Sale[]
   salesAsSeller     Sale[]        @relation("SaleSeller")
   actionHistory      ActionHistory[]
@@ -296,7 +296,7 @@ model MfaBackupCode {
 model Session {
   id           String    @id @default(uuid())
   userId       String
-  /// Hash SHA-256 del refresh opaco (web) o token legado (p. ej. JWT en Shopflow).
+  /// Hash SHA-256 del refresh opaco (web) o token legado (p. ej. JWT en Pos).
   sessionToken String    @unique
   ipAddress    String?
   userAgent    String?
@@ -379,7 +379,7 @@ model Company {
   // Permisos directos por empresa (overrides)
   userPermissions  UserPermission[]
 
-  // Shopflow
+  // Pos
   products          Product[]
   categories        Category[]
   suppliers         Supplier[]
@@ -395,7 +395,7 @@ model Company {
   stores            Store[]
   storeInventory    StoreInventory[]
   userPreferences   UserPreferences[]
-  usersWithPreferredShopflow User[] @relation("ShopflowPreferredCompany")
+  usersWithPreferredPos User[] @relation("PosPreferredCompany")
   cashRegisters     CashRegister[]
   cashSessions      CashSession[]
 
@@ -428,7 +428,7 @@ model CompanyMember {
   @@map("company_members")
 }
 
-/// Catálogo global de módulos (Workify, Shopflow, Techservices, etc.)
+/// Catálogo global de módulos (Workify, Pos, Techservices, etc.)
 model Module {
   id          String   @id @default(uuid())
   key         String   @unique
@@ -919,7 +919,7 @@ model Translation {
   key         String
   language    String
   value       String
-  module      String?  // "workify", "shopflow", "shared"
+  module      String?  // "workify", "pos", "shared"
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -1018,7 +1018,7 @@ model ServiceVisit {
 }
 
 // ========================================
-// MODELOS SHOPFLOW
+// MODELOS POS
 // ========================================
 
 model Product {

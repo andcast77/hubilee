@@ -41,7 +41,7 @@ export type CompanyUpdateResult = {
   id: string;
   name: string;
   workifyEnabled: boolean;
-  shopflowEnabled: boolean;
+  posEnabled: boolean;
   technicalServicesEnabled: boolean;
   updatedAt: string;
 };
@@ -97,7 +97,7 @@ export const authApi = {
     lastName?: string;
     companyName: string;
     workifyEnabled?: boolean;
-    shopflowEnabled?: boolean;
+    posEnabled?: boolean;
     technicalServicesEnabled?: boolean;
   }) =>
     client.post<ApiResponse<{ sent: boolean }>>("/v1/auth/register/link/send", body),
@@ -112,7 +112,7 @@ export const authApi = {
     lastName: string;
     companyName: string;
     workifyEnabled?: boolean;
-    shopflowEnabled?: boolean;
+    posEnabled?: boolean;
     technicalServicesEnabled?: boolean;
     registrationTicket?: string;
   }) =>
@@ -320,7 +320,7 @@ export const companyApi = {
     ),
 };
 
-/** Shopflow module API (same session cookie). Used for in-app notifications from Hub when Shopflow is enabled. */
+/** Pos module API (same session cookie). Used for in-app notifications from Hub when Pos is enabled. */
 export type InAppNotificationDto = {
   id: string;
   title: string;
@@ -331,7 +331,7 @@ export type InAppNotificationDto = {
   data?: Record<string, unknown> | null;
 };
 
-export const shopflowNotificationsApi = {
+export const posNotificationsApi = {
   list: (userId: string) =>
     client.get<{
       success: boolean;
@@ -341,22 +341,22 @@ export const shopflowNotificationsApi = {
       };
       error?: string;
     }>(
-      `/v1/shopflow/notifications?userId=${encodeURIComponent(userId)}&limit=50&page=1`
+      `/v1/pos/notifications?userId=${encodeURIComponent(userId)}&limit=50&page=1`
     ),
 
   unreadCount: (userId: string) =>
     client.get<{ success: boolean; data?: { count: number }; error?: string }>(
-      `/v1/shopflow/notifications/unread-count?userId=${encodeURIComponent(userId)}`
+      `/v1/pos/notifications/unread-count?userId=${encodeURIComponent(userId)}`
     ),
 
   markRead: (id: string, userId: string) =>
-    client.put<{ success: boolean; error?: string }>(`/v1/shopflow/notifications/${id}/read`, {
+    client.put<{ success: boolean; error?: string }>(`/v1/pos/notifications/${id}/read`, {
       userId,
     }),
 
   markAllRead: (userId: string) =>
     client.put<{ success: boolean; data?: { count: number }; error?: string }>(
-      `/v1/shopflow/notifications/read-all`,
+      `/v1/pos/notifications/read-all`,
       { userId }
     ),
 
@@ -372,7 +372,7 @@ export const shopflowNotificationsApi = {
         preferences?: Record<string, { inApp?: boolean; push?: boolean; email?: boolean }> | null;
       };
       error?: string;
-    }>(`/v1/shopflow/users/${userId}/notification-preferences`),
+    }>(`/v1/pos/users/${userId}/notification-preferences`),
 
   updatePreferences: (
     userId: string,
@@ -394,12 +394,12 @@ export const shopflowNotificationsApi = {
         preferences?: Record<string, { inApp?: boolean; push?: boolean; email?: boolean }> | null;
       };
       error?: string;
-    }>(`/v1/shopflow/users/${userId}/notification-preferences`, body),
+    }>(`/v1/pos/users/${userId}/notification-preferences`, body),
 };
 
-export const shopflowStoresApi = {
+export const posStoresApi = {
   list: () =>
     client.get<{ success: boolean; data?: { id: string; name: string; active?: boolean }[]; error?: string }>(
-      `/v1/shopflow/stores`
+      `/v1/pos/stores`
     ),
 };

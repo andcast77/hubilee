@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@hubi
 import { CheckCircle2, Circle } from "lucide-react";
 import type { Company, CompanyStats } from "@/types/company";
 import { isModuleEnabled } from "@/types/company";
-import { shopflowStoresApi } from "@/lib/api-client";
+import { posStoresApi } from "@/lib/api-client";
 
 const MS_PER_DAY = 86_400_000;
 
@@ -22,18 +22,18 @@ type CheckItem = {
 type Props = {
   company: Company;
   stats: CompanyStats | undefined;
-  shopflowUrl: string;
+  posUrl: string;
 };
 
-export function OnboardingChecklist({ company, stats, shopflowUrl }: Props) {
+export function OnboardingChecklist({ company, stats, posUrl }: Props) {
   const { data: storesRes } = useQuery({
-    queryKey: ["hubShopflowStores", company.id],
+    queryKey: ["hubPosStores", company.id],
     queryFn: async () => {
-      const res = await shopflowStoresApi.list();
+      const res = await posStoresApi.list();
       if (!res.success) throw new Error(res.error || "stores");
       return res.data ?? [];
     },
-    enabled: isModuleEnabled(company, "shopflow"),
+    enabled: isModuleEnabled(company, "pos"),
     staleTime: 60_000,
   });
 
@@ -42,13 +42,13 @@ export function OnboardingChecklist({ company, stats, shopflowUrl }: Props) {
   const profileOk = Boolean(company.taxId?.trim()) && Boolean(company.name?.trim());
   const modulesOk =
     isModuleEnabled(company, "workify") ||
-    isModuleEnabled(company, "shopflow") ||
+    isModuleEnabled(company, "pos") ||
     isModuleEnabled(company, "techservices");
   const teamOk = (stats?.totalMembers ?? 0) >= 2;
   const stores = storesRes ?? [];
   const activeStores = stores.filter((s) => s.active !== false);
   const storeOk =
-    !isModuleEnabled(company, "shopflow") || activeStores.length >= 1;
+    !isModuleEnabled(company, "pos") || activeStores.length >= 1;
 
   const items: CheckItem[] = [
     {
@@ -62,7 +62,7 @@ export function OnboardingChecklist({ company, stats, shopflowUrl }: Props) {
       id: "modules",
       done: modulesOk,
       label: "Activar módulos",
-      hint: "Habilita al menos un módulo (Workify, Shopflow o Tech Services).",
+      hint: "Habilita al menos un módulo (Workify, Pos o Tech Services).",
       to: "/dashboard/settings",
     },
     {
@@ -76,11 +76,11 @@ export function OnboardingChecklist({ company, stats, shopflowUrl }: Props) {
       id: "store",
       done: storeOk,
       label: "Configurar primer local / tienda",
-      hint: isModuleEnabled(company, "shopflow")
-        ? "Crea tu primer local en Shopflow."
-        : "Activa Shopflow y configura locales desde el módulo de ventas.",
-      ...(isModuleEnabled(company, "shopflow")
-        ? { externalHref: `${shopflowUrl.replace(/\/$/, "")}/admin/settings` }
+      hint: isModuleEnabled(company, "pos")
+        ? "Crea tu primer local en Pos."
+        : "Activa Pos y configura locales desde el módulo de ventas.",
+      ...(isModuleEnabled(company, "pos")
+        ? { externalHref: `${posUrl.replace(/\/$/, "")}/admin/settings` }
         : { to: "/dashboard/settings" }),
     },
   ];
@@ -116,7 +116,7 @@ export function OnboardingChecklist({ company, stats, shopflowUrl }: Props) {
                     href={item.externalHref}
                     className="mt-1 inline-block text-sm font-medium text-indigo-700 hover:underline"
                   >
-                    Ir a Shopflow
+                    Ir a Pos
                   </a>
                 ) : null}
                 {!item.done && item.to ? (

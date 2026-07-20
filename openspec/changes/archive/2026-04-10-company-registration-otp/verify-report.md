@@ -10,7 +10,7 @@
 | OTP send limit (3) + verify lockout (3) + success path | `packages/api` Vitest `src/__tests__/unit/registration-otp.service.test.ts` |
 | Ticket email mismatch, reuse, invalid JWT, JWT claims | `src/__tests__/unit/registration-ticket.service.test.ts` |
 | Full API unit suite | `pnpm --filter @hubilee/api run test:unit` |
-| Front typecheck | Hub / Workify / Shopflow `tsc --noEmit` (CI or local) |
+| Front typecheck | Hub / Workify / Pos `tsc --noEmit` (CI or local) |
 
 ## Spec scenario coverage (sdd-verify)
 
@@ -25,7 +25,7 @@
 | Register with company + ticket / DTO | Implemented in `packages/api/src/services/auth.service.ts`; register-without-company unchanged |
 | Captcha invalid / user exists / Redis down | Covered by implementation + integration with real deps for full paths; captcha skip in non-prod when secret empty documented in `turnstile.service.ts` |
 | Dedicated rate-limit bucket for OTP routes | `packages/api/src/plugins/core/rate-limit.plugin.ts` |
-| Front: Hub, Workify, Shopflow OTP + Turnstile | `RegisterPage` / `RegisterForm` + `@marsidev/react-turnstile` |
+| Front: Hub, Workify, Pos OTP + Turnstile | `RegisterPage` / `RegisterForm` + `@marsidev/react-turnstile` |
 
 ## Manual smoke (product)
 
@@ -33,7 +33,7 @@ Prerrequisitos: API con `UPSTASH_*`, email (Resend) y Turnstile en prod; local s
 
 1. Levantar API y una app (p. ej. Hub `pnpm dev:hub`).
 2. Registro con empresa: completar formulario → captcha → código en email → verificar → cuenta creada.
-3. Repetir flujo en Workify y Shopflow (mismos endpoints API).
+3. Repetir flujo en Workify y Pos (mismos endpoints API).
 4. Opcional: comprobar `resend-verification` post-registro en Hub (flujo distinto del OTP previo).
 
 Marcar en PLAN-39 §11 el ítem de smoke manual cuando se ejecute en un entorno real.

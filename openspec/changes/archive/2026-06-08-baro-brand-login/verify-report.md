@@ -21,8 +21,8 @@ pnpm --filter @hubilee/baro build
 
 ## Manual notes
 
-- Baro and Shopflow auth shells share the same CSS class pattern (`shopflow-auth-shell` rules in Baro `auth-globals.css`).
-- Docker Baro on `:3006` and Shopflow on `:3002` verified during session.
+- Baro and Pos auth shells share the same CSS class pattern (`pos-auth-shell` rules in Baro `auth-globals.css`).
+- Docker Baro on `:3006` and Pos on `:3002` verified during session.
 
 ## Gaps
 

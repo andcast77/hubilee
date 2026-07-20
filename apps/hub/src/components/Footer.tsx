@@ -31,11 +31,11 @@ export function Footer() {
               <ul className="space-y-2.5 text-sm">
                 <li>
                   <a
-                    href={urls.shopflow}
+                    href={urls.pos}
                     className="text-white/40 hover:text-white transition-colors duration-150"
                     rel="noopener noreferrer"
                   >
-                    ShopFlow
+                    POS
                   </a>
                 </li>
                 <li>

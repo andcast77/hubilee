@@ -11,11 +11,11 @@ export function LandingHome() {
 
   const modules = [
     {
-      title: "ShopFlow POS",
+      title: "POS POS",
       description: "Inventario y ventas en mostrador. Conecta cuando necesites datos de tienda.",
       icon: <ShoppingCart className="w-6 h-6" />,
       features: ["POS", "Stock", "Reportes"],
-      href: urls.shopflow,
+      href: urls.pos,
       accentColor: "text-violet-400",
       accentBg: "bg-violet-500/10",
     },

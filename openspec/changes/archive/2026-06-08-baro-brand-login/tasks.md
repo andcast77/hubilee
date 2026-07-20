@@ -7,7 +7,7 @@
 
 ## 2. Baro auth UI
 
-- [x] 2.1 Add `views/LoginPage.tsx` (Shopflow pattern, Baro copy)
+- [x] 2.1 Add `views/LoginPage.tsx` (Pos pattern, Baro copy)
 - [x] 2.2 Create `(auth)/` route group with `auth-globals.css`
 - [x] 2.3 Move marketing pages to `(site)/`
 - [x] 2.4 Add `@hubilee/ui`, transpile, types

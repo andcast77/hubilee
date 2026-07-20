@@ -4,7 +4,7 @@ import type { TokenPayload } from '../core/auth.js'
 import { ForbiddenError, NotFoundError, BadRequestError } from '../common/errors/app-error.js'
 import { createRepositories } from '../repositories/index.js'
 import { assertCanManageMembers, assertCompanyAccess } from '../policies/company-authorization.policy.js'
-import { assertUserInCompany } from '../policies/shopflow-authorization.policy.js'
+import { assertUserInCompany } from '../policies/pos-authorization.policy.js'
 
 function getCallerCompanyId(caller: TokenPayload): string {
   if (!caller.companyId) {

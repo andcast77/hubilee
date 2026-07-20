@@ -1,4 +1,4 @@
--- Shopflow multi-tenant: add companyId to all Shopflow models
+-- Pos multi-tenant: add companyId to all Pos models
 
 -- AlterTable: products
 ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "companyId" TEXT;

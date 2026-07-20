@@ -11,7 +11,7 @@
 |-------------|--------|----------|
 | API at `apps/api/` | PASS | `git mv packages/api → apps/api`; `@hubilee/api` builds from `apps/api` |
 | UI at `packages/ui/` | PASS | `git mv packages/component-library → packages/ui` |
-| Tailwind `@source` / content paths | PASS | hub, shopflow, workify, techservices updated to `packages/ui` |
+| Tailwind `@source` / content paths | PASS | hub, pos, workify, techservices updated to `packages/ui` |
 | Shared builds before apps | PASS | (from PR1; hub build still passes) |
 
 ## Automated Tests

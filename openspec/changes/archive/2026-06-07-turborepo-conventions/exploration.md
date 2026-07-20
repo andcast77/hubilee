@@ -70,7 +70,7 @@ hubilee/
 ```
 hubilee/
 ├── apps/
-│   ├── hub/, shopflow/, workify/, techservices/, balance/, baro/
+│   ├── hub/, pos/, workify/, techservices/, balance/, baro/
 │   └── api/                    # moved from packages/api
 ├── packages/
 │   ├── ui/                     # renamed from component-library

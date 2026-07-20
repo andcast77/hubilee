@@ -25,7 +25,7 @@ const workifyRegisterPanel = (
   <AuthBrandDecorativePanel
     badge="Workify"
     title="Tu equipo, en orden"
-    description="Alta de empresa y usuarios con el mismo layout de registro que el Hub y Shopflow; solo el texto es propio de Workify."
+    description="Alta de empresa y usuarios con el mismo layout de registro que el Hub y Pos; solo el texto es propio de Workify."
     quote={<>RRHH y operación, bajo la misma cuenta.</>}
   />
 );
@@ -144,7 +144,7 @@ export default function RegisterForm() {
           lastName: formData.lastName.trim(),
           companyName: formData.companyName.trim(),
           workifyEnabled: true,
-          shopflowEnabled: false,
+          posEnabled: false,
         });
         setStep('link-pending');
         setCaptchaToken(null);
@@ -167,7 +167,7 @@ export default function RegisterForm() {
           lastName: formData.lastName.trim(),
           companyName: formData.companyName.trim(),
           workifyEnabled: true,
-          shopflowEnabled: false,
+          posEnabled: false,
         });
       } catch (err) {
         setError(err instanceof ApiError ? err.message : 'No se pudo reenviar el enlace.');

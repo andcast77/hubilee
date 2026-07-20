@@ -124,7 +124,7 @@ export function MembersPage() {
         <CardContent className="text-sm text-blue-800">
           <p>
             La gestión de miembros (agregar, editar, eliminar) se realiza desde los módulos específicos
-            (Workify, Shopflow, TechServices) para mantener la separación de responsabilidades.
+            (Workify, Pos, TechServices) para mantener la separación de responsabilidades.
           </p>
           <p className="mt-2">
             Accede a los módulos desde tu dashboard para administrar los usuarios según el contexto del módulo.
@@ -226,7 +226,7 @@ export function MembersPage() {
           </CardHeader>
           <CardContent className="text-sm text-indigo-800">
             <p>
-              Para agregar nuevos miembros a la empresa, utiliza los módulos (Workify, Shopflow)
+              Para agregar nuevos miembros a la empresa, utiliza los módulos (Workify, Pos)
               donde podrás definir sus roles y permisos específicos según el contexto del módulo.
             </p>
           </CardContent>

@@ -1,6 +1,6 @@
 # @hubilee/shared
 
-Utilidades **frontend** compartidas entre **hub**, **shopflow**, **workify** y **techservices**: cookie de sesión JWT y cliente HTTP (`fetch`) con el mismo contrato en todas las apps.
+Utilidades **frontend** compartidas entre **hub**, **pos**, **workify** y **techservices**: cookie de sesión JWT y cliente HTTP (`fetch`) con el mismo contrato en todas las apps.
 
 No publica `dist`: el paquete exporta **fuentes TypeScript** (`main` / `exports` → `src/*.ts`). Las apps deben resolver TS vía el bundler (p. ej. `transpilePackages` en Next.js).
 
@@ -19,7 +19,7 @@ import { ApiClient, createPrefixedApi } from '@hubilee/shared'
 import { setTokenCookie } from '@hubilee/shared/auth'
 
 const client = new ApiClient(process.env.NEXT_PUBLIC_API_URL!)
-const shopflow = createPrefixedApi(client, '/api/shopflow')
+const pos = createPrefixedApi(client, '/api/pos')
 ```
 
 `ApiClient` añade `Authorization: Bearer <token>` leyendo la cookie si no se pasa cabecera explícita.

@@ -56,7 +56,7 @@ Next.js product apps in Docker MUST use `output: 'standalone'` and `outputFileTr
 
 #### Scenario: Standalone tracing root
 
-- GIVEN a Next.js app included in Docker deploy (hub, shopflow, workify, techservices, baro)
+- GIVEN a Next.js app included in Docker deploy (hub, pos, workify, techservices, baro)
 - WHEN its production image is built
 - THEN `next.config` MUST declare `output: 'standalone'` and monorepo `outputFileTracingRoot`
 

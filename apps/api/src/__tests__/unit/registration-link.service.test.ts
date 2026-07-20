@@ -87,7 +87,7 @@ describe('registration-link.service (PLAN-40)', () => {
       company: {
         id: 'c1',
         name: 'Test Co',
-        modules: { workify: true, shopflow: false, techservices: false },
+        modules: { workify: true, pos: false, techservices: false },
       },
     })
     process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-jwt-secret-for-registration-link-tests'
@@ -199,7 +199,7 @@ describe('registration-link.service (PLAN-40)', () => {
       company: {
         id: 'c1',
         name: 'Test Co',
-        modules: { workify: true, shopflow: false, techservices: false },
+        modules: { workify: true, pos: false, techservices: false },
       },
     })
     const out = await completeRegistrationFromLink({ email, token })
@@ -226,7 +226,7 @@ describe('registration-link.service (PLAN-40)', () => {
       company: {
         id: 'c1',
         name: 'Test Co',
-        modules: { workify: true, shopflow: false, techservices: false },
+        modules: { workify: true, pos: false, techservices: false },
       },
     })
     const out = await completeRegistrationFromLink({ email, token })

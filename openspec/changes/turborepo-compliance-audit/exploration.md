@@ -18,7 +18,7 @@ The repo recently completed change `turborepo-conventions` (archived 2026-06-07)
 
 | Check | Status | Evidence |
 |-------|--------|----------|
-| Deployables under `apps/` | ✅ | `apps/{api,hub,shopflow,workify,techservices,baro,balance}` |
+| Deployables under `apps/` | ✅ | `apps/{api,hub,pos,workify,techservices,baro,balance}` |
 | Libraries under `packages/` | ✅ | `packages/{contracts,database,shared,ui}` |
 | API at `apps/api/` | ✅ | `git mv` done in Slice B |
 | UI folder `packages/ui/` | ✅ | Renamed from `component-library` |
@@ -35,7 +35,7 @@ The repo recently completed change `turborepo-conventions` (archived 2026-06-07)
 |-------|--------|----------|
 | `turbo prune --docker` in Next image | ✅ | `docker/Dockerfile.nextjs` prepare stage |
 | `turbo prune --docker` in API image | ✅ | `docker/Dockerfile.api` |
-| Next `output: 'standalone'` | ✅ | hub, shopflow, workify, techservices, baro (+ balance WIP) |
+| Next `output: 'standalone'` | ✅ | hub, pos, workify, techservices, baro (+ balance WIP) |
 | `outputFileTracingRoot` at monorepo root | ✅ | Same apps |
 | Runner `node apps/{app}/server.js` | ✅ | Dockerfile.nextjs CMD; hub smoke HTTP 200 |
 | No per-app Dockerfiles | ✅ | Deleted; compose uses `docker/Dockerfile.nextjs` |

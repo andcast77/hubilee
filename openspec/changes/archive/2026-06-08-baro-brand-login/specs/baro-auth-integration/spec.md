@@ -4,7 +4,7 @@
 
 ### Requirement: Branded login shell
 
-Baro login MUST use the shared hubilee auth shell pattern: `@hubilee/ui` auth layout/brand components, isolated auth-route CSS (no marketing `globals.css` on login), and a `views/LoginPage.tsx` view matching the Shopflow login structure (MFA step, Zod validation, Hub links for register/forgot password).
+Baro login MUST use the shared hubilee auth shell pattern: `@hubilee/ui` auth layout/brand components, isolated auth-route CSS (no marketing `globals.css` on login), and a `views/LoginPage.tsx` view matching the Pos login structure (MFA step, Zod validation, Hub links for register/forgot password).
 
 #### Scenario: Login page visual parity
 

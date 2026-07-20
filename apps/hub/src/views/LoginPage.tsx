@@ -175,7 +175,7 @@ export function LoginPage() {
       description={
         <>
           Accede a todas tus herramientas de negocio en un solo lugar. Workify,
-          Shopflow, Technical Services y más.
+          Pos, Technical Services y más.
         </>
       }
       quote={<>Centraliza tu negocio, amplía tus posibilidades.</>}

@@ -4,10 +4,10 @@ CREATE TYPE "MembershipRole" AS ENUM ('OWNER', 'ADMIN', 'USER');
 -- AlterTable: users - add isSuperuser
 ALTER TABLE "users" ADD COLUMN "isSuperuser" BOOLEAN NOT NULL DEFAULT false;
 
--- AlterTable: companies - add ownerUserId, workifyEnabled, shopflowEnabled, isActive
+-- AlterTable: companies - add ownerUserId, workifyEnabled, posEnabled, isActive
 ALTER TABLE "companies" ADD COLUMN "ownerUserId" TEXT;
 ALTER TABLE "companies" ADD COLUMN "workifyEnabled" BOOLEAN NOT NULL DEFAULT false;
-ALTER TABLE "companies" ADD COLUMN "shopflowEnabled" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "companies" ADD COLUMN "posEnabled" BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE "companies" ADD COLUMN "isActive" BOOLEAN NOT NULL DEFAULT true;
 
 -- CreateTable: company_members

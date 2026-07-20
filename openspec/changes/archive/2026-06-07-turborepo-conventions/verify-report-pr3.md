@@ -12,9 +12,9 @@
 | Next.js image uses `turbo prune` | PASS | `docker/Dockerfile.nextjs` runs `turbo prune "${PACKAGE}" --docker` |
 | API image uses `turbo prune` | PASS | `docker/Dockerfile.api` runs `turbo prune @hubilee/api --docker` |
 | Hub standalone runtime | PASS | CMD `node apps/$APP_DIR/server.js`; smoke HTTP 200 |
-| Standalone + tracing root in next.config | PASS | hub, shopflow, workify, techservices, baro |
+| Standalone + tracing root in next.config | PASS | hub, pos, workify, techservices, baro |
 | Compose passes `NEXT_PUBLIC_*` build args | PASS | `docker-compose.yml` `x-next-build-args` |
-| Shared Dockerfiles (no per-app Dockerfile) | PASS | Deleted `apps/{hub,shopflow,workify,techservices,baro}/Dockerfile` |
+| Shared Dockerfiles (no per-app Dockerfile) | PASS | Deleted `apps/{hub,pos,workify,techservices,baro}/Dockerfile` |
 | API serves from `apps/api/dist/server.js` | PASS | `docker/Dockerfile.api` CMD + entrypoint migrations |
 | Vercel API via turbo graph | PASS | `apps/api/vercel.json` → `turbo run build --filter=@hubilee/api...` |
 

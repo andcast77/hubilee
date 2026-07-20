@@ -206,7 +206,7 @@ export async function anonymizeMyData(userId: string): Promise<AnonymizeResult> 
         verificationTokenExpiry: null,
         passwordResetTokenHash: null,
         passwordResetTokenExpiry: null,
-        shopflowPreferredCompanyId: null,
+        posPreferredCompanyId: null,
         password: invalidPasswordHash,
       },
     })

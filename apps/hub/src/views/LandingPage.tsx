@@ -15,12 +15,12 @@ export function LandingPage() {
     const urls = getLandingUrls();
     return [
       {
-        title: "ShopFlow POS",
+        title: "POS POS",
         description:
           "Punto de venta completo con gestión de inventario, caja y reportes de ventas en tiempo real.",
         icon: <ShoppingCart className="w-6 h-6" />,
         features: ["Gestión de productos", "Punto de venta rápido", "Reportes de ventas"],
-        href: urls.shopflow,
+        href: urls.pos,
         accentColor: "text-violet-400",
         accentBg: "bg-violet-500/10",
       },

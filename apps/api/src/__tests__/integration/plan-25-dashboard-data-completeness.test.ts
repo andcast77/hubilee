@@ -199,14 +199,14 @@ describe('PLAN-25: Dashboard data completeness (integration)', () => {
     expect(Array.isArray(json.weeklyOrderTrend)).toBe(true)
   })
 
-  // --- Shopflow ---
+  // --- Pos ---
 
-  it('GET /v1/shopflow/reports/dashboard-metrics returns 200 with data envelope', async () => {
+  it('GET /v1/pos/reports/dashboard-metrics returns 200 with data envelope', async () => {
     const { start, end } = todayIsoRange()
     const qs = `startDate=${encodeURIComponent(start)}&endDate=${encodeURIComponent(end)}`
     const { res, json } = await inject(app, {
       method: 'GET',
-      url: `/v1/shopflow/reports/dashboard-metrics?${qs}`,
+      url: `/v1/pos/reports/dashboard-metrics?${qs}`,
       headers: { Authorization: `Bearer ${acmeOwnerToken}` },
     })
     expect(res.statusCode).toBe(200)
@@ -219,17 +219,17 @@ describe('PLAN-25: Dashboard data completeness (integration)', () => {
     expect(Array.isArray(json.data.oldestOverdueInvoices)).toBe(true)
   })
 
-  it('Shopflow dashboard-metrics is tenant-isolated (pending totals can differ by company)', async () => {
+  it('Pos dashboard-metrics is tenant-isolated (pending totals can differ by company)', async () => {
     const { start, end } = todayIsoRange()
     const qs = `startDate=${encodeURIComponent(start)}&endDate=${encodeURIComponent(end)}`
     const { json: acmeJson } = await inject(app, {
       method: 'GET',
-      url: `/v1/shopflow/reports/dashboard-metrics?${qs}`,
+      url: `/v1/pos/reports/dashboard-metrics?${qs}`,
       headers: { Authorization: `Bearer ${acmeOwnerToken}` },
     })
     const { json: betaJson } = await inject(app, {
       method: 'GET',
-      url: `/v1/shopflow/reports/dashboard-metrics?${qs}`,
+      url: `/v1/pos/reports/dashboard-metrics?${qs}`,
       headers: { Authorization: `Bearer ${betaOwnerToken}` },
     })
     expect(acmeJson.success).toBe(true)

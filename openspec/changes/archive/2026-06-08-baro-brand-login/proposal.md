@@ -1,14 +1,14 @@
-# Proposal: Baro brand login (Shopflow auth shell)
+# Proposal: Baro brand login (Pos auth shell)
 
 ## Intent
 
-Align Baro login UI and auth-route styling with the Shopflow auth template (`@hubilee/ui` brand shell) while preserving Baro-specific copy and existing API-backed session model.
+Align Baro login UI and auth-route styling with the Pos auth template (`@hubilee/ui` brand shell) while preserving Baro-specific copy and existing API-backed session model.
 
 ## Scope
 
 ### In scope
 
-- Replace `components/auth-form.tsx` with `views/LoginPage.tsx` (Shopflow pattern)
+- Replace `components/auth-form.tsx` with `views/LoginPage.tsx` (Pos pattern)
 - Auth route group `(auth)/` with isolated `auth-globals.css`
 - Move marketing home to `(site)/` with existing `globals.css`
 - Add `@hubilee/ui` dependency and transpile in Next config

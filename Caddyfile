@@ -14,8 +14,8 @@
     reverse_proxy workify:3003
 }
 
-{$SHOPFLOW_DOMAIN:pos.baroconstruccionessrl.com.ar} {
-    reverse_proxy shopflow:3002
+{$POS_DOMAIN:pos.baroconstruccionessrl.com.ar} {
+    reverse_proxy pos:3002
 }
 
 {$HUB_DOMAIN:hub.hubilee.app} {

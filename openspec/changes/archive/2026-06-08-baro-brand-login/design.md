@@ -7,7 +7,7 @@ apps/baro/app/
   layout.tsx              # minimal root body (antialiased, no marketing bg)
   (auth)/
     layout.tsx            # auth shell only
-    auth-globals.css      # shopflow-auth-shell rules (copied pattern)
+    auth-globals.css      # pos-auth-shell rules (copied pattern)
     login/page.tsx        # Suspense + LoginPage
     register/page.tsx     # Hub redirect
   (site)/

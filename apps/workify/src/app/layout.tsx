@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-/** Hub / Hubilee marketing accent (indigo-500) — not Shopflow POS blue */
+/** Hub / Hubilee marketing accent (indigo-500) — not Pos POS blue */
 const WORKIFY_THEME = "#6366f1";
 
 const metadataBaseUrl = (() => {

@@ -19,7 +19,7 @@ Move standalone `baro` into `apps/baro/` with zero code changes to baro's runtim
 
 | Option | Tradeoff | Verdict |
 |--------|----------|---------|
-| **Keep `@/*` → `./*`** | Zero import rewrites, consistent with all 5 existing apps (hub, shopflow, etc. all use `@/*`) | **Chosen** |
+| **Keep `@/*` → `./*`** | Zero import rewrites, consistent with all 5 existing apps (hub, pos, etc. all use `@/*`) | **Chosen** |
 | Rewrite to `@hubilee/baro/*` | Explicit namespace but diverges from monorepo convention, requires rewriting all baro imports | Rejected |
 
 **Rationale**: No root `tsconfig.json` exists — each app scopes `@/*` in its own `tsconfig.json`. Baro's `@/*` → `./*` works identically after move to `apps/baro/`. Zero runtime changes needed.
@@ -55,7 +55,7 @@ Internet ──→ Caddy (:80/:443)
                 │
                 ├── baro.hubilee.app ──→ baro:3000 ──→ baro-db:5432
                 ├── hub.hubilee.app   ──→ hub:3001
-                ├── shopflow.hubilee.app ──→ shopflow:3002
+                ├── pos.hubilee.app ──→ pos:3002
                 ├── workify.hubilee.app  ──→ workify:3003
                 ├── techservices.hubilee.app ──→ techservices:3004
                 └── balance.hubilee.app ──→ balance:3005

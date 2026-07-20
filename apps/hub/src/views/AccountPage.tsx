@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { MeResponse } from "@hubilee/contracts";
 import { useUser } from "@/hooks/useUser";
 import { clearTokenCookie } from "@/lib/auth";
-import { authApi, accountApi, shopflowNotificationsApi } from "@/lib/api-client";
+import { authApi, accountApi, posNotificationsApi } from "@/lib/api-client";
 import {
   Card,
   CardContent,
@@ -75,16 +75,16 @@ export function AccountPage() {
     router.replace("/login");
   };
 
-  const shopflowEnabled = user?.company?.modules?.shopflow === true;
+  const posEnabled = user?.company?.modules?.pos === true;
 
   const prefsQuery = useQuery({
     queryKey: ["hubNotificationPrefs", user?.id],
     queryFn: async () => {
-      const res = await shopflowNotificationsApi.getPreferences(user!.id);
+      const res = await posNotificationsApi.getPreferences(user!.id);
       if (!res.success || !res.data) throw new Error(res.error || "prefs");
       return res.data;
     },
-    enabled: !!user && shopflowEnabled,
+    enabled: !!user && posEnabled,
   });
 
   const backupCodesQuery = useQuery({
@@ -104,7 +104,7 @@ export function AccountPage() {
       emailEnabled?: boolean;
       preferences?: Record<string, { inApp?: boolean; push?: boolean; email?: boolean }>;
     }) => {
-      const res = await shopflowNotificationsApi.updatePreferences(user!.id, patch);
+      const res = await posNotificationsApi.updatePreferences(user!.id, patch);
       if (!res.success || !res.data) throw new Error(res.error || "update");
       return res.data;
     },
@@ -412,7 +412,7 @@ export function AccountPage() {
         </CardContent>
       </Card>
 
-      {shopflowEnabled ? (
+      {posEnabled ? (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -420,7 +420,7 @@ export function AccountPage() {
               Canales de notificación
             </CardTitle>
             <CardDescription>
-              Controla cómo recibes alertas del módulo Shopflow (stock, reportes, etc.). Requiere Shopflow
+              Controla cómo recibes alertas del módulo Pos (stock, reportes, etc.). Requiere Pos
               activo para tu empresa.
             </CardDescription>
           </CardHeader>
@@ -434,7 +434,7 @@ export function AccountPage() {
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <Label htmlFor="in-app-notif">En la aplicación</Label>
-                    <p className="text-xs text-slate-500">Campana y lista en Hub / Shopflow</p>
+                    <p className="text-xs text-slate-500">Campana y lista en Hub / Pos</p>
                   </div>
                   <Switch
                     id="in-app-notif"

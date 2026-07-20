@@ -159,7 +159,7 @@ export function SettingsPage() {
     try {
       const updateData: UpdateCompanyInput = {};
       if (moduleName === "workify") updateData.workifyEnabled = enabled;
-      else if (moduleName === "shopflow") updateData.shopflowEnabled = enabled;
+      else if (moduleName === "pos") updateData.posEnabled = enabled;
       else if (moduleName === "techServices") updateData.technicalServicesEnabled = enabled;
 
       const response = await companyApi.updateCompany(company.id, updateData);
@@ -299,15 +299,15 @@ export function SettingsPage() {
                   />
                 </div>
 
-                {/* Shopflow Module */}
+                {/* Pos Module */}
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
-                    <h4 className="font-medium">Shopflow</h4>
+                    <h4 className="font-medium">Pos</h4>
                     <p className="text-sm text-slate-600">Punto de venta e inventario</p>
                   </div>
                   <Switch
-                    checked={company.modules?.shopflow ?? company.shopflowEnabled ?? false}
-                    onCheckedChange={(checked: boolean) => handleModulesChange("shopflow", checked)}
+                    checked={company.modules?.pos ?? company.posEnabled ?? false}
+                    onCheckedChange={(checked: boolean) => handleModulesChange("pos", checked)}
                     disabled={!isOwner}
                   />
                 </div>

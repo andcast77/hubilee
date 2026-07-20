@@ -95,11 +95,11 @@ vi.mock('../../common/cache/redis.js', () => ({
   }),
 }))
 
-vi.mock('../../services/shopflow-notifications.service.js', () => ({
+vi.mock('../../services/pos-notifications.service.js', () => ({
   createNotification: mockCreateNotification,
 }))
 
-vi.mock('../../services/shopflow-reports.service.js', () => ({
+vi.mock('../../services/pos-reports.service.js', () => ({
   getStats: mockGetStats,
 }))
 
@@ -108,7 +108,7 @@ vi.mock('../../services/push-sender.service.js', () => ({
   sendPushToCompanyAdmins: vi.fn(),
 }))
 
-vi.mock('../../services/shopflow-export.service.js', () => ({
+vi.mock('../../services/pos-export.service.js', () => ({
   exportJson: mockExportJson,
 }))
 

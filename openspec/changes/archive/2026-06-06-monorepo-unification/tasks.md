@@ -28,7 +28,7 @@ Chain strategy: stacked-to-main
 - [x] 1.1 Copy standalone baro app files into `apps/baro/` preserving directory structure
 - [x] 1.2 Create `docker/Dockerfile.nextjs` with generic multi-stage build pattern (base → deps → builder → runner)
 - [x] 1.3 Create `apps/baro/Dockerfile` extending the generic pattern with Prisma generate step
-- [x] 1.4 Create `Caddyfile` with 6 domain→service blocks (baro, hub, shopflow, workify, techservices, balance) + TLS
+- [x] 1.4 Create `Caddyfile` with 6 domain→service blocks (baro, hub, pos, workify, techservices, balance) + TLS
 - [x] 1.5 Update `docker-compose.yml`: add Caddy, baro, baro-db services; add `caddy_network`; add named volumes for baro-db
 - [x] 1.6 Update `turbo.json`: add `baro#build`, `baro#dev`, `baro#typecheck`, `baro#lint` pipeline entries
 - [x] 1.7 Update `apps/baro/next.config.ts`: set `experimental.turbopack.root` to monorepo root

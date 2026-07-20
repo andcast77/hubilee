@@ -43,7 +43,7 @@ The `next: not found` failure is **reproducible** and affects all six app Docker
 | Area | State |
 |------|--------|
 | `docker/Dockerfile.nextjs` | Generic template; runner copies **zero** `node_modules` — worse than per-app files; unused by compose |
-| `outputFileTracingRoot` | Only `apps/baro` and `apps/techservices`; missing on hub/shopflow/workify/balance |
+| `outputFileTracingRoot` | Only `apps/baro` and `apps/techservices`; missing on hub/pos/workify/balance |
 | `output: 'standalone'` | Not used anywhere — no Next.js standalone deploy pattern |
 | `.dockerignore` | Excludes `apps/*/node_modules` (expected for context); also excludes `.npmrc` and **balance WIP paths** (stale if balance is now tracked) |
 | `NEXT_PUBLIC_*` in compose | Set at **runtime** (`NEXT_PUBLIC_API_URL=http://api:3000`); Next.js inlines `NEXT_PUBLIC_*` at **build** time — runtime env does not fix client bundle |
@@ -54,7 +54,7 @@ The `next: not found` failure is **reproducible** and affects all six app Docker
 ### Affected Areas
 
 - `apps/hub/Dockerfile` — missing app-level `node_modules`; confirmed runtime failure
-- `apps/shopflow/Dockerfile` — same runner pattern
+- `apps/pos/Dockerfile` — same runner pattern
 - `apps/workify/Dockerfile` — same
 - `apps/techservices/Dockerfile` — same
 - `apps/balance/Dockerfile` — same

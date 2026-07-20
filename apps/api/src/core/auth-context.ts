@@ -30,7 +30,7 @@ export async function getUserCompanies(
     return companies.map((c: { id: string; name: string }) => ({
       id: c.id,
       name: c.name,
-      modules: modulesMap.get(c.id) ?? { workify: false, shopflow: false, techservices: false, baro: false },
+      modules: modulesMap.get(c.id) ?? { workify: false, pos: false, techservices: false, baro: false },
       membershipRole: null,
     }))
   }
@@ -48,7 +48,7 @@ export async function getUserCompanies(
     return activeMembers.map((m: MemberWithCompany) => ({
       id: m.company.id,
       name: m.company.name,
-      modules: modulesMap.get(m.company.id) ?? { workify: false, shopflow: false, techservices: false, baro: false },
+      modules: modulesMap.get(m.company.id) ?? { workify: false, pos: false, techservices: false, baro: false },
       membershipRole: m.membershipRole,
     }))
   }
@@ -65,13 +65,13 @@ export async function getUserCompanies(
   return activeRoles.map((r: RoleWithCompany) => ({
     id: r.company.id,
     name: r.company.name,
-    modules: modulesMap.get(r.company.id) ?? { workify: false, shopflow: false, techservices: false, baro: false },
+    modules: modulesMap.get(r.company.id) ?? { workify: false, pos: false, techservices: false, baro: false },
     membershipRole: null,
   }))
 }
 
 /**
- * Pick selected company from list (by preferredCompanyId/shopflowPreferredCompanyId or first if single).
+ * Pick selected company from list (by preferredCompanyId/posPreferredCompanyId or first if single).
  */
 export function selectCompanyForUser(
   companies: CompanyRow[],
@@ -105,7 +105,7 @@ export type CompanyContext = {
   membershipRole: string | null
 }
 
-export type ShopflowContext = CompanyContext & { storeId?: string | null }
+export type PosContext = CompanyContext & { storeId?: string | null }
 export type WorkifyContext = CompanyContext
 export type MembershipRoleName = 'OWNER' | 'ADMIN' | 'USER'
 
@@ -211,7 +211,7 @@ export async function requireCompanyContext(
 }
 
 /**
- * PreHandler para rutas Shopflow: requireAuth + requireCompanyContext + X-Store-Id.
+ * PreHandler para rutas Pos: requireAuth + requireCompanyContext + X-Store-Id.
  *
  * Security: store scope is DENY-BY-DEFAULT and SERVER-DERIVED — the optional
  * `X-Store-Id` header is never trusted on its own, and its ABSENCE must never disable
@@ -227,7 +227,7 @@ export async function requireCompanyContext(
  *     (`request.storeId = undefined`); every downstream store-scope check must then
  *     deny by default instead of treating "unresolved" as "unrestricted".
  */
-export async function requireShopflowContext(
+export async function requirePosContext(
   request: FastifyRequest,
   reply: FastifyReply
 ): Promise<void> {
@@ -330,12 +330,12 @@ export function requireRole(roles: string[]) {
   }
 }
 
-export function contextFromRequest(request: FastifyRequest, includeStoreId: true): ShopflowContext
+export function contextFromRequest(request: FastifyRequest, includeStoreId: true): PosContext
 export function contextFromRequest(request: FastifyRequest, includeStoreId?: false): CompanyContext
 export function contextFromRequest(
   request: FastifyRequest,
   includeStoreId = false
-): CompanyContext | ShopflowContext {
+): CompanyContext | PosContext {
   const base: CompanyContext = {
     userId: request.user!.id,
     companyId: request.companyId!,

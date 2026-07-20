@@ -89,7 +89,7 @@ export async function userHasPermission(
  * - All other roles (USER) are subject to deny-by-default: must have an explicit
  *   UserPermission or UserRoleAssignment→RolePermission for the given resource+action.
  *
- * Usage: `preHandler: [...pre, requirePermission('shopflow.sales', 'create')]`
+ * Usage: `preHandler: [...pre, requirePermission('pos.sales', 'create')]`
  */
 /** Minimal shape needed to evaluate a permission outside of a Fastify request (e.g. from a service). */
 export type PermissionContext = {

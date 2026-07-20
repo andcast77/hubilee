@@ -10,7 +10,7 @@ x-app-env: &app-env
 x-next-build-args: &next-build-args
   NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3000}
   NEXT_PUBLIC_HUB_URL: ${HUB_URL:-http://localhost:3001}
-  NEXT_PUBLIC_SHOPFLOW_URL: ${SHOPFLOW_URL:-http://localhost:3002}
+  NEXT_PUBLIC_POS_URL: ${POS_URL:-http://localhost:3002}
   NEXT_PUBLIC_WORKIFY_URL: ${WORKIFY_URL:-http://localhost:3003}
   NEXT_PUBLIC_TECHSERVICES_URL: ${TECHSERVICES_URL:-http://localhost:3004}
   NEXT_PUBLIC_BALANCE_URL: ${BALANCE_URL:-http://localhost:3005}
@@ -69,7 +69,7 @@ services:
       HUB_DOMAIN: ${HUB_DOMAIN:-hub.hubilee.app}
       BARO_DOMAIN: ${BARO_DOMAIN:-forms.baroconstruccionessrl.com.ar}
       WORKIFY_DOMAIN: ${WORKIFY_DOMAIN:-rrhh.baroconstruccionessrl.com.ar}
-      SHOPFLOW_DOMAIN: ${SHOPFLOW_DOMAIN:-pos.baroconstruccionessrl.com.ar}
+      POS_DOMAIN: ${POS_DOMAIN:-pos.baroconstruccionessrl.com.ar}
       TECHSERVICES_DOMAIN: ${TECHSERVICES_DOMAIN:-techservices.hubilee.app}
       BALANCE_DOMAIN: ${BALANCE_DOMAIN:-balance.hubilee.app}
       UPDATE_DOMAIN: ${UPDATE_DOMAIN:-update.hubilee.app}
@@ -95,7 +95,7 @@ services:
         APP_DIR: hub
         PORT: '3001'
         NEXT_PUBLIC_HUB_URL: ${HUB_URL?HUB_URL is required}
-        NEXT_PUBLIC_SHOPFLOW_URL: ${SHOPFLOW_URL?SHOPFLOW_URL is required}
+        NEXT_PUBLIC_POS_URL: ${POS_URL?POS_URL is required}
         NEXT_PUBLIC_WORKIFY_URL: ${WORKIFY_URL?WORKIFY_URL is required}
         NEXT_PUBLIC_TECHSERVICES_URL: ${TECHSERVICES_URL:-http://localhost:3004}
         NEXT_PUBLIC_BALANCE_URL: ${BALANCE_URL:-http://localhost:3005}
@@ -110,19 +110,19 @@ services:
     depends_on:
       - api
 
-  shopflow:
+  pos:
     build:
       context: .
       dockerfile: docker/Dockerfile.nextjs
       args:
         <<: *next-build-args
-        PACKAGE: '@hubilee/shopflow'
-        APP_DIR: shopflow
+        PACKAGE: '@hubilee/pos'
+        APP_DIR: pos
         PORT: '3002'
-        NEXT_PUBLIC_SHOPFLOW_URL: ${SHOPFLOW_URL?SHOPFLOW_URL is required}
+        NEXT_PUBLIC_POS_URL: ${POS_URL?POS_URL is required}
         NEXT_PUBLIC_HUB_URL: ${HUB_URL?HUB_URL is required}
         NEXT_PUBLIC_WORKIFY_URL: ${WORKIFY_URL?WORKIFY_URL is required}
-    container_name: ${STACK_NAME:-hubilee}-shopflow
+    container_name: ${STACK_NAME:-hubilee}-pos
     restart: unless-stopped
     environment:
       <<: *app-env

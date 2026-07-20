@@ -45,7 +45,7 @@ export type CompanyStatsResponse = {
 export const updateCompanyBodySchema = z.object({
   name: z.string().optional(),
   workifyEnabled: z.boolean().optional(),
-  shopflowEnabled: z.boolean().optional(),
+  posEnabled: z.boolean().optional(),
   technicalServicesEnabled: z.boolean().optional(),
   logo: z.string().nullable().optional(),
   taxId: z.string().nullable().optional(),

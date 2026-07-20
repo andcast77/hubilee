@@ -9,7 +9,7 @@ Referencias: [Prisma + Neon](https://www.prisma.io/docs/orm/overview/databases/n
 
 ## Contenido
 
-- **Schema:** `prisma/schema.prisma` (modelos workify, shopflow, techservices, usuarios, empresas, módulos, etc.)
+- **Schema:** `prisma/schema.prisma` (modelos workify, pos, techservices, usuarios, empresas, módulos, etc.)
 - **Migraciones activas:** `prisma/migrations/` · histórico bajo `prisma/migrations_legacy_20260213/` · SQL manual en `prisma/migrations/manual/`
 - **Cliente:** `prisma generate` escribe en `dist/generated/prisma`; el build copia a `generated/` para que compile `src/client.ts`; runtime resuelve desde `dist/`
 
@@ -113,7 +113,7 @@ Si una credencial de producción fue compartida por chat, ticket, commit o captu
 
 ## Seeds
 
-El seed cubre **workify**, **shopflow** y **techservices** (registros `Module`, permisos hub, datos de ejemplo por módulo).
+El seed cubre **workify**, **pos** y **techservices** (registros `Module`, permisos hub, datos de ejemplo por módulo).
 
 ### Ejecutar Seeds
 
@@ -138,7 +138,7 @@ El seed incluye:
 
 **Techservices:** módulo `techservices` en BD, permiso `techservices.access`; las empresas de ejemplo pueden tener el módulo contratado (el seed no crea aún activos/órdenes de ejemplo salvo que el script lo amplíe).
 
-**Shopflow:**
+**Pos:**
 - Categorías (Electrónica, Ropa)
 - Proveedores (Tech Supplies Inc., Fashion Wholesale)
 - Productos de ejemplo (Laptop Dell XPS 15, Camiseta Básica)
@@ -150,7 +150,7 @@ El seed incluye:
 
 **Nota**: El seed limpia todos los datos existentes antes de insertar nuevos datos.
 
-**Locales de venta (Shopflow)**: El seed crea dos locales por empresa (Acme y Beta). Para que el selector "Local de venta" en Shopflow muestre opciones, la **API** debe usar la **misma base de datos** que usaste para el seed: configura la misma `DATABASE_URL` en `api/.env` que en `database/.env` (o la que usas al ejecutar `pnpm db:seed`).
+**Locales de venta (Pos)**: El seed crea dos locales por empresa (Acme y Beta). Para que el selector "Local de venta" en Pos muestre opciones, la **API** debe usar la **misma base de datos** que usaste para el seed: configura la misma `DATABASE_URL` en `api/.env` que en `database/.env` (o la que usas al ejecutar `pnpm db:seed`).
 
 ## Migraciones
 

@@ -24,7 +24,7 @@ import type { MemberModuleItem, MemberRoleItem } from "@/lib/api-client";
 
 const MODULE_LABELS: Record<string, string> = {
   workify: "Workify (RRHH)",
-  shopflow: "Shopflow (Ventas)",
+  pos: "Pos (Ventas)",
   techservices: "Tech Services",
 };
 

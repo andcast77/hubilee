@@ -18,12 +18,12 @@ export function toAuthUserResponse(
 }
 
 export function toAuthCompanyResponse(
-  company: { id: string; name: string; modules?: { workify: boolean; shopflow: boolean; techservices: boolean } }
+  company: { id: string; name: string; modules?: { workify: boolean; pos: boolean; techservices: boolean } }
 ): AuthCompanyResponse {
   return {
     id: company.id,
     name: company.name,
-    modules: company.modules ?? { workify: false, shopflow: false, techservices: false },
+    modules: company.modules ?? { workify: false, pos: false, techservices: false },
   }
 }
 
@@ -31,6 +31,6 @@ export function companyRowToAuthCompany(row: CompanyRow): AuthCompanyResponse {
   return {
     id: row.id,
     name: row.name,
-    modules: row.modules ?? { workify: false, shopflow: false, techservices: false },
+    modules: row.modules ?? { workify: false, pos: false, techservices: false },
   }
 }

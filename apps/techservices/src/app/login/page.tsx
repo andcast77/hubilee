@@ -50,7 +50,7 @@ type CompanyOption = {
   id: string;
   name: string;
   workifyEnabled?: boolean;
-  shopflowEnabled?: boolean;
+  posEnabled?: boolean;
   technicalServicesEnabled?: boolean;
 };
 

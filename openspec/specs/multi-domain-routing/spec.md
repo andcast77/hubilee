@@ -10,7 +10,7 @@ Define the Caddy reverse proxy configuration that routes incoming HTTP(S) reques
 
 ### Requirement: Domain-to-Container Routing
 
-The Caddyfile MUST define one `{domain}` block per product app and the API, routing to `{service_name}:{port}` via Docker Compose internal DNS. All six product apps MUST be represented (hub, shopflow, workify, techservices, balance, baro).
+The Caddyfile MUST define one `{domain}` block per product app and the API, routing to `{service_name}:{port}` via Docker Compose internal DNS. All six product apps MUST be represented (hub, pos, workify, techservices, balance, baro).
 
 #### Scenario: All apps served on their domains
 
@@ -38,7 +38,7 @@ Every domain block in the Caddyfile MUST have a corresponding Docker Compose ser
 #### Scenario: All configured domains routable
 
 - GIVEN the full compose stack is running
-- WHEN Caddy receives requests for api, hub, shopflow, workify, techservices, balance, and baro domains
+- WHEN Caddy receives requests for api, hub, pos, workify, techservices, balance, and baro domains
 - THEN each request proxies to a healthy upstream container
 - AND no domain returns 502 due to a missing compose service
 

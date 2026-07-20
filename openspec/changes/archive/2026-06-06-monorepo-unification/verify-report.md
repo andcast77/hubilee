@@ -19,7 +19,7 @@
 | 1.1 Copy baro to apps/baro/ | ✅ Complete | `apps/baro/` exists with 22 entries (prisma, components, tests, config, etc.) |
 | 1.2 Create docker/Dockerfile.nextjs | ✅ Complete | File exists with 4-stage multi-stage pattern |
 | 1.3 Create apps/baro/Dockerfile | ✅ Complete | Extends generic pattern with Prisma generate, deploy, docker-entrypoint |
-| 1.4 Create Caddyfile | ✅ Complete | 6 domain blocks (baro, hub, shopflow, workify, techservices, balance) |
+| 1.4 Create Caddyfile | ✅ Complete | 6 domain blocks (baro, hub, pos, workify, techservices, balance) |
 | 1.5 Update docker-compose.yml | ✅ Complete | All 4 services (postgres, caddy, baro, baro-db) + caddy_network + 3 named volumes |
 | 1.6 Update turbo.json | ✅ Complete | baro#build, baro#dev, baro#typecheck, baro#lint pipeline entries |
 | 1.7 Update apps/baro/next.config.ts | ✅ Complete | `turbopack.root` → `path.join(__dirname, "..", "..")` |
@@ -73,7 +73,7 @@ volumes:
 ```caddyfile
 baro.hubilee.app    { reverse_proxy baro:3000 }
 hub.hubilee.app     { reverse_proxy hub:3001 }
-shopflow.hubilee.app     { reverse_proxy shopflow:3002 }
+pos.hubilee.app     { reverse_proxy pos:3002 }
 workify.hubilee.app      { reverse_proxy workify:3003 }
 techservices.hubilee.app { reverse_proxy techservices:3004 }
 balance.hubilee.app      { reverse_proxy balance:3005 }
@@ -147,7 +147,7 @@ hubilee-db    110MB  (postgres:16-alpine)
 
 | Requirement | Status | Notes |
 |------------|--------|-------|
-| Caddyfile exists with 6 domain blocks | ✅ Implemented | baro:3000, hub:3001, shopflow:3002, workify:3003, techservices:3004, balance:3005 |
+| Caddyfile exists with 6 domain blocks | ✅ Implemented | baro:3000, hub:3001, pos:3002, workify:3003, techservices:3004, balance:3005 |
 | Auto TLS configured | ✅ Implemented | No `tls` directive → Caddy defaults to auto Let's Encrypt |
 | Dockerfile for baro exists | ✅ Implemented | `apps/baro/Dockerfile` with Prisma generate, deploy, entrypoint |
 | Generic Dockerfile.nextjs exists | ✅ Implemented | `docker/Dockerfile.nextjs` 4-stage: base → deps → builder → runner |
@@ -173,7 +173,7 @@ hubilee-db    110MB  (postgres:16-alpine)
 | tsconfig extends tsconfig.base.json | ✅ Yes | `"extends": "../../tsconfig.base.json"` in baro's tsconfig.json |
 | turbo.json pipeline for baro | ✅ Yes | baro#build, baro#dev, baro#typecheck, baro#lint all defined with correct config |
 | docker-compose structure per design | ✅ Yes | Caddy (80:80, 443:443), baro (build context, env_file, depends_on), baro-db (5433:5432, POSTGRES_*, volume) |
-| Zero changes to existing app code | ✅ Yes | No existing `apps/{hub,shopflow,workify,techservices,balance}` or `packages/*` modified |
+| Zero changes to existing app code | ✅ Yes | No existing `apps/{hub,pos,workify,techservices,balance}` or `packages/*` modified |
 
 ### Issues Found
 

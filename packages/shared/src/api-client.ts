@@ -272,7 +272,7 @@ export function getAuthHeaders(bearerToken?: string | null): HeadersInit {
 
 /**
  * Create a prefixed API client for a specific module.
- * Usage: createPrefixedApi(client, '/v1/shopflow')
+ * Usage: createPrefixedApi(client, '/v1/pos')
  */
 export function createPrefixedApi(client: ApiClient, prefix: string) {
   const normalize = (ep: string) => ep.startsWith('/') ? ep : `/${ep}`

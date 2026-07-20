@@ -23,7 +23,7 @@ Three phased tracks aligned to specs `baro-data-model`, `baro-auth-integration`,
 
 | Option | Tradeoff | Verdict |
 |--------|----------|---------|
-| **All mutations/reads via `/v1/baro/*`** | Matches workify/shopflow; central RBAC | **Chosen** |
+| **All mutations/reads via `/v1/baro/*`** | Matches workify/pos; central RBAC | **Chosen** |
 | RSC + `@hubilee/database` in baro | Faster short-term; splits authz | Rejected |
 
 **Exception:** DOCX render routes may stay in baro as Server Actions calling API for payload, then local template render (no DB in app).
@@ -55,7 +55,7 @@ Remove `baro-db`, `baro_pgdata`, baro entrypoint migrate.
 ```
 Browser ──→ Caddy (:443)
               ├── baro.hubilee.app ──→ baro:3000 (Next.js)
-              ├── hub / shopflow / … ──→ app:N
+              ├── hub / pos / … ──→ app:N
               └── (apps call API with credentials:include)
                         │
                         ▼
@@ -98,7 +98,7 @@ Browser ──→ Caddy (:443)
 | `apps/baro/package.json` | Modify | `@hubilee/baro`, drop prisma deps |
 | `docker-compose.yml` | Modify | postgres, api, caddy, 6 apps; no baro-db |
 | `docker/Dockerfile.api` | Create | API production image |
-| `apps/{hub,shopflow,workify,techservices,balance,baro}/Dockerfile` | Create | Thin wrappers |
+| `apps/{hub,pos,workify,techservices,balance,baro}/Dockerfile` | Create | Thin wrappers |
 | `apps/baro/docker-entrypoint.sh` | Modify | Remove prisma; `next start` only |
 | `package.json`, `turbo.json` | Modify | Scripts, `NEXT_PUBLIC_*`, CORS for baro domain |
 
@@ -139,7 +139,7 @@ Rollback: restore DB backup; revert git; re-point baro to archived standalone st
 ## Decision Log
 
 - **Baro register:** Use **Hub** company registration — baro login/register pages link to Hub; new tenants get `Company` + modules via existing Hub/OTP flow; `baro` module enabled during or after registration (Hub module picker or post-registration admin).
-- **CORS (verified):** `packages/api/.env` sets `CORS_ORIGIN` to localhost **3001–3004 only** (hub, shopflow, workify, techservices). **Baro (3000) and balance (3005) are missing**; production `*.hubilee.app` domains are not listed. Baro today uses separate `AUTH_ALLOWED_ORIGINS` in `apps/baro/.env` — removed with Option B. **Task:** extend `CORS_ORIGIN` in `packages/api/.env`, `.env.example`, and `docker-compose.yml` for baro + balance + Docker hostnames.
+- **CORS (verified):** `packages/api/.env` sets `CORS_ORIGIN` to localhost **3001–3004 only** (hub, pos, workify, techservices). **Baro (3000) and balance (3005) are missing**; production `*.hubilee.app` domains are not listed. Baro today uses separate `AUTH_ALLOWED_ORIGINS` in `apps/baro/.env` — removed with Option B. **Task:** extend `CORS_ORIGIN` in `packages/api/.env`, `.env.example`, and `docker-compose.yml` for baro + balance + Docker hostnames.
 
 ## Open Questions
 

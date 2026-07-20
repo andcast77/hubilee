@@ -1,6 +1,6 @@
 import { prisma } from '../db/index.js'
 import { cacheSet } from '../common/cache/cache.js'
-import { exportJson } from '../services/shopflow-export.service.js'
+import { exportJson } from '../services/pos-export.service.js'
 import { saveJobRun, createRunId } from './job-state.js'
 import type { CompanyContext } from '../core/auth-context.js'
 
@@ -15,7 +15,7 @@ function systemCtx(companyId: string): CompanyContext {
 }
 
 /**
- * Runs a full company data backup using the existing Shopflow export flow:
+ * Runs a full company data backup using the existing Pos export flow:
  *  1. Exports all company tables to JSON via exportJson().
  *  2. Stores the full snapshot in Redis with a 48h TTL (best-effort; silently skipped on size errors).
  *  3. Writes an IntegrationLog entry with per-table record counts for audit trail.
@@ -37,7 +37,7 @@ export async function runBackupForCompany(companyId: string): Promise<void> {
     const ctx = systemCtx(companyId)
     const timestamp = new Date().toISOString()
 
-    // Full company data export (reuses the existing Shopflow manual backup flow)
+    // Full company data export (reuses the existing Pos manual backup flow)
     const exportData = await exportJson(ctx)
 
     // Per-table record counts for quick summary

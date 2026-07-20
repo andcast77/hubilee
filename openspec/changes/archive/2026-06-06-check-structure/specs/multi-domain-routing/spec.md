@@ -9,7 +9,7 @@ Every domain block in the Caddyfile MUST have a corresponding Docker Compose ser
 #### Scenario: All configured domains routable
 
 - GIVEN the full compose stack is running
-- WHEN Caddy receives requests for hub, shopflow, workify, techservices, balance, and baro domains
+- WHEN Caddy receives requests for hub, pos, workify, techservices, balance, and baro domains
 - THEN each request proxies to a healthy upstream container
 - AND no domain returns 502 due to a missing compose service
 

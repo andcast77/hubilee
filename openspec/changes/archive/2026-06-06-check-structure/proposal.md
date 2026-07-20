@@ -10,7 +10,7 @@ Run **every app and the API via Docker Compose** on **one Postgres database** (`
 - **Baro DB merge** — domain models in `packages/database`; remove `apps/baro/prisma/`
 - **Baro auth merge (Option B)** — drop baro `User`/`RefreshToken`; use hubilee `User`, `Session`, `@hubilee/api` auth endpoints; add `baro` module key + RBAC
 - **Tenant scoping** — baro entities scoped by `companyId`; replace `accountOwnerId` with company/member context
-- **Baro app refactor** — remove local auth routes/JWT; use `@hubilee/shared` auth + API client (shopflow/workify pattern)
+- **Baro app refactor** — remove local auth routes/JWT; use `@hubilee/shared` auth + API client (pos/workify pattern)
 - **Docker** — shared `postgres`, `@hubilee/api`, Caddy, 6 apps; remove `baro-db`; stack-level migrate
 - Rename `baro` → `@hubilee/baro`
 - Root scripts + `turbo.json` env; spec updates

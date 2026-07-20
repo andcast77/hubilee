@@ -122,10 +122,10 @@ async function main() {
     },
   })
 
-  const moduleShopflow = await prisma.module.create({
+  const modulePos = await prisma.module.create({
     data: {
-      key: 'shopflow',
-      name: 'Shopflow',
+      key: 'pos',
+      name: 'Pos',
       description: 'Módulo de ventas y tiendas',
     },
   })
@@ -268,24 +268,24 @@ async function main() {
       action: 'manage',
       description: 'Crear o modificar usuarios desde Workify',
     },
-    // Shopflow
+    // Pos
     {
-      name: 'shopflow.access',
-      resource: 'shopflow',
+      name: 'pos.access',
+      resource: 'pos',
       action: 'access',
-      description: 'Acceder al módulo Shopflow',
+      description: 'Acceder al módulo Pos',
     },
     {
-      name: 'shopflow.users.read',
-      resource: 'shopflow.users',
+      name: 'pos.users.read',
+      resource: 'pos.users',
       action: 'read',
-      description: 'Ver usuarios del módulo Shopflow',
+      description: 'Ver usuarios del módulo Pos',
     },
     {
-      name: 'shopflow.users.manage',
-      resource: 'shopflow.users',
+      name: 'pos.users.manage',
+      resource: 'pos.users',
       action: 'manage',
-      description: 'Crear o modificar usuarios desde Shopflow',
+      description: 'Crear o modificar usuarios desde Pos',
     },
     // Techservices
     {
@@ -313,80 +313,80 @@ async function main() {
       action: 'manage',
       description: 'Gestionar expedientes en Baro',
     },
-    // Shopflow — ventas granulares
+    // Pos — ventas granulares
     {
-      name: 'shopflow.sales.read',
-      resource: 'shopflow.sales',
+      name: 'pos.sales.read',
+      resource: 'pos.sales',
       action: 'read',
-      description: 'Ver ventas en Shopflow',
+      description: 'Ver ventas en Pos',
     },
     {
-      name: 'shopflow.sales.create',
-      resource: 'shopflow.sales',
+      name: 'pos.sales.create',
+      resource: 'pos.sales',
       action: 'create',
-      description: 'Crear nuevas ventas en Shopflow',
+      description: 'Crear nuevas ventas en Pos',
     },
     {
-      name: 'shopflow.sales.cancel',
-      resource: 'shopflow.sales',
+      name: 'pos.sales.cancel',
+      resource: 'pos.sales',
       action: 'cancel',
-      description: 'Cancelar ventas en Shopflow',
+      description: 'Cancelar ventas en Pos',
     },
     {
-      name: 'shopflow.sales.settle',
-      resource: 'shopflow.sales',
+      name: 'pos.sales.settle',
+      resource: 'pos.sales',
       action: 'settle',
-      description: 'Liquidar (PENDING->COMPLETED) ventas en Shopflow, asignando sesión de caja y factura',
+      description: 'Liquidar (PENDING->COMPLETED) ventas en Pos, asignando sesión de caja y factura',
     },
     {
-      name: 'shopflow.sales.refund',
-      resource: 'shopflow.sales',
+      name: 'pos.sales.refund',
+      resource: 'pos.sales',
       action: 'refund',
-      description: 'Reembolsar (revertir) ventas completadas en Shopflow — acción elevada, salida de dinero',
+      description: 'Reembolsar (revertir) ventas completadas en Pos — acción elevada, salida de dinero',
     },
-    // Shopflow — inventario granular
+    // Pos — inventario granular
     {
-      name: 'shopflow.inventory.read',
-      resource: 'shopflow.inventory',
+      name: 'pos.inventory.read',
+      resource: 'pos.inventory',
       action: 'read',
-      description: 'Ver inventario y transferencias en Shopflow',
+      description: 'Ver inventario y transferencias en Pos',
     },
     {
-      name: 'shopflow.inventory.write',
-      resource: 'shopflow.inventory',
+      name: 'pos.inventory.write',
+      resource: 'pos.inventory',
       action: 'write',
-      description: 'Crear y modificar transferencias de inventario en Shopflow',
+      description: 'Crear y modificar transferencias de inventario en Pos',
     },
-    // Shopflow — caja (cash registers / cash sessions)
+    // Pos — caja (cash registers / cash sessions)
     {
-      name: 'shopflow.cash-registers.read',
-      resource: 'shopflow.cash-registers',
+      name: 'pos.cash-registers.read',
+      resource: 'pos.cash-registers',
       action: 'read',
-      description: 'Ver cajas registradoras en Shopflow',
+      description: 'Ver cajas registradoras en Pos',
     },
     {
-      name: 'shopflow.cash-registers.create',
-      resource: 'shopflow.cash-registers',
+      name: 'pos.cash-registers.create',
+      resource: 'pos.cash-registers',
       action: 'create',
-      description: 'Crear cajas registradoras en Shopflow',
+      description: 'Crear cajas registradoras en Pos',
     },
     {
-      name: 'shopflow.cash-sessions.read',
-      resource: 'shopflow.cash-sessions',
+      name: 'pos.cash-sessions.read',
+      resource: 'pos.cash-sessions',
       action: 'read',
-      description: 'Ver sesiones de caja y arqueos en Shopflow',
+      description: 'Ver sesiones de caja y arqueos en Pos',
     },
     {
-      name: 'shopflow.cash-sessions.open',
-      resource: 'shopflow.cash-sessions',
+      name: 'pos.cash-sessions.open',
+      resource: 'pos.cash-sessions',
       action: 'open',
-      description: 'Abrir sesiones de caja en Shopflow',
+      description: 'Abrir sesiones de caja en Pos',
     },
     {
-      name: 'shopflow.cash-sessions.close',
-      resource: 'shopflow.cash-sessions',
+      name: 'pos.cash-sessions.close',
+      resource: 'pos.cash-sessions',
       action: 'close',
-      description: 'Cerrar sesiones de caja (arqueo) en Shopflow',
+      description: 'Cerrar sesiones de caja (arqueo) en Pos',
     },
     // Workify — empleados
     {
@@ -418,7 +418,7 @@ async function main() {
 
   console.log('🏢 Creando datos de Workify...')
 
-  // 1. Crear empresa (contrata Workify y Shopflow)
+  // 1. Crear empresa (contrata Workify y Pos)
   const company = await prisma.company.create({
     data: {
       name: 'Acme Inc.',
@@ -430,13 +430,13 @@ async function main() {
   await prisma.companyModule.createMany({
     data: [
       { companyId: company.id, moduleId: moduleWorkify.id, enabled: true },
-      { companyId: company.id, moduleId: moduleShopflow.id, enabled: true },
+      { companyId: company.id, moduleId: modulePos.id, enabled: true },
       { companyId: company.id, moduleId: moduleTechservices.id, enabled: true },
       { companyId: company.id, moduleId: moduleBaro.id, enabled: true },
     ],
   })
 
-  // 2. Crear usuarios (necesarios para company members y Shopflow)
+  // 2. Crear usuarios (necesarios para company members y Pos)
   const hashedPassword = await bcrypt.hash('password123', 10)
   const superuser = await prisma.user.create({
     data: {
@@ -490,12 +490,12 @@ async function main() {
     data: [
       // Owner: todos los módulos activos de la empresa
       { companyMemberId: acmeOwnerMember.id, moduleId: moduleWorkify.id, enabled: true },
-      { companyMemberId: acmeOwnerMember.id, moduleId: moduleShopflow.id, enabled: true },
+      { companyMemberId: acmeOwnerMember.id, moduleId: modulePos.id, enabled: true },
       { companyMemberId: acmeOwnerMember.id, moduleId: moduleTechservices.id, enabled: true },
       { companyMemberId: acmeOwnerMember.id, moduleId: moduleBaro.id, enabled: true },
-      // Usuario estándar: Workify + Shopflow por defecto
+      // Usuario estándar: Workify + Pos por defecto
       { companyMemberId: acmeUserMember.id, moduleId: moduleWorkify.id, enabled: true },
-      { companyMemberId: acmeUserMember.id, moduleId: moduleShopflow.id, enabled: true },
+      { companyMemberId: acmeUserMember.id, moduleId: modulePos.id, enabled: true },
     ],
   })
 
@@ -540,7 +540,7 @@ async function main() {
     },
   })
 
-  // Shopflow functional roles
+  // Pos functional roles
   const gerenteRole = await prisma.role.create({
     data: {
       name: 'Gerente',
@@ -595,15 +595,15 @@ async function main() {
       'workify.users.read',
       'workify.users.manage',
       'workify.employees.manage',
-      'shopflow.access',
-      'shopflow.users.read',
-      'shopflow.users.manage',
-      'shopflow.sales.read',
-      'shopflow.sales.create',
-      'shopflow.sales.cancel',
-      'shopflow.sales.refund',
-      'shopflow.inventory.read',
-      'shopflow.inventory.write',
+      'pos.access',
+      'pos.users.read',
+      'pos.users.manage',
+      'pos.sales.read',
+      'pos.sales.create',
+      'pos.sales.cancel',
+      'pos.sales.refund',
+      'pos.inventory.read',
+      'pos.inventory.write',
       'techservices.access',
       'techservices.visits.close',
       'baro.access',
@@ -630,15 +630,15 @@ async function main() {
       'workify.users.read',
       'workify.users.manage',
       'workify.employees.manage',
-      'shopflow.access',
-      'shopflow.users.read',
-      'shopflow.users.manage',
-      'shopflow.sales.read',
-      'shopflow.sales.create',
-      'shopflow.sales.cancel',
-      'shopflow.sales.refund',
-      'shopflow.inventory.read',
-      'shopflow.inventory.write',
+      'pos.access',
+      'pos.users.read',
+      'pos.users.manage',
+      'pos.sales.read',
+      'pos.sales.create',
+      'pos.sales.cancel',
+      'pos.sales.refund',
+      'pos.inventory.read',
+      'pos.inventory.write',
       'techservices.access',
       'techservices.visits.close',
       'baro.access',
@@ -668,10 +668,10 @@ async function main() {
       'hub.members.read',
       'workify.access',
       'workify.users.read',
-      'shopflow.access',
-      'shopflow.users.read',
-      'shopflow.sales.read',
-      'shopflow.inventory.read',
+      'pos.access',
+      'pos.users.read',
+      'pos.sales.read',
+      'pos.inventory.read',
     ].map((name) => ({
       roleId: managerRole.id,
       permissionId: permissionsByName[name]!.id,
@@ -679,55 +679,55 @@ async function main() {
     // BasicUser: solo acceso a módulos
     ...[
       'workify.access',
-      'shopflow.access',
+      'pos.access',
       'techservices.access',
       'baro.access',
     ].map((name) => ({
       roleId: basicUserRole.id,
       permissionId: permissionsByName[name]!.id,
     })),
-    // Gerente Shopflow: acceso completo a ventas e inventario (incluye refund — acción elevada)
+    // Gerente Pos: acceso completo a ventas e inventario (incluye refund — acción elevada)
     ...[
-      'shopflow.access',
-      'shopflow.sales.read',
-      'shopflow.sales.create',
-      'shopflow.sales.cancel',
-      'shopflow.sales.refund',
-      'shopflow.inventory.read',
-      'shopflow.inventory.write',
+      'pos.access',
+      'pos.sales.read',
+      'pos.sales.create',
+      'pos.sales.cancel',
+      'pos.sales.refund',
+      'pos.inventory.read',
+      'pos.inventory.write',
     ].map((name) => ({
       roleId: gerenteRole.id,
       permissionId: permissionsByName[name]!.id,
     })),
     // Cajero: crear/leer ventas + liquidar pendientes + cancelar pendientes abandonadas + operar la caja (leer cajas, abrir/cerrar/leer sesiones)
     ...[
-      'shopflow.access',
-      'shopflow.sales.read',
-      'shopflow.sales.create',
-      'shopflow.sales.settle',
-      'shopflow.sales.cancel',
-      'shopflow.cash-registers.read',
-      'shopflow.cash-sessions.read',
-      'shopflow.cash-sessions.open',
-      'shopflow.cash-sessions.close',
+      'pos.access',
+      'pos.sales.read',
+      'pos.sales.create',
+      'pos.sales.settle',
+      'pos.sales.cancel',
+      'pos.cash-registers.read',
+      'pos.cash-sessions.read',
+      'pos.cash-sessions.open',
+      'pos.cash-sessions.close',
     ].map((name) => ({
       roleId: cajeroRole.id,
       permissionId: permissionsByName[name]!.id,
     })),
     // Vendedor: solo crear ventas pendientes (moto vendedor), sin permisos de caja ni de liquidación
     ...[
-      'shopflow.access',
-      'shopflow.sales.create',
+      'pos.access',
+      'pos.sales.create',
     ].map((name) => ({
       roleId: vendedorRole.id,
       permissionId: permissionsByName[name]!.id,
     })),
     // Supervisor: ventas e inventario (lectura + escritura inventario)
     ...[
-      'shopflow.access',
-      'shopflow.sales.read',
-      'shopflow.inventory.read',
-      'shopflow.inventory.write',
+      'pos.access',
+      'pos.sales.read',
+      'pos.inventory.read',
+      'pos.inventory.write',
     ].map((name) => ({
       roleId: supervisorRole.id,
       permissionId: permissionsByName[name]!.id,
@@ -915,10 +915,10 @@ async function main() {
   }
 
   // ========================================
-  // SEEDS SHOPFLOW
+  // SEEDS POS
   // ========================================
 
-  console.log('🛒 Creando datos de Shopflow...')
+  console.log('🛒 Creando datos de Pos...')
 
   const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
@@ -1449,7 +1449,7 @@ async function main() {
   await prisma.companyModule.createMany({
     data: [
       { companyId: company2.id, moduleId: moduleWorkify.id, enabled: true },
-      { companyId: company2.id, moduleId: moduleShopflow.id, enabled: true },
+      { companyId: company2.id, moduleId: modulePos.id, enabled: true },
       { companyId: company2.id, moduleId: moduleTechservices.id, enabled: true },
       { companyId: company2.id, moduleId: moduleBaro.id, enabled: true },
     ],
@@ -1498,11 +1498,11 @@ async function main() {
   await prisma.companyMemberModule.createMany({
     data: [
       { companyMemberId: betaOwnerMember.id, moduleId: moduleWorkify.id, enabled: true },
-      { companyMemberId: betaOwnerMember.id, moduleId: moduleShopflow.id, enabled: true },
+      { companyMemberId: betaOwnerMember.id, moduleId: modulePos.id, enabled: true },
       { companyMemberId: betaOwnerMember.id, moduleId: moduleTechservices.id, enabled: true },
       { companyMemberId: betaOwnerMember.id, moduleId: moduleBaro.id, enabled: true },
       { companyMemberId: betaUserMember.id, moduleId: moduleWorkify.id, enabled: true },
-      { companyMemberId: betaUserMember.id, moduleId: moduleShopflow.id, enabled: true },
+      { companyMemberId: betaUserMember.id, moduleId: modulePos.id, enabled: true },
     ],
   })
 
@@ -1668,10 +1668,10 @@ async function main() {
       'workify.access',
       'workify.users.read',
       'workify.users.manage',
-      'shopflow.access',
-      'shopflow.users.read',
-      'shopflow.users.manage',
-      'shopflow.sales.refund',
+      'pos.access',
+      'pos.users.read',
+      'pos.users.manage',
+      'pos.sales.refund',
       'techservices.access',
       'baro.access',
     ].map((name) => ({
@@ -1695,10 +1695,10 @@ async function main() {
       'workify.access',
       'workify.users.read',
       'workify.users.manage',
-      'shopflow.access',
-      'shopflow.users.read',
-      'shopflow.users.manage',
-      'shopflow.sales.refund',
+      'pos.access',
+      'pos.users.read',
+      'pos.users.manage',
+      'pos.sales.refund',
       'techservices.access',
       'baro.access',
     ].map((name) => ({
@@ -1725,8 +1725,8 @@ async function main() {
       'hub.members.read',
       'workify.access',
       'workify.users.read',
-      'shopflow.access',
-      'shopflow.users.read',
+      'pos.access',
+      'pos.users.read',
     ].map((name) => ({
       roleId: betaManagerRole.id,
       permissionId: permissionsByName[name]!.id,
@@ -1734,7 +1734,7 @@ async function main() {
     // BasicUser
     ...[
       'workify.access',
-      'shopflow.access',
+      'pos.access',
       'techservices.access',
       'baro.access',
     ].map((name) => ({
@@ -1743,23 +1743,23 @@ async function main() {
     })),
     // Cajero: crear/leer ventas + liquidar pendientes + cancelar pendientes abandonadas + operar la caja (leer cajas, abrir/cerrar/leer sesiones)
     ...[
-      'shopflow.access',
-      'shopflow.sales.read',
-      'shopflow.sales.create',
-      'shopflow.sales.settle',
-      'shopflow.sales.cancel',
-      'shopflow.cash-registers.read',
-      'shopflow.cash-sessions.read',
-      'shopflow.cash-sessions.open',
-      'shopflow.cash-sessions.close',
+      'pos.access',
+      'pos.sales.read',
+      'pos.sales.create',
+      'pos.sales.settle',
+      'pos.sales.cancel',
+      'pos.cash-registers.read',
+      'pos.cash-sessions.read',
+      'pos.cash-sessions.open',
+      'pos.cash-sessions.close',
     ].map((name) => ({
       roleId: betaCajeroRole.id,
       permissionId: permissionsByName[name]!.id,
     })),
     // Vendedor: solo crear ventas pendientes (moto vendedor), sin permisos de caja ni de liquidación
     ...[
-      'shopflow.access',
-      'shopflow.sales.create',
+      'pos.access',
+      'pos.sales.create',
     ].map((name) => ({
       roleId: betaVendedorRole.id,
       permissionId: permissionsByName[name]!.id,
@@ -1823,7 +1823,7 @@ async function main() {
     console.log('⚠️ Tablas Workify no encontradas, omitiendo seed Workify Beta')
   }
 
-  // Shopflow: dos locales por empresa - Beta
+  // Pos: dos locales por empresa - Beta
   const storeBeta1 = await prisma.store.create({
     data: {
       companyId: company2.id,
@@ -1853,7 +1853,7 @@ async function main() {
   })
   console.log('✅ Local asignado a usuario USER (Beta)')
 
-  // Shopflow: categorías Beta (distintas para debug)
+  // Pos: categorías Beta (distintas para debug)
   const homeCategory = await prisma.category.create({
     data: {
       companyId: company2.id,

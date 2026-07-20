@@ -27,7 +27,7 @@ export function LandingFooter({ urls, registerHref = "/register", moduleName, mo
                   <a href={urls.hub} className="text-white/40 hover:text-white transition-colors duration-150" target="_blank" rel="noopener noreferrer">Hub</a>
                 </li>
                 <li>
-                  <a href={urls.shopflow} className="text-white/40 hover:text-white transition-colors duration-150" target="_blank" rel="noopener noreferrer">ShopFlow</a>
+                  <a href={urls.pos} className="text-white/40 hover:text-white transition-colors duration-150" target="_blank" rel="noopener noreferrer">POS</a>
                 </li>
                 <li>
                   <a href={urls.workify} className="text-white/40 hover:text-white transition-colors duration-150" target="_blank" rel="noopener noreferrer">Workify</a>

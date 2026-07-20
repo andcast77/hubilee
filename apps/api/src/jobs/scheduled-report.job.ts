@@ -1,14 +1,14 @@
 import { prisma } from '../db/index.js'
-import { createNotification } from '../services/shopflow-notifications.service.js'
+import { createNotification } from '../services/pos-notifications.service.js'
 import { sendPushToUser } from '../services/push-sender.service.js'
-import { getStats } from '../services/shopflow-reports.service.js'
+import { getStats } from '../services/pos-reports.service.js'
 import { cacheSet } from '../common/cache/cache.js'
 import { saveJobRun, createRunId } from './job-state.js'
-import type { ShopflowContext } from '../core/auth-context.js'
+import type { PosContext } from '../core/auth-context.js'
 
 const REPORT_TTL = 24 * 60 * 60 // 24 hours
 
-function systemCtx(companyId: string): ShopflowContext {
+function systemCtx(companyId: string): PosContext {
   return { companyId, userId: 'system', isSuperuser: false, membershipRole: null, storeId: null }
 }
 

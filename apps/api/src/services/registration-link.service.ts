@@ -23,7 +23,7 @@ export type RegistrationLinkDraft = {
   lastName: string
   companyName: string
   workifyEnabled?: boolean
-  shopflowEnabled?: boolean
+  posEnabled?: boolean
   technicalServicesEnabled?: boolean
 }
 
@@ -151,7 +151,7 @@ export async function sendRegistrationLink(params: {
           lastName: params.draft.lastName?.trim() ?? '',
           companyName: cn,
           workifyEnabled: params.draft.workifyEnabled,
-          shopflowEnabled: params.draft.shopflowEnabled,
+          posEnabled: params.draft.posEnabled,
           technicalServicesEnabled: params.draft.technicalServicesEnabled,
         }
       })()
@@ -225,7 +225,7 @@ export async function completeRegistrationFromLink(params: {
     lastName: blob.draft.lastName,
     companyName: blob.draft.companyName,
     workifyEnabled: blob.draft.workifyEnabled,
-    shopflowEnabled: blob.draft.shopflowEnabled,
+    posEnabled: blob.draft.posEnabled,
     technicalServicesEnabled: blob.draft.technicalServicesEnabled,
     registrationTicket,
   })

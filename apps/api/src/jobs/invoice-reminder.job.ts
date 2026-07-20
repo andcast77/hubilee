@@ -1,5 +1,5 @@
 import { prisma } from '../db/index.js'
-import { createNotification } from '../services/shopflow-notifications.service.js'
+import { createNotification } from '../services/pos-notifications.service.js'
 import { sendPushToUser } from '../services/push-sender.service.js'
 import { saveJobRun, createRunId, isIdemSent, markIdemSent } from './job-state.js'
 import type { CompanyContext } from '../core/auth-context.js'

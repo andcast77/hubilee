@@ -11,7 +11,7 @@
 
 - `packages/api/src/dto/auth.dto.ts`, `services/auth.service.ts`, `controllers/v1/auth.controller.ts`
 - Nuevos: servicios OTP, mailer, verificación Turnstile, util ticket
-- `apps/hub|workify|shopflow` registro y `api-client`
+- `apps/hub|workify|pos` registro y `api-client`
 
 ## Recommendation
 

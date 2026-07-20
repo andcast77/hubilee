@@ -2,14 +2,14 @@
 
 ## Intent
 
-Exigir verificación de email por OTP y captcha antes de crear empresa en registro; emitir `registrationTicket` de corta vida y validarlo en `POST /v1/auth/register` cuando hay `companyName`. Reduce abuso y alinea Hub, Workify y Shopflow al mismo flujo.
+Exigir verificación de email por OTP y captcha antes de crear empresa en registro; emitir `registrationTicket` de corta vida y validarlo en `POST /v1/auth/register` cuando hay `companyName`. Reduce abuso y alinea Hub, Workify y Pos al mismo flujo.
 
 ## Scope
 
 ### In Scope
 
 - API: `POST /v1/auth/register/otp/send`, `POST /v1/auth/register/otp/verify`; extensión de registro con ticket; mailer (SMTP); Turnstile server-side; Redis para OTP hasheado, contadores y `jti` one-time; rate limits dedicados.
-- Front: flujo por pasos en Hub, Workify, Shopflow; variables `NEXT_PUBLIC_*` Turnstile.
+- Front: flujo por pasos en Hub, Workify, Pos; variables `NEXT_PUBLIC_*` Turnstile.
 - Tests API: límites 3/3, ticket inválido, mismatch email; documentación `.env.example` / README API.
 - Decisión documentada para `resend-verification` (implementar / fusionar / deprecar).
 
@@ -38,7 +38,7 @@ Redis (Upstash) para hash OTP, TTL ~15m, contadores send/fail; HMAC/pepper para 
 | Area | Impact | Description |
 |------|--------|-------------|
 | `packages/api` | Modified | DTOs, auth service/controller, rate-limit, env, mailer, tests |
-| `apps/hub`, `workify`, `shopflow` | Modified | Register UI + API client + Turnstile |
+| `apps/hub`, `workify`, `pos` | Modified | Register UI + API client + Turnstile |
 | `docs/plans/PLAN-39` | Modified | Checklist §11 durante implementación |
 
 ## Risks

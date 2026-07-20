@@ -1,6 +1,6 @@
 # Hubilee API
 
-API compartida **Fastify 5** para Hubilee: JWT, multi-empresa (contexto de compañía/miembro) y rutas agrupadas por módulo (**shopflow**, **workify**, **techservices**). Acceso a datos con **@hubilee/database** (Prisma).
+API compartida **Fastify 5** para Hubilee: JWT, multi-empresa (contexto de compañía/miembro) y rutas agrupadas por módulo (**pos**, **workify**, **techservices**). Acceso a datos con **@hubilee/database** (Prisma).
 
 **Producción / preview:** el camino oficial es **Vercel** (esta API) + **Neon** (PostgreSQL). Otros hosts (p. ej. Render) y **`.env.render.example`** se documentan como **legado**; no sustituyen esa historia de despliegue.
 
@@ -69,7 +69,7 @@ packages/api/
 │   ├── server.ts             # Fastify: env, CORS, rate limit, registro de controllers
 │   ├── swagger.ts
 │   ├── db/                   # Acceso Prisma
-│   ├── controllers/          # health (raíz); v1/* — auth, users, companies, shopflow/*, workify, techservices
+│   ├── controllers/          # health (raíz); v1/* — auth, users, companies, pos/*, workify, techservices
 │   ├── services/
 │   ├── repositories/
 │   ├── dto/
@@ -96,7 +96,7 @@ La API sigue siendo **un solo deployable** (`src/server.ts`), pero las rutas se 
 
 ### Versión en URL
 
-Las rutas de negocio viven bajo **`/v1/...`** (p. ej. `/v1/auth/login`, `/v1/shopflow/products`). **`/health`** y la UI de Swagger **`/v1/docs`** quedan fuera de ese prefijo de dominio donde aplica.
+Las rutas de negocio viven bajo **`/v1/...`** (p. ej. `/v1/auth/login`, `/v1/pos/products`). **`/health`** y la UI de Swagger **`/v1/docs`** quedan fuera de ese prefijo de dominio donde aplica.
 
 ## 🔧 Scripts Disponibles
 
@@ -157,7 +157,7 @@ Si aún despliegas fuera de Vercel, ver **`.env.render.example`** en este paquet
 | `/v1/auth/*` | Registro, login, logout, sesión, empresas del usuario |
 | `/v1/users` | Usuarios (protegido) |
 | `/v1/companies`, miembros | Empresas y membresías |
-| `/v1/shopflow/*` | Ventas, productos, clientes, tiendas, reportes, export, notificaciones, etc. |
+| `/v1/pos/*` | Ventas, productos, clientes, tiendas, reportes, export, notificaciones, etc. |
 | `/v1/workify/*` | RRHH / asistencia (módulo habilitado por empresa) |
 | `/v1/techservices/*` | Servicios técnicos / mantenimiento (módulo habilitado) |
 

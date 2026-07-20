@@ -32,7 +32,7 @@ pnpm --filter @hubilee/api vitest run \
 docker compose config -q
 ```
 
-**Result:** exit 0 — valid YAML, all services defined (postgres, api, caddy, hub, shopflow, workify, techservices, balance, baro)
+**Result:** exit 0 — valid YAML, all services defined (postgres, api, caddy, hub, pos, workify, techservices, balance, baro)
 
 ### CORS
 

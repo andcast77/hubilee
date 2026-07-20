@@ -78,7 +78,7 @@ export type LoginResult =
 export type RegisterResult = {
   user: { id: string; email: string; name: string; role: string; companyId?: string }
   token: string
-  company?: { id: string; name: string; modules: { workify: boolean; shopflow: boolean; techservices: boolean } }
+  company?: { id: string; name: string; modules: { workify: boolean; pos: boolean; techservices: boolean } }
 }
 
 export type MeResult = {
@@ -92,7 +92,7 @@ export type MeResult = {
   membershipRole?: string
   isSuperuser?: boolean
   twoFactorEnabled?: boolean
-  company?: { id: string; name: string; modules: { workify: boolean; shopflow: boolean; techservices: boolean } }
+  company?: { id: string; name: string; modules: { workify: boolean; pos: boolean; techservices: boolean } }
 }
 
 export async function login(body: LoginBody): Promise<LoginResult> {
@@ -110,7 +110,7 @@ export async function login(body: LoginBody): Promise<LoginResult> {
       isSuperuser: true,
       firstName: true,
       lastName: true,
-      shopflowPreferredCompanyId: true,
+      posPreferredCompanyId: true,
       twoFactorEnabled: true,
       failedLoginAttempts: true,
       lockedUntil: true,
@@ -189,7 +189,7 @@ export async function login(body: LoginBody): Promise<LoginResult> {
   }
 
   const companies = await getUserCompanies(user.id, user.isSuperuser ?? false)
-  const preferredCompanyId = bodyCompanyId ?? user.shopflowPreferredCompanyId ?? undefined
+  const preferredCompanyId = bodyCompanyId ?? user.posPreferredCompanyId ?? undefined
   const selected = selectCompanyForUser(companies, preferredCompanyId)
   const selectedCompany = selected?.selectedCompany ?? null
   const selectedMembershipRole = selected?.selectedMembershipRole ?? null
@@ -289,7 +289,7 @@ export async function completeMfaLogin(body: MfaVerifyBody): Promise<CompleteMfa
       isSuperuser: true,
       firstName: true,
       lastName: true,
-      shopflowPreferredCompanyId: true,
+      posPreferredCompanyId: true,
       twoFactorEnabled: true,
       twoFactorSecret: true,
     },
@@ -324,7 +324,7 @@ export async function completeMfaLogin(body: MfaVerifyBody): Promise<CompleteMfa
   })
 
   const companies = await getUserCompanies(user.id, user.isSuperuser ?? false)
-  const preferredCompanyId = body.companyId ?? user.shopflowPreferredCompanyId ?? undefined
+  const preferredCompanyId = body.companyId ?? user.posPreferredCompanyId ?? undefined
   const selected = selectCompanyForUser(companies, preferredCompanyId)
   const selectedCompany = selected?.selectedCompany ?? null
   const selectedMembershipRole = selected?.selectedMembershipRole ?? null
@@ -373,7 +373,7 @@ export async function register(body: RegisterBody): Promise<RegisterResult> {
     lastName = '',
     companyName,
     workifyEnabled = true,
-    shopflowEnabled = false,
+    posEnabled = false,
     technicalServicesEnabled = false,
   } = body
   const email = rawEmail.trim().toLowerCase()
@@ -394,9 +394,9 @@ export async function register(body: RegisterBody): Promise<RegisterResult> {
     }
     await verifyAndConsumeRegistrationTicket(cfg, email, ticket)
 
-    const modulesMap = await findModulesByKeys(['workify', 'shopflow', 'techservices'])
+    const modulesMap = await findModulesByKeys(['workify', 'pos', 'techservices'])
     const workifyMod = modulesMap.get('workify')
-    const shopflowMod = modulesMap.get('shopflow')
+    const posMod = modulesMap.get('pos')
     const techservicesMod = modulesMap.get('techservices')
 
     const { user, company } = await prisma.$transaction(async (tx) => {
@@ -427,7 +427,7 @@ export async function register(body: RegisterBody): Promise<RegisterResult> {
 
       const moduleIds: string[] = []
       if (workifyEnabled && workifyMod) moduleIds.push(workifyMod.id)
-      if (shopflowEnabled && shopflowMod) moduleIds.push(shopflowMod.id)
+      if (posEnabled && posMod) moduleIds.push(posMod.id)
       if (technicalServicesEnabled && techservicesMod) moduleIds.push(techservicesMod.id)
       for (const modId of moduleIds) {
         await tx.companyModule.create({
@@ -469,7 +469,7 @@ export async function register(body: RegisterBody): Promise<RegisterResult> {
       company: {
         id: company.id,
         name: company.name,
-        modules: { workify: workifyEnabled, shopflow: shopflowEnabled, techservices: technicalServicesEnabled },
+        modules: { workify: workifyEnabled, pos: posEnabled, techservices: technicalServicesEnabled },
       },
     }
   }
@@ -510,7 +510,7 @@ export async function me(decoded: TokenPayload): Promise<MeResult> {
       isActive: true,
       firstName: true,
       lastName: true,
-      shopflowPreferredCompanyId: true,
+      posPreferredCompanyId: true,
       twoFactorEnabled: true,
     },
   })
@@ -518,7 +518,7 @@ export async function me(decoded: TokenPayload): Promise<MeResult> {
   if (!user) throw new NotFoundError('Usuario no encontrado')
   if (!user.isActive) throw new UnauthorizedError('Usuario inactivo')
 
-  let preferredCompanyId: string | null = user.shopflowPreferredCompanyId
+  let preferredCompanyId: string | null = user.posPreferredCompanyId
 
   if (!preferredCompanyId) {
     const companies = await getUserCompanies(decoded.id, decoded.isSuperuser ?? false)
@@ -526,13 +526,13 @@ export async function me(decoded: TokenPayload): Promise<MeResult> {
     if (defaultCompanyId) {
       await prisma.user.update({
         where: { id: decoded.id },
-        data: { shopflowPreferredCompanyId: defaultCompanyId },
+        data: { posPreferredCompanyId: defaultCompanyId },
       })
       preferredCompanyId = defaultCompanyId
     }
   }
 
-  let company: { id: string; name: string; modules: { workify: boolean; shopflow: boolean; techservices: boolean } } | null = null
+  let company: { id: string; name: string; modules: { workify: boolean; pos: boolean; techservices: boolean } } | null = null
   let responseCompanyId: string | undefined = decoded.companyId
 
   if (decoded.companyId) {
@@ -596,7 +596,7 @@ export type SetContextResult = {
   token: string
   companyId: string
   membershipRole: string | null
-  company: { id: string; name: string; modules: { workify: boolean; shopflow: boolean; techservices: boolean } } | null
+  company: { id: string; name: string; modules: { workify: boolean; pos: boolean; techservices: boolean } } | null
 }
 
 export async function setContext(
@@ -615,7 +615,7 @@ export async function setContext(
   })
   await prisma.user.update({
     where: { id: decoded.id },
-    data: { shopflowPreferredCompanyId: companyId },
+    data: { posPreferredCompanyId: companyId },
   })
   const company = await prisma.company.findFirst({
     where: { id: companyId, isActive: true },

@@ -63,7 +63,7 @@ Chain strategy: stacked-to-v2
 ## Phase 4: Docker, CORS & Monorepo Wiring
 
 - [x] 4.1 Extend `CORS_ORIGIN` in `packages/api/.env.example`, `packages/api/.env`, compose API env: localhost **3000,3001–3006** + `https://*.hubilee.app` domains
-- [x] 4.2 Create `docker/Dockerfile.api`; thin `apps/{hub,shopflow,workify,techservices,balance,baro}/Dockerfile` from `docker/Dockerfile.nextjs`
+- [x] 4.2 Create `docker/Dockerfile.api`; thin `apps/{hub,pos,workify,techservices,balance,baro}/Dockerfile` from `docker/Dockerfile.nextjs`
 - [x] 4.3 Rewrite `docker-compose.yml`: `postgres`, `api`, `caddy`, 6 apps; **remove `baro-db`** / `baro_pgdata`
 - [x] 4.4 Simplify `apps/baro/docker-entrypoint.sh` — no prisma migrate
 - [x] 4.5 Add root scripts + `turbo.json` globalEnv (`NEXT_PUBLIC_BALANCE_URL`, `dev:balance`, `dev:baro`, etc.)
