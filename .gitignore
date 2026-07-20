@@ -48,3 +48,10 @@ prisma/migrations/
 .cache/
 .turbo/
 context/
+# Local AI runtime state
+.atl/
+.docs/
+.cursor/
+.codegraph/
+opencode.json
+.github/
