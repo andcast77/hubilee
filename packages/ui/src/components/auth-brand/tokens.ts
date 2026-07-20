@@ -1,4 +1,4 @@
-/** Shared brand auth surface — same layout across Hub, Pos, Workify, Techservices. */
+/** Shared brand auth surface — same layout across Hub, Pos, Hr, Techservices. */
 
 /**
  * `!` needed so Tailwind wins over unlayered `.ui-card` / `.ui-input` SCSS when CSS is bundled

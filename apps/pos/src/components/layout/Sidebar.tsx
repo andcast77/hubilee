@@ -128,7 +128,7 @@ export function Sidebar() {
     authApi
       .post<{
         success?: boolean
-        data?: { companyId?: string; company?: { id: string; name: string; workifyEnabled: boolean; posEnabled: boolean } }
+        data?: { companyId?: string; company?: { id: string; name: string; hrEnabled: boolean; posEnabled: boolean } }
         error?: string
       }>('/context', { companyId: firstId })
       .then((res) => {
@@ -155,7 +155,7 @@ export function Sidebar() {
     try {
       const res = await authApi.post<{
         success?: boolean
-        data?: { companyId?: string; company?: { id: string; name: string; workifyEnabled: boolean; posEnabled: boolean } }
+        data?: { companyId?: string; company?: { id: string; name: string; hrEnabled: boolean; posEnabled: boolean } }
         error?: string
       }>('/context', { companyId })
       if (res && typeof res === 'object' && res.success && res.data) {

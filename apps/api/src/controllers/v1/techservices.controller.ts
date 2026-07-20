@@ -1,7 +1,7 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import type { FastifyInstance } from 'fastify'
 import { requireAuth } from '../../core/auth.js'
-import { contextFromRequest, requireWorkifyContext } from '../../core/auth-context.js'
+import { contextFromRequest, requireHrContext } from '../../core/auth-context.js'
 import { requireModuleAccess } from '../../core/modules.js'
 import { sendBadRequest, sendNotFound, sendServerError } from '../../core/errors.js'
 import { validateBody } from '../../core/validate.js'
@@ -308,7 +308,7 @@ export async function getMe(request: FastifyRequest, reply: FastifyReply) {
   }
 }
 
-const preTech = [requireAuth, requireWorkifyContext, requireModuleAccess('techservices')]
+const preTech = [requireAuth, requireHrContext, requireModuleAccess('techservices')]
 
 /** Wraps a handler so Fastify's generic request is cast to the handler's expected type. */
 function handle<T extends (req: any, rep: any) => any>(

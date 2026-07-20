@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 
-/* Mismo contrato que Shopflow login — sin shadcn ni estilos del sitio marketing. */
+/* Mismo contrato que POS login — sin shadcn ni estilos del sitio marketing. */
 @source '../../../../packages/ui/src';
 
 @layer base {
@@ -28,54 +28,54 @@
   }
 }
 
-.shopflow-auth-shell .ui-card {
+.pos-auth-shell .ui-card {
   background-color: rgb(255 255 255 / 0.05);
   border-color: rgb(255 255 255 / 0.1);
   color: rgb(255 255 255);
   box-shadow: none;
 }
 
-.shopflow-auth-shell .ui-card__title {
+.pos-auth-shell .ui-card__title {
   color: rgb(255 255 255);
 }
 
-.shopflow-auth-shell .ui-card__description {
+.pos-auth-shell .ui-card__description {
   color: rgb(255 255 255 / 0.6);
 }
 
-.shopflow-auth-shell .ui-input {
+.pos-auth-shell .ui-input {
   background-color: rgb(255 255 255 / 0.1);
   border-color: rgb(255 255 255 / 0.2);
   color: rgb(255 255 255);
   box-shadow: none;
 }
 
-.shopflow-auth-shell .ui-input::placeholder {
+.pos-auth-shell .ui-input::placeholder {
   color: rgb(255 255 255 / 0.4);
 }
 
-.shopflow-auth-shell .ui-input:focus-visible {
+.pos-auth-shell .ui-input:focus-visible {
   box-shadow:
     0 0 0 2px rgb(10 10 15),
     0 0 0 4px rgb(99 102 241 / 0.45);
 }
 
-.shopflow-auth-shell .ui-label {
+.pos-auth-shell .ui-label {
   color: rgb(255 255 255 / 0.8);
 }
 
-.shopflow-auth-shell .ui-btn--variant-outline {
+.pos-auth-shell .ui-btn--variant-outline {
   background-color: rgb(255 255 255 / 0.05);
   border-color: rgb(255 255 255 / 0.2);
   color: rgb(255 255 255);
 }
 
-.shopflow-auth-shell .ui-btn--variant-outline:hover:not(:disabled) {
+.pos-auth-shell .ui-btn--variant-outline:hover:not(:disabled) {
   background-color: rgb(255 255 255 / 0.1);
 }
 
 @media (min-width: 1024px) {
-  .shopflow-auth-layout {
+  .pos-auth-layout {
     grid-template-columns: 1fr 1fr;
   }
 }

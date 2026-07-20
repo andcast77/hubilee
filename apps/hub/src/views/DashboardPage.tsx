@@ -43,11 +43,11 @@ export function DashboardPage() {
 
   const modules = [
     {
-      title: "Workify",
+      title: "Hr",
       description: "Gestión de recursos humanos y nómina",
       icon: Briefcase,
-      href: process.env.NEXT_PUBLIC_WORKIFY_URL || "http://localhost:3003",
-      enabled: company.modules?.workify ?? company.workifyEnabled ?? false,
+      href: process.env.NEXT_PUBLIC_HR_URL || "http://localhost:3003",
+      enabled: company.modules?.hr ?? company.hrEnabled ?? false,
       color: "purple",
     },
     {

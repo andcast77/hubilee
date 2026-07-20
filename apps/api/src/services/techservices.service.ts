@@ -492,7 +492,7 @@ export async function getMe(ctx: CompanyContext) {
     ? {
         id: company.id,
         name: company.name,
-        workifyEnabled: modules?.workify ?? false,
+        hrEnabled: modules?.hr ?? false,
         posEnabled: modules?.pos ?? false,
         technicalServicesEnabled: modules?.techservices ?? false,
       }

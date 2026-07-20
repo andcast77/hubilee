@@ -20,7 +20,7 @@ El schema actual está en un único archivo `schema.prisma`. Prisma 7 soporta m�
    Mantener `prisma/schema.prisma` como archivo principal (generator + datasource + **todos los enums**) y crear archivos adicionales en `prisma/`:
 
    - `shared.prisma`: User, Session, Company, CompanyMember, Module, CompanyModule, CompanyMemberModule, Role, Permission, RolePermission, UserRoleAssignment, UserPermission
-   - `workify.prisma`: Department, Position, Employee, WorkShift, Schedule, SpecialDayAssignment, Holiday, TimeEntry, Payroll, PayrollRule, License, LicensePolicy, Document, AuditLog, IntegrationLog, Report, Translation
+   - `hr.prisma`: Department, Position, Employee, WorkShift, Schedule, SpecialDayAssignment, Holiday, TimeEntry, Payroll, PayrollRule, License, LicensePolicy, Document, AuditLog, IntegrationLog, Report, Translation
    - `techservices.prisma`: TechnicalAsset, WorkOrder, WorkOrderPart, ServiceVisit
    - `pos.prisma`: Product, Category, Supplier, Customer, Sale, SaleItem, StoreConfig, Store, UserStore, TicketConfig, UserPreferences, InventoryTransfer, LoyaltyConfig, LoyaltyPoint, Notification, NotificationPreference, ActionHistory
 

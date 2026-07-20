@@ -20,11 +20,11 @@ export function LandingPage() {
       accentBg: "bg-violet-500/10",
     },
     {
-      title: "Workify",
+      title: "Hr",
       description: "RRHH, turnos y asistencia para equipos que operan en horarios.",
       icon: <Users className="w-6 h-6" />,
       features: ["Turnos", "Asistencia", "Empleados"],
-      href: urls.workify,
+      href: urls.hr,
       accentColor: "text-sky-400",
       accentBg: "bg-sky-500/10",
     },

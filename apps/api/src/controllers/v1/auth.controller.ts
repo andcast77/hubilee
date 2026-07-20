@@ -312,7 +312,7 @@ export async function registerLinkSend(request: FastifyRequest, reply: FastifyRe
       firstName: body.firstName ?? '',
       lastName: body.lastName ?? '',
       companyName: body.companyName,
-      workifyEnabled: body.workifyEnabled,
+      hrEnabled: body.hrEnabled,
       posEnabled: body.posEnabled,
       technicalServicesEnabled: body.technicalServicesEnabled,
     },

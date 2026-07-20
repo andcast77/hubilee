@@ -31,7 +31,7 @@ export async function getStats(companyId: string) {
 
 export async function update(companyId: string, caller: TokenPayload, body: UpdateCompanyBody) {
   assertCompanyAccess(caller, companyId)
-  if (body.workifyEnabled !== undefined || body.posEnabled !== undefined || body.technicalServicesEnabled !== undefined) {
+  if (body.hrEnabled !== undefined || body.posEnabled !== undefined || body.technicalServicesEnabled !== undefined) {
     assertOwner(caller, 'Solo el propietario puede activar/desactivar módulos')
   }
   assertCanManageCompany(caller)
@@ -48,16 +48,16 @@ export async function update(companyId: string, caller: TokenPayload, body: Upda
   }
 
   if (
-    body.workifyEnabled !== undefined ||
+    body.hrEnabled !== undefined ||
     body.posEnabled !== undefined ||
     body.technicalServicesEnabled !== undefined
   ) {
-    const modulesMap = await findModulesByKeys(['workify', 'pos', 'techservices'])
-    const workifyMod = modulesMap.get('workify')
+    const modulesMap = await findModulesByKeys(['hr', 'pos', 'techservices'])
+    const hrMod = modulesMap.get('hr')
     const posMod = modulesMap.get('pos')
     const techservicesMod = modulesMap.get('techservices')
     const updates: { moduleId: string; enabled: boolean }[] = []
-    if (body.workifyEnabled !== undefined && workifyMod) updates.push({ moduleId: workifyMod.id, enabled: body.workifyEnabled })
+    if (body.hrEnabled !== undefined && hrMod) updates.push({ moduleId: hrMod.id, enabled: body.hrEnabled })
     if (body.posEnabled !== undefined && posMod) updates.push({ moduleId: posMod.id, enabled: body.posEnabled })
     if (body.technicalServicesEnabled !== undefined && techservicesMod) updates.push({ moduleId: techservicesMod.id, enabled: body.technicalServicesEnabled })
     for (const { moduleId, enabled } of updates) {

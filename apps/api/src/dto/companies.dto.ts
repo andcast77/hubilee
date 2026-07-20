@@ -44,7 +44,7 @@ export type CompanyStatsResponse = {
 /** Input: update company */
 export const updateCompanyBodySchema = z.object({
   name: z.string().optional(),
-  workifyEnabled: z.boolean().optional(),
+  hrEnabled: z.boolean().optional(),
   posEnabled: z.boolean().optional(),
   technicalServicesEnabled: z.boolean().optional(),
   logo: z.string().nullable().optional(),

@@ -65,7 +65,7 @@ async function main() {
   await clear('loyaltyConfig', () => prisma.loyaltyConfig.deleteMany())
   await clear('store', () => prisma.store.deleteMany())
 
-  // Workify
+  // Hr
   await clear('userRoleAssignment', () => prisma.userRoleAssignment.deleteMany())
   await clear('userPermission', () => prisma.userPermission.deleteMany())
   await clear('rolePermission', () => prisma.rolePermission.deleteMany())
@@ -114,10 +114,10 @@ async function main() {
   console.log('🧩 Creando catálogo de módulos y permisos...')
 
   // 1. Módulos globales
-  const moduleWorkify = await prisma.module.create({
+  const moduleHr = await prisma.module.create({
     data: {
-      key: 'workify',
-      name: 'Workify',
+      key: 'hr',
+      name: 'Hr',
       description: 'Módulo de RRHH y gestión de personal',
     },
   })
@@ -249,24 +249,24 @@ async function main() {
       action: 'assign',
       description: 'Asignar o revocar roles a usuarios',
     },
-    // Workify
+    // Hr
     {
-      name: 'workify.access',
-      resource: 'workify',
+      name: 'hr.access',
+      resource: 'hr',
       action: 'access',
-      description: 'Acceder al módulo Workify',
+      description: 'Acceder al módulo Hr',
     },
     {
-      name: 'workify.users.read',
-      resource: 'workify.users',
+      name: 'hr.users.read',
+      resource: 'hr.users',
       action: 'read',
-      description: 'Ver usuarios del módulo Workify',
+      description: 'Ver usuarios del módulo Hr',
     },
     {
-      name: 'workify.users.manage',
-      resource: 'workify.users',
+      name: 'hr.users.manage',
+      resource: 'hr.users',
       action: 'manage',
-      description: 'Crear o modificar usuarios desde Workify',
+      description: 'Crear o modificar usuarios desde Hr',
     },
     // Pos
     {
@@ -388,12 +388,12 @@ async function main() {
       action: 'close',
       description: 'Cerrar sesiones de caja (arqueo) en Pos',
     },
-    // Workify — empleados
+    // Hr — empleados
     {
-      name: 'workify.employees.manage',
-      resource: 'workify.employees',
+      name: 'hr.employees.manage',
+      resource: 'hr.employees',
       action: 'manage',
-      description: 'Gestionar empleados en Workify',
+      description: 'Gestionar empleados en Hr',
     },
   ] as const
 
@@ -413,12 +413,12 @@ async function main() {
   )
 
   // ========================================
-  // SEEDS WORKIFY
+  // SEEDS HR
   // ========================================
 
-  console.log('🏢 Creando datos de Workify...')
+  console.log('🏢 Creando datos de Hr...')
 
-  // 1. Crear empresa (contrata Workify y Pos)
+  // 1. Crear empresa (contrata Hr y Pos)
   const company = await prisma.company.create({
     data: {
       name: 'Acme Inc.',
@@ -429,7 +429,7 @@ async function main() {
   // Módulos contratados por Acme
   await prisma.companyModule.createMany({
     data: [
-      { companyId: company.id, moduleId: moduleWorkify.id, enabled: true },
+      { companyId: company.id, moduleId: moduleHr.id, enabled: true },
       { companyId: company.id, moduleId: modulePos.id, enabled: true },
       { companyId: company.id, moduleId: moduleTechservices.id, enabled: true },
       { companyId: company.id, moduleId: moduleBaro.id, enabled: true },
@@ -489,12 +489,12 @@ async function main() {
   await prisma.companyMemberModule.createMany({
     data: [
       // Owner: todos los módulos activos de la empresa
-      { companyMemberId: acmeOwnerMember.id, moduleId: moduleWorkify.id, enabled: true },
+      { companyMemberId: acmeOwnerMember.id, moduleId: moduleHr.id, enabled: true },
       { companyMemberId: acmeOwnerMember.id, moduleId: modulePos.id, enabled: true },
       { companyMemberId: acmeOwnerMember.id, moduleId: moduleTechservices.id, enabled: true },
       { companyMemberId: acmeOwnerMember.id, moduleId: moduleBaro.id, enabled: true },
-      // Usuario estándar: Workify + Pos por defecto
-      { companyMemberId: acmeUserMember.id, moduleId: moduleWorkify.id, enabled: true },
+      // Usuario estándar: Hr + Pos por defecto
+      { companyMemberId: acmeUserMember.id, moduleId: moduleHr.id, enabled: true },
       { companyMemberId: acmeUserMember.id, moduleId: modulePos.id, enabled: true },
     ],
   })
@@ -591,10 +591,10 @@ async function main() {
       'hub.roles.manage',
       'hub.permissions.read',
       'hub.role.assign',
-      'workify.access',
-      'workify.users.read',
-      'workify.users.manage',
-      'workify.employees.manage',
+      'hr.access',
+      'hr.users.read',
+      'hr.users.manage',
+      'hr.employees.manage',
       'pos.access',
       'pos.users.read',
       'pos.users.manage',
@@ -626,10 +626,10 @@ async function main() {
       'hub.user.modules.manage',
       'hub.roles.read',
       'hub.permissions.read',
-      'workify.access',
-      'workify.users.read',
-      'workify.users.manage',
-      'workify.employees.manage',
+      'hr.access',
+      'hr.users.read',
+      'hr.users.manage',
+      'hr.employees.manage',
       'pos.access',
       'pos.users.read',
       'pos.users.manage',
@@ -655,10 +655,10 @@ async function main() {
       'hub.members.update',
       'hub.user.modules.read',
       'hub.user.modules.manage',
-      'workify.access',
-      'workify.users.read',
-      'workify.users.manage',
-      'workify.employees.manage',
+      'hr.access',
+      'hr.users.read',
+      'hr.users.manage',
+      'hr.employees.manage',
     ].map((name) => ({
       roleId: hrRole.id,
       permissionId: permissionsByName[name]!.id,
@@ -666,8 +666,8 @@ async function main() {
     // Manager: acceso al módulo y lectura de miembros
     ...[
       'hub.members.read',
-      'workify.access',
-      'workify.users.read',
+      'hr.access',
+      'hr.users.read',
       'pos.access',
       'pos.users.read',
       'pos.sales.read',
@@ -678,7 +678,7 @@ async function main() {
     })),
     // BasicUser: solo acceso a módulos
     ...[
-      'workify.access',
+      'hr.access',
       'pos.access',
       'techservices.access',
       'baro.access',
@@ -753,7 +753,7 @@ async function main() {
   })
   console.log('✅ Roles y permisos de Acme creados y asignados (Owner/Gerente para acmeGerente, BasicUser/Cajero para acmeVentas)')
 
-  // 3. Workify (opcional: si las tablas no existen se omite)
+  // 3. Hr (opcional: si las tablas no existen se omite)
   let hrDepartment: { id: string; name: string } | null = null
   let itDepartment: { id: string; name: string } | null = null
   try {
@@ -911,7 +911,7 @@ async function main() {
   })
     console.log('✅ Horarios creados')
   } catch {
-    console.log('⚠️ Tablas Workify no encontradas, omitiendo seed Workify')
+    console.log('⚠️ Tablas Hr no encontradas, omitiendo seed Hr')
   }
 
   // ========================================
@@ -1448,7 +1448,7 @@ async function main() {
   // Módulos contratados por Beta
   await prisma.companyModule.createMany({
     data: [
-      { companyId: company2.id, moduleId: moduleWorkify.id, enabled: true },
+      { companyId: company2.id, moduleId: moduleHr.id, enabled: true },
       { companyId: company2.id, moduleId: modulePos.id, enabled: true },
       { companyId: company2.id, moduleId: moduleTechservices.id, enabled: true },
       { companyId: company2.id, moduleId: moduleBaro.id, enabled: true },
@@ -1497,16 +1497,16 @@ async function main() {
   // Módulos activos para cada miembro de Beta
   await prisma.companyMemberModule.createMany({
     data: [
-      { companyMemberId: betaOwnerMember.id, moduleId: moduleWorkify.id, enabled: true },
+      { companyMemberId: betaOwnerMember.id, moduleId: moduleHr.id, enabled: true },
       { companyMemberId: betaOwnerMember.id, moduleId: modulePos.id, enabled: true },
       { companyMemberId: betaOwnerMember.id, moduleId: moduleTechservices.id, enabled: true },
       { companyMemberId: betaOwnerMember.id, moduleId: moduleBaro.id, enabled: true },
-      { companyMemberId: betaUserMember.id, moduleId: moduleWorkify.id, enabled: true },
+      { companyMemberId: betaUserMember.id, moduleId: moduleHr.id, enabled: true },
       { companyMemberId: betaUserMember.id, moduleId: modulePos.id, enabled: true },
     ],
   })
 
-  // Workify: departamentos Beta (opcional: tablas pueden no existir)
+  // Hr: departamentos Beta (opcional: tablas pueden no existir)
   try {
     const salesDepartment = await prisma.department.create({
     data: {
@@ -1665,9 +1665,9 @@ async function main() {
       'hub.roles.manage',
       'hub.permissions.read',
       'hub.role.assign',
-      'workify.access',
-      'workify.users.read',
-      'workify.users.manage',
+      'hr.access',
+      'hr.users.read',
+      'hr.users.manage',
       'pos.access',
       'pos.users.read',
       'pos.users.manage',
@@ -1692,9 +1692,9 @@ async function main() {
       'hub.user.modules.manage',
       'hub.roles.read',
       'hub.permissions.read',
-      'workify.access',
-      'workify.users.read',
-      'workify.users.manage',
+      'hr.access',
+      'hr.users.read',
+      'hr.users.manage',
       'pos.access',
       'pos.users.read',
       'pos.users.manage',
@@ -1713,9 +1713,9 @@ async function main() {
       'hub.members.update',
       'hub.user.modules.read',
       'hub.user.modules.manage',
-      'workify.access',
-      'workify.users.read',
-      'workify.users.manage',
+      'hr.access',
+      'hr.users.read',
+      'hr.users.manage',
     ].map((name) => ({
       roleId: betaHrRole.id,
       permissionId: permissionsByName[name]!.id,
@@ -1723,8 +1723,8 @@ async function main() {
     // Manager
     ...[
       'hub.members.read',
-      'workify.access',
-      'workify.users.read',
+      'hr.access',
+      'hr.users.read',
       'pos.access',
       'pos.users.read',
     ].map((name) => ({
@@ -1733,7 +1733,7 @@ async function main() {
     })),
     // BasicUser
     ...[
-      'workify.access',
+      'hr.access',
       'pos.access',
       'techservices.access',
       'baro.access',
@@ -1820,7 +1820,7 @@ async function main() {
   })
     console.log('✅ Horarios Beta creados')
   } catch {
-    console.log('⚠️ Tablas Workify no encontradas, omitiendo seed Workify Beta')
+    console.log('⚠️ Tablas Hr no encontradas, omitiendo seed Hr Beta')
   }
 
   // Pos: dos locales por empresa - Beta

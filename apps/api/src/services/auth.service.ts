@@ -78,7 +78,7 @@ export type LoginResult =
 export type RegisterResult = {
   user: { id: string; email: string; name: string; role: string; companyId?: string }
   token: string
-  company?: { id: string; name: string; modules: { workify: boolean; pos: boolean; techservices: boolean } }
+  company?: { id: string; name: string; modules: { hr: boolean; pos: boolean; techservices: boolean } }
 }
 
 export type MeResult = {
@@ -92,7 +92,7 @@ export type MeResult = {
   membershipRole?: string
   isSuperuser?: boolean
   twoFactorEnabled?: boolean
-  company?: { id: string; name: string; modules: { workify: boolean; pos: boolean; techservices: boolean } }
+  company?: { id: string; name: string; modules: { hr: boolean; pos: boolean; techservices: boolean } }
 }
 
 export async function login(body: LoginBody): Promise<LoginResult> {
@@ -372,7 +372,7 @@ export async function register(body: RegisterBody): Promise<RegisterResult> {
     firstName = '',
     lastName = '',
     companyName,
-    workifyEnabled = true,
+    hrEnabled = true,
     posEnabled = false,
     technicalServicesEnabled = false,
   } = body
@@ -394,8 +394,8 @@ export async function register(body: RegisterBody): Promise<RegisterResult> {
     }
     await verifyAndConsumeRegistrationTicket(cfg, email, ticket)
 
-    const modulesMap = await findModulesByKeys(['workify', 'pos', 'techservices'])
-    const workifyMod = modulesMap.get('workify')
+    const modulesMap = await findModulesByKeys(['hr', 'pos', 'techservices'])
+    const hrMod = modulesMap.get('hr')
     const posMod = modulesMap.get('pos')
     const techservicesMod = modulesMap.get('techservices')
 
@@ -426,7 +426,7 @@ export async function register(body: RegisterBody): Promise<RegisterResult> {
       })
 
       const moduleIds: string[] = []
-      if (workifyEnabled && workifyMod) moduleIds.push(workifyMod.id)
+      if (hrEnabled && hrMod) moduleIds.push(hrMod.id)
       if (posEnabled && posMod) moduleIds.push(posMod.id)
       if (technicalServicesEnabled && techservicesMod) moduleIds.push(techservicesMod.id)
       for (const modId of moduleIds) {
@@ -469,7 +469,7 @@ export async function register(body: RegisterBody): Promise<RegisterResult> {
       company: {
         id: company.id,
         name: company.name,
-        modules: { workify: workifyEnabled, pos: posEnabled, techservices: technicalServicesEnabled },
+        modules: { hr: hrEnabled, pos: posEnabled, techservices: technicalServicesEnabled },
       },
     }
   }
@@ -532,7 +532,7 @@ export async function me(decoded: TokenPayload): Promise<MeResult> {
     }
   }
 
-  let company: { id: string; name: string; modules: { workify: boolean; pos: boolean; techservices: boolean } } | null = null
+  let company: { id: string; name: string; modules: { hr: boolean; pos: boolean; techservices: boolean } } | null = null
   let responseCompanyId: string | undefined = decoded.companyId
 
   if (decoded.companyId) {
@@ -596,7 +596,7 @@ export type SetContextResult = {
   token: string
   companyId: string
   membershipRole: string | null
-  company: { id: string; name: string; modules: { workify: boolean; pos: boolean; techservices: boolean } } | null
+  company: { id: string; name: string; modules: { hr: boolean; pos: boolean; techservices: boolean } } | null
 }
 
 export async function setContext(

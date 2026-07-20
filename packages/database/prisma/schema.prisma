@@ -86,7 +86,7 @@ enum NotificationStatus {
 }
 
 // ========================================
-// ENUMS WORKIFY
+// ENUMS HR
 // ========================================
 
 enum SalaryType {
@@ -250,7 +250,7 @@ model User {
   // Pertenencia a empresas (owner/admin/user por empresa)
   companyMemberships CompanyMember[]
 
-  // Relaciones Workify
+  // Relaciones Hr
   userRoles         UserRoleAssignment[]
   userPermissions   UserPermission[]
   employees         Employee[]
@@ -318,7 +318,7 @@ model Session {
 }
 
 // ========================================
-// MODELOS WORKIFY
+// MODELOS HR
 // ========================================
 
 model Company {
@@ -428,7 +428,7 @@ model CompanyMember {
   @@map("company_members")
 }
 
-/// Catálogo global de módulos (Workify, Pos, Techservices, etc.)
+/// Catálogo global de módulos (Hr, Pos, Techservices, etc.)
 model Module {
   id          String   @id @default(uuid())
   key         String   @unique
@@ -919,7 +919,7 @@ model Translation {
   key         String
   language    String
   value       String
-  module      String?  // "workify", "pos", "shared"
+  module      String?  // "hr", "pos", "shared"
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

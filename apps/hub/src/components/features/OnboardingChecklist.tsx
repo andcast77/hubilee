@@ -41,7 +41,7 @@ export function OnboardingChecklist({ company, stats, posUrl }: Props) {
   const isYoungCompany = Date.now() - created < 14 * MS_PER_DAY;
   const profileOk = Boolean(company.taxId?.trim()) && Boolean(company.name?.trim());
   const modulesOk =
-    isModuleEnabled(company, "workify") ||
+    isModuleEnabled(company, "hr") ||
     isModuleEnabled(company, "pos") ||
     isModuleEnabled(company, "techservices");
   const teamOk = (stats?.totalMembers ?? 0) >= 2;
@@ -62,7 +62,7 @@ export function OnboardingChecklist({ company, stats, posUrl }: Props) {
       id: "modules",
       done: modulesOk,
       label: "Activar módulos",
-      hint: "Habilita al menos un módulo (Workify, Pos o Tech Services).",
+      hint: "Habilita al menos un módulo (Hr, Pos o Tech Services).",
       to: "/dashboard/settings",
     },
     {

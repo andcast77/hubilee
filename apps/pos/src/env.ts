@@ -31,7 +31,7 @@ export const env = {
   get vapidPublicKey() {
     return readEnv('VITE_VAPID_PUBLIC_KEY')
   },
-  get workifyUrl() {
-    return readEnv('VITE_WORKIFY_URL')
+  get hrUrl() {
+    return readEnv('VITE_HR_URL')
   },
 } as const

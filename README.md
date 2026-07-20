@@ -11,7 +11,7 @@ hubilee/
 ├── apps/
 │   ├── hub/              # @hubilee/hub — portal Next.js (login, dashboard, módulos)
 │   ├── pos/         # @hubilee/pos — POS, inventario, reportes (Next.js)
-│   ├── workify/          # @hubilee/workify — RRHH, fichajes, reportes (Next.js)
+│   ├── hr/          # @hubilee/hr — RRHH, fichajes, reportes (Next.js)
 │   └── techservices/     # @hubilee/techservices — órdenes, activos, agenda (Next.js)
 ├── packages/
 │   ├── api/                  # API REST Fastify compartida
@@ -28,26 +28,26 @@ hubilee/
 
 | App | Puerto | Descripción |
 |-----|--------|-------------|
-| **hub** | 3001 | Portal multi-empresa: auth, dashboard, enlaces a workify/pos/techservices (`Next.js`) |
+| **hub** | 3001 | Portal multi-empresa: auth, dashboard, enlaces a hr/pos/techservices (`Next.js`) |
 | **pos** | 3002 | POS, inventario, reportes, admin del módulo (`Next.js`) |
-| **workify** | 3003 | Empleados, turnos, fichajes, roles; API `/api/workify` (`Next.js` + Turbo) |
+| **hr** | 3003 | Empleados, turnos, fichajes, roles; API `/api/hr` (`Next.js` + Turbo) |
 | **techservices** | 3004 | Órdenes de trabajo, activos, visitas; API `/api/techservices` (`Next.js`) |
 
 ### Paquetes
 
 | Paquete | Descripción |
 |---------|-------------|
-| **@hubilee/api** | API Fastify: JWT, CORS, rate limit, Swagger (`/api/docs`); rutas por dominio (auth, usuarios, empresas, miembros, **pos**, **workify**, **techservices**); versión URL `/api/v1/*` → misma API que `/api/*` |
+| **@hubilee/api** | API Fastify: JWT, CORS, rate limit, Swagger (`/api/docs`); rutas por dominio (auth, usuarios, empresas, miembros, **pos**, **hr**, **techservices**); versión URL `/api/v1/*` → misma API que `/api/*` |
 | **@hubilee/contracts** | Tipos TS compartidos: respuestas auth (`LoginResponse`, `MeResponse`, …), `CompanyRow` / `CompanyModules`, envoltorio **`ApiResponse<T>`**; API + apps frontend |
-| **@hubilee/ui** | (`packages/component-library`) Componentes React (Radix), estilos SCSS → CSS; consumo en **hub**, **pos**, **workify**, **techservices** vía `workspace:*` |
-| **@hubilee/database** | Schema Prisma (workify, pos, techservices, hub), migraciones, `prisma` exportado; adaptador **pg** en local, **Neon** en cloud |
-| **@hubilee/shared** | (`packages/shared`) Cookie JWT + `ApiClient` / `createPrefixedApi` para **hub**, **pos**, **workify**, **techservices** (TS fuente, sin build) |
+| **@hubilee/ui** | (`packages/component-library`) Componentes React (Radix), estilos SCSS → CSS; consumo en **hub**, **pos**, **hr**, **techservices** vía `workspace:*` |
+| **@hubilee/database** | Schema Prisma (hr, pos, techservices, hub), migraciones, `prisma` exportado; adaptador **pg** en local, **Neon** en cloud |
+| **@hubilee/shared** | (`packages/shared`) Cookie JWT + `ApiClient` / `createPrefixedApi` para **hub**, **pos**, **hr**, **techservices** (TS fuente, sin build) |
 
 ### Módulos de negocio
 
 Las empresas pueden activar estos módulos:
 
-- **workify** — RRHH, empleados, fichajes y reportes (app `apps/workify`)
+- **hr** — RRHH, empleados, fichajes y reportes (app `apps/hr`)
 - **pos** — Ventas, productos, clientes, proveedores, reportes
 - **techservices** — Servicios técnicos y mantenimiento
 
@@ -63,7 +63,7 @@ Las empresas pueden activar estos módulos:
 
 ## Despliegue (producción / preview)
 
-Historia única objetivo: **API + frontends en [Vercel](https://vercel.com/)**, **PostgreSQL en [Neon](https://neon.tech/)**. Cada app (`packages/api`, `apps/hub`, `apps/pos`, `apps/workify`, `apps/techservices`) tiene su proyecto Vercel con `vercel.json`; el build de la API desde el monorepo usa **`pnpm run api:bundle`** (ver [`packages/api/README.md`](./packages/api/README.md)). **GitHub Actions** puede usar Postgres en contenedor para CI; no es el hosting de producción.
+Historia única objetivo: **API + frontends en [Vercel](https://vercel.com/)**, **PostgreSQL en [Neon](https://neon.tech/)**. Cada app (`packages/api`, `apps/hub`, `apps/pos`, `apps/hr`, `apps/techservices`) tiene su proyecto Vercel con `vercel.json`; el build de la API desde el monorepo usa **`pnpm run api:bundle`** (ver [`packages/api/README.md`](./packages/api/README.md)). **GitHub Actions** puede usar Postgres en contenedor para CI; no es el hosting de producción.
 
 Variables críticas en Vercel (Production + Preview): en la API, `DATABASE_URL` (URL **pooled** de Neon para runtime serverless), `JWT_SECRET`, `FIELD_ENCRYPTION_KEY`, `CORS_ORIGIN`; en cada frontend, las `NEXT_PUBLIC_*` alineadas con las URLs públicas del ecosistema. Migraciones contra Neon: `pnpm migrate:deploy` desde la raíz con `DATABASE_URL` apuntando a Neon (flujo en [`packages/database/README.md`](./packages/database/README.md)).
 
@@ -121,7 +121,7 @@ pnpm dev
 - **Swagger:** http://localhost:3000/api/docs  
 - **Hub:** http://localhost:3001  
 - **Pos:** http://localhost:3002  
-- **Workify:** http://localhost:3003  
+- **Hr:** http://localhost:3003  
 - **Techservices:** http://localhost:3004  
 
 ### Levantar solo Hub + API + BD local
@@ -171,8 +171,8 @@ pnpm --filter @hubilee/hub dev
 # Pos (puerto 3002)
 pnpm --filter @hubilee/pos dev
 
-# Workify (puerto 3003)
-pnpm --filter @hubilee/workify dev
+# Hr (puerto 3003)
+pnpm --filter @hubilee/hr dev
 
 # Techservices
 pnpm --filter @hubilee/techservices dev
@@ -188,7 +188,7 @@ Crear `.env` en `packages/api/` o en la raíz:
 |----------|-------------|-------------|
 | `PORT` | Puerto del servidor API | 3000 |
 | `DATABASE_URL` | URL de conexión PostgreSQL | (requerido) |
-| `CORS_ORIGIN` | Orígenes CORS separados por coma | hub **3001**, pos **3002**, workify **3003**, techservices **3004** |
+| `CORS_ORIGIN` | Orígenes CORS separados por coma | hub **3001**, pos **3002**, hr **3003**, techservices **3004** |
 | `JWT_SECRET` | Clave para firmar tokens | (requerido en prod) |
 | `JWT_ACCESS_EXPIRES_IN` | TTL del access JWT (p. ej. `15m`) | `15m` |
 | `NODE_ENV` | Entorno | development |
@@ -198,7 +198,7 @@ Crear `.env` en `packages/api/` o en la raíz:
 Fuente de verdad para orígenes de desarrollo (para que los frontends puedan hacer requests autenticados con cookie):
 - `http://localhost:3001` (hub)
 - `http://localhost:3002` (pos)
-- `http://localhost:3003` (workify)
+- `http://localhost:3003` (hr)
 - `http://localhost:3004` (techservices)
 
 Asegúrate de que `packages/api/.env` tenga `CORS_ORIGIN` con esa lista (en el ejemplo y en el fallback del código).
@@ -210,7 +210,7 @@ Asegúrate de que `packages/api/.env` tenga `CORS_ORIGIN` con esa lista (en el e
 - Añadir/actualizar el `env.example` de la app con URLs públicas vía **`NEXT_PUBLIC_*`** (las cuatro apps son **Next.js**).
 - Verificar si el módulo requiere headers adicionales (ejemplo: `X-Store-Id` en rutas de Pos).
 
-Las apps **hub**, **pos**, **workify** y **techservices** usan `NEXT_PUBLIC_API_URL` cuando hace falta URL absoluta de la API; en Hub además `NEXT_PUBLIC_HUB_URL`, `NEXT_PUBLIC_POS_URL`, `NEXT_PUBLIC_WORKIFY_URL`, `NEXT_PUBLIC_TECHSERVICES_URL` para enlaces del ecosistema. Ver [Hub](./apps/hub/README.md) y [Pos](./apps/pos/README.md).
+Las apps **hub**, **pos**, **hr** y **techservices** usan `NEXT_PUBLIC_API_URL` cuando hace falta URL absoluta de la API; en Hub además `NEXT_PUBLIC_HUB_URL`, `NEXT_PUBLIC_POS_URL`, `NEXT_PUBLIC_HR_URL`, `NEXT_PUBLIC_TECHSERVICES_URL` para enlaces del ecosistema. Ver [Hub](./apps/hub/README.md) y [Pos](./apps/pos/README.md).
 
 ---
 
@@ -218,7 +218,7 @@ Las apps **hub**, **pos**, **workify** y **techservices** usan `NEXT_PUBLIC_API_
 
 - **Monorepo:** pnpm workspaces, Turborepo. Versiones compartidas: bloque `catalog:` en [`pnpm-workspace.yaml`](./pnpm-workspace.yaml) y referencias `"paquete": "catalog:"` en cada `package.json` que consuma esa versión. Alineación semver entre workspaces: [PLAN-32](docs/plans/%5Bcompleted%5D%20PLAN-32-monorepo-dependency-alignment.md). Gobierno del catálogo pnpm: [PLAN-34](docs/plans/%5Bcompleted%5D%20PLAN-34-pnpm-catalog.md); procedimiento corto para añadir entradas: [SYNC.md — pnpm workspace catalog](./docs/plans/SYNC.md#pnpm-workspace-catalog).
 - **API:** Fastify 5, Zod, JWT, Swagger
-- **Frontend:** **hub**, **pos**, **workify** y **techservices** con Next.js (App Router donde aplica); Tailwind; **@hubilee/ui**
+- **Frontend:** **hub**, **pos**, **hr** y **techservices** con Next.js (App Router donde aplica); Tailwind; **@hubilee/ui**
 - **BD:** Prisma (vía `@hubilee/database`)
 - **Contratos:** `@hubilee/contracts` (tipos API ↔ frontend)
 - **Front compartido:** `@hubilee/shared` (fetch + cookie token)
@@ -236,5 +236,5 @@ Las apps **hub**, **pos**, **workify** y **techservices** usan `NEXT_PUBLIC_API_
 - [Shared - README](./packages/shared/README.md) — `@hubilee/shared`: auth por cookie, cliente API
 - [Hub - README](./apps/hub/README.md) — `@hubilee/hub`: dashboard, variables `NEXT_PUBLIC_*`, rewrites `/v1`
 - [Pos - README](./apps/pos/README.md) — POS, API `/v1/pos`, puerto 3002, `NEXT_PUBLIC_*`
-- [Workify - README](./apps/workify/README.md) — RRHH, `/api/workify`, puerto 3003
+- [Hr - README](./apps/hr/README.md) — RRHH, `/api/hr`, puerto 3003
 - [Techservices - README](./apps/techservices/README.md) — Next.js, `/api/techservices`, puerto 3004

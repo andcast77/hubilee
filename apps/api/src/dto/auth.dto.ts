@@ -34,7 +34,7 @@ export const registerBodySchema = z
     lastName: z.string().optional(),
     companyName: z.string().optional(),
     registrationTicket: z.string().min(1).optional(),
-    workifyEnabled: z.boolean().optional(),
+    hrEnabled: z.boolean().optional(),
     posEnabled: z.boolean().optional(),
     technicalServicesEnabled: z.boolean().optional(),
   })
@@ -77,7 +77,7 @@ export const registerLinkSendBodySchema = z.object({
   firstName: z.string().optional(),
   lastName: z.string().optional(),
   companyName: z.string().min(1, 'El nombre de la empresa es requerido'),
-  workifyEnabled: z.boolean().optional(),
+  hrEnabled: z.boolean().optional(),
   posEnabled: z.boolean().optional(),
   technicalServicesEnabled: z.boolean().optional(),
 })
@@ -174,5 +174,5 @@ export type AuthUserResponse = {
 export type AuthCompanyResponse = {
   id: string
   name: string
-  modules: { workify: boolean; pos: boolean; techservices: boolean }
+  modules: { hr: boolean; pos: boolean; techservices: boolean }
 }

@@ -16,7 +16,7 @@ export function LandingFooter({ urls, moduleName, moduleDescription }: Props) {
           <div className="max-w-xs">
             <span className="text-lg font-black text-white tracking-tight block mb-3">{moduleName}</span>
             <p className="text-sm text-white/30 leading-relaxed">{moduleDescription}</p>
-            <p className="text-xs text-white/20 mt-3">Conectado con el ecosistema Hubilee (Hub, Workify, Tech Services).</p>
+            <p className="text-xs text-white/20 mt-3">Conectado con el ecosistema Hubilee (Hub, Hr, Tech Services).</p>
           </div>
           <div className="flex gap-16">
             <div>
@@ -29,7 +29,7 @@ export function LandingFooter({ urls, moduleName, moduleDescription }: Props) {
                   <a href={urls.pos} className="text-white/40 hover:text-white transition-colors duration-150" target="_blank" rel="noopener noreferrer">POS</a>
                 </li>
                 <li>
-                  <a href={urls.workify} className="text-white/40 hover:text-white transition-colors duration-150" target="_blank" rel="noopener noreferrer">Workify</a>
+                  <a href={urls.hr} className="text-white/40 hover:text-white transition-colors duration-150" target="_blank" rel="noopener noreferrer">Hr</a>
                 </li>
                 <li>
                   <a href={urls.techservices} className="text-white/40 hover:text-white transition-colors duration-150" target="_blank" rel="noopener noreferrer">Servicios Técnicos</a>

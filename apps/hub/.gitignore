@@ -57,7 +57,7 @@ prisma/migrations/
 services/
 
 # Módulos frontend - Proyectos separados (repositorios independientes)
-# Los módulos frontend (ShopFlow, Workify) son repositorios Git independientes
+# Los módulos frontend (POS, HR) son repositorios Git independientes
 # Se clonan localmente para desarrollo con scripts/setup-modules-dev.sh
 # Se despliegan por separado en Vercel
 # Son solo clones locales para tener contexto, NO deben estar en el build

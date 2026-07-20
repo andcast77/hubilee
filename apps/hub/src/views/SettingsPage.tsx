@@ -158,7 +158,7 @@ export function SettingsPage() {
 
     try {
       const updateData: UpdateCompanyInput = {};
-      if (moduleName === "workify") updateData.workifyEnabled = enabled;
+      if (moduleName === "hr") updateData.hrEnabled = enabled;
       else if (moduleName === "pos") updateData.posEnabled = enabled;
       else if (moduleName === "techServices") updateData.technicalServicesEnabled = enabled;
 
@@ -286,15 +286,15 @@ export function SettingsPage() {
               )}
 
               <div className="space-y-4">
-                {/* Workify Module */}
+                {/* Hr Module */}
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
-                    <h4 className="font-medium">Workify</h4>
+                    <h4 className="font-medium">Hr</h4>
                     <p className="text-sm text-slate-600">Gestión de recursos humanos y nómina</p>
                   </div>
                   <Switch
-                    checked={company.modules?.workify ?? company.workifyEnabled ?? false}
-                    onCheckedChange={(checked: boolean) => handleModulesChange("workify", checked)}
+                    checked={company.modules?.hr ?? company.hrEnabled ?? false}
+                    onCheckedChange={(checked: boolean) => handleModulesChange("hr", checked)}
                     disabled={!isOwner}
                   />
                 </div>

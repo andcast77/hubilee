@@ -174,7 +174,7 @@ export function LoginPage() {
       title="Gestiona tus módulos"
       description={
         <>
-          Accede a todas tus herramientas de negocio en un solo lugar. Workify,
+          Accede a todas tus herramientas de negocio en un solo lugar. Hr,
           Pos, Technical Services y más.
         </>
       }

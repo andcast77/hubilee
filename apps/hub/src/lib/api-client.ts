@@ -40,7 +40,7 @@ const clientGuestProbe = new ApiClient(API_URL, { refreshOn401: false });
 export type CompanyUpdateResult = {
   id: string;
   name: string;
-  workifyEnabled: boolean;
+  hrEnabled: boolean;
   posEnabled: boolean;
   technicalServicesEnabled: boolean;
   updatedAt: string;
@@ -96,7 +96,7 @@ export const authApi = {
     firstName?: string;
     lastName?: string;
     companyName: string;
-    workifyEnabled?: boolean;
+    hrEnabled?: boolean;
     posEnabled?: boolean;
     technicalServicesEnabled?: boolean;
   }) =>
@@ -111,7 +111,7 @@ export const authApi = {
     firstName: string;
     lastName: string;
     companyName: string;
-    workifyEnabled?: boolean;
+    hrEnabled?: boolean;
     posEnabled?: boolean;
     technicalServicesEnabled?: boolean;
     registrationTicket?: string;

@@ -10,8 +10,8 @@
     reverse_proxy baro:3006
 }
 
-{$WORKIFY_DOMAIN:rrhh.baroconstruccionessrl.com.ar} {
-    reverse_proxy workify:3003
+{$HR_DOMAIN:rrhh.baroconstruccionessrl.com.ar} {
+    reverse_proxy hr:3003
 }
 
 {$POS_DOMAIN:pos.baroconstruccionessrl.com.ar} {

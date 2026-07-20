@@ -32,7 +32,7 @@ export default defineConfig(({ mode }) => {
     NEXT_PUBLIC_TECHSERVICES_URL: 'VITE_TECHSERVICES_URL',
     NEXT_PUBLIC_TURNSTILE_SITE_KEY: 'VITE_TURNSTILE_SITE_KEY',
     NEXT_PUBLIC_VAPID_PUBLIC_KEY: 'VITE_VAPID_PUBLIC_KEY',
-    NEXT_PUBLIC_WORKIFY_URL: 'VITE_WORKIFY_URL',
+    NEXT_PUBLIC_HR_URL: 'VITE_HR_URL',
   }
   const define = Object.fromEntries(
     Object.entries(nextPublicToVite).map(([nextKey, viteKey]) => {

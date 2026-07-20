@@ -25,11 +25,11 @@ export function LandingPage() {
         accentBg: "bg-violet-500/10",
       },
       {
-        title: "Workify",
+        title: "Hr",
         description: "Gestión completa de recursos humanos, turnos, asistencia y nómina.",
         icon: <Users className="w-6 h-6" />,
         features: ["Gestión de turnos", "Control de asistencia", "Nómina integrada"],
-        href: urls.workify,
+        href: urls.hr,
         accentColor: "text-sky-400",
         accentBg: "bg-sky-500/10",
       },

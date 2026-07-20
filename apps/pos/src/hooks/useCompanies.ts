@@ -6,7 +6,7 @@ import { authApi } from '@/lib/api/client'
 export type CompanyOption = {
   id: string
   name: string
-  workifyEnabled: boolean
+  hrEnabled: boolean
   posEnabled: boolean
 }
 

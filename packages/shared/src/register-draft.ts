@@ -14,7 +14,7 @@ export type RegisterDraftV1 = {
   termsAccepted: boolean
   /** Hub exige ambos checkboxes; otras apps pueden omitir y se asume true al registrar. */
   privacyAccepted?: boolean
-  workifyEnabled?: boolean
+  hrEnabled?: boolean
   posEnabled?: boolean
   technicalServicesEnabled?: boolean
 }
@@ -46,7 +46,7 @@ export function parseRegisterDraftV1(raw: string | null): RegisterDraftV1 | null
       companyName: d.companyName.trim(),
       termsAccepted: true,
       privacyAccepted: d.privacyAccepted,
-      workifyEnabled: d.workifyEnabled,
+      hrEnabled: d.hrEnabled,
       posEnabled: d.posEnabled,
       technicalServicesEnabled: d.technicalServicesEnabled,
     }

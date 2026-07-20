@@ -39,7 +39,7 @@ export function useUsers(query?: UserQueryInput) {
   })
 }
 
-/** Usuarios de la empresa (misma lista en Workify y Pos). Usar cuando tengas companyId. */
+/** Usuarios de la empresa (misma lista en Hr y Pos). Usar cuando tengas companyId. */
 export function useCompanyMembers(companyId: string | null | undefined) {
   return useQuery({
     queryKey: ['companyMembers', companyId],

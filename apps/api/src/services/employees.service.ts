@@ -203,7 +203,7 @@ export async function createEmployee(
     },
   })
 
-  sseManager.emit(ctx.companyId, 'workify:dashboard:invalidate', { reason: 'employee-created' })
+  sseManager.emit(ctx.companyId, 'hr:dashboard:invalidate', { reason: 'employee-created' })
   return mapEmployee(e, key)
 }
 
@@ -252,6 +252,6 @@ export async function updateEmployee(
     data,
   })
 
-  sseManager.emit(ctx.companyId, 'workify:dashboard:invalidate', { reason: 'employee-updated' })
+  sseManager.emit(ctx.companyId, 'hr:dashboard:invalidate', { reason: 'employee-updated' })
   return mapEmployee(e, key)
 }

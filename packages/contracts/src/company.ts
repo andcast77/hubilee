@@ -1,5 +1,5 @@
 export type CompanyModules = {
-  workify: boolean
+  hr: boolean
   pos: boolean
   techservices: boolean
 }

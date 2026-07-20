@@ -30,7 +30,7 @@ export async function getUserCompanies(
     return companies.map((c: { id: string; name: string }) => ({
       id: c.id,
       name: c.name,
-      modules: modulesMap.get(c.id) ?? { workify: false, pos: false, techservices: false, baro: false },
+      modules: modulesMap.get(c.id) ?? { hr: false, pos: false, techservices: false, baro: false },
       membershipRole: null,
     }))
   }
@@ -48,7 +48,7 @@ export async function getUserCompanies(
     return activeMembers.map((m: MemberWithCompany) => ({
       id: m.company.id,
       name: m.company.name,
-      modules: modulesMap.get(m.company.id) ?? { workify: false, pos: false, techservices: false, baro: false },
+      modules: modulesMap.get(m.company.id) ?? { hr: false, pos: false, techservices: false, baro: false },
       membershipRole: m.membershipRole,
     }))
   }
@@ -65,7 +65,7 @@ export async function getUserCompanies(
   return activeRoles.map((r: RoleWithCompany) => ({
     id: r.company.id,
     name: r.company.name,
-    modules: modulesMap.get(r.company.id) ?? { workify: false, pos: false, techservices: false, baro: false },
+    modules: modulesMap.get(r.company.id) ?? { hr: false, pos: false, techservices: false, baro: false },
     membershipRole: null,
   }))
 }
@@ -106,7 +106,7 @@ export type CompanyContext = {
 }
 
 export type PosContext = CompanyContext & { storeId?: string | null }
-export type WorkifyContext = CompanyContext
+export type HrContext = CompanyContext
 export type MembershipRoleName = 'OWNER' | 'ADMIN' | 'USER'
 
 declare module 'fastify' {
@@ -286,9 +286,9 @@ export async function requirePosContext(
 }
 
 /**
- * PreHandler para rutas Workify/TechServices: requireAuth + requireCompanyContext.
+ * PreHandler para rutas Hr/TechServices: requireAuth + requireCompanyContext.
  */
-export async function requireWorkifyContext(
+export async function requireHrContext(
   request: FastifyRequest,
   reply: FastifyReply
 ): Promise<void> {

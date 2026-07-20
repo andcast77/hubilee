@@ -9,7 +9,7 @@ Referencias: [Prisma + Neon](https://www.prisma.io/docs/orm/overview/databases/n
 
 ## Contenido
 
-- **Schema:** `prisma/schema.prisma` (modelos workify, pos, techservices, usuarios, empresas, módulos, etc.)
+- **Schema:** `prisma/schema.prisma` (modelos hr, pos, techservices, usuarios, empresas, módulos, etc.)
 - **Migraciones activas:** `prisma/migrations/` · histórico bajo `prisma/migrations_legacy_20260213/` · SQL manual en `prisma/migrations/manual/`
 - **Cliente:** `prisma generate` escribe en `dist/generated/prisma`; el build copia a `generated/` para que compile `src/client.ts`; runtime resuelve desde `dist/`
 
@@ -113,7 +113,7 @@ Si una credencial de producción fue compartida por chat, ticket, commit o captu
 
 ## Seeds
 
-El seed cubre **workify**, **pos** y **techservices** (registros `Module`, permisos hub, datos de ejemplo por módulo).
+El seed cubre **hr**, **pos** y **techservices** (registros `Module`, permisos hub, datos de ejemplo por módulo).
 
 ### Ejecutar Seeds
 
@@ -126,7 +126,7 @@ pnpm --filter @hubilee/database db:seed
 
 El seed incluye:
 
-**Workify:**
+**Hr:**
 - Empresa de ejemplo (Acme Inc.)
 - Departamentos (Recursos Humanos, Tecnología)
 - Posiciones (Gerente, Desarrollador)

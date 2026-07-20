@@ -6,7 +6,7 @@ export const updateCompanySchema = z.object({
     .min(2, "El nombre debe tener al menos 2 caracteres")
     .max(255, "El nombre no puede exceder 255 caracteres")
     .optional(),
-  workifyEnabled: z.boolean().optional(),
+  hrEnabled: z.boolean().optional(),
   posEnabled: z.boolean().optional(),
   technicalServicesEnabled: z.boolean().optional(),
 });

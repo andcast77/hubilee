@@ -49,7 +49,7 @@ const tsPanel = (
 type CompanyOption = {
   id: string;
   name: string;
-  workifyEnabled?: boolean;
+  hrEnabled?: boolean;
   posEnabled?: boolean;
   technicalServicesEnabled?: boolean;
 };

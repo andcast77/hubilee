@@ -2,7 +2,7 @@ import { apiClient, companiesApi, type ApiResult } from '@/lib/api/client'
 import { ApiError, ErrorCodes } from '@/lib/utils/errors'
 import type { CreateUserInput, UpdateUserInput, UserQueryInput } from '@/lib/validations/user'
 
-/** Company members (usuarios de la empresa) - misma lista en Workify y Pos */
+/** Company members (usuarios de la empresa) - misma lista en Hr y Pos */
 export async function getCompanyMembers(companyId: string) {
   const response = await companiesApi.getMembers<{ success: boolean; data: any[]; error?: string }>(companyId)
   if (!response.success) {

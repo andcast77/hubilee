@@ -21,11 +21,11 @@ export function LandingHome() {
       accentBg: "bg-violet-500/10",
     },
     {
-      title: "Workify",
+      title: "Hr",
       description: "RRHH, turnos y asistencia.",
       icon: <Users className="w-6 h-6" />,
       features: ["Turnos", "Asistencia", "Empleados"],
-      href: urls.workify,
+      href: urls.hr,
       accentColor: "text-sky-400",
       accentBg: "bg-sky-500/10",
     },

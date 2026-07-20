@@ -2,7 +2,7 @@
  * PLAN-25: Dashboard data completeness — integration smoke tests.
  *
  * Verifies authenticated endpoints return 200 with expected envelopes and tenant-scoped
- * counts (Workify employee total matches Prisma for the JWT company).
+ * counts (Hr employee total matches Prisma for the JWT company).
  *
  * Requires DATABASE_URL + seeded DB (see integration/setup.ts).
  */
@@ -104,15 +104,15 @@ describe('PLAN-25: Dashboard data completeness (integration)', () => {
     })
   }, 60_000)
 
-  // --- Workify ---
+  // --- Hr ---
 
-  it('GET /v1/workify/dashboard/stats returns 200 and totalEmployees matches tenant', async () => {
+  it('GET /v1/hr/dashboard/stats returns 200 and totalEmployees matches tenant', async () => {
     const expected = await prisma.employee.count({
       where: { companyId: acmeCompanyId, isDeleted: false },
     })
     const { res, json } = await inject(app, {
       method: 'GET',
-      url: '/v1/workify/dashboard/stats',
+      url: '/v1/hr/dashboard/stats',
       headers: { Authorization: `Bearer ${acmeOwnerToken}` },
     })
     expect(res.statusCode).toBe(200)
@@ -124,10 +124,10 @@ describe('PLAN-25: Dashboard data completeness (integration)', () => {
     expect(Array.isArray(json.departmentAttendance)).toBe(true)
   })
 
-  it('GET /v1/workify/dashboard/alerts returns 200 with alerts array', async () => {
+  it('GET /v1/hr/dashboard/alerts returns 200 with alerts array', async () => {
     const { res, json } = await inject(app, {
       method: 'GET',
-      url: '/v1/workify/dashboard/alerts',
+      url: '/v1/hr/dashboard/alerts',
       headers: { Authorization: `Bearer ${acmeUserToken}` },
     })
     expect(res.statusCode).toBe(200)
@@ -135,10 +135,10 @@ describe('PLAN-25: Dashboard data completeness (integration)', () => {
     expect(Array.isArray(json.alerts)).toBe(true)
   })
 
-  it('GET /v1/workify/attendance/stats returns 200 with KPI fields', async () => {
+  it('GET /v1/hr/attendance/stats returns 200 with KPI fields', async () => {
     const { res, json } = await inject(app, {
       method: 'GET',
-      url: '/v1/workify/attendance/stats',
+      url: '/v1/hr/attendance/stats',
       headers: { Authorization: `Bearer ${acmeOwnerToken}` },
     })
     expect(res.statusCode).toBe(200)
@@ -150,7 +150,7 @@ describe('PLAN-25: Dashboard data completeness (integration)', () => {
     expect(typeof json.isWorkDay).toBe('boolean')
   })
 
-  it('Workify dashboard stats are tenant-isolated (Acme vs Beta)', async () => {
+  it('Hr dashboard stats are tenant-isolated (Acme vs Beta)', async () => {
     const acmeCount = await prisma.employee.count({
       where: { companyId: acmeCompanyId, isDeleted: false },
     })
@@ -160,12 +160,12 @@ describe('PLAN-25: Dashboard data completeness (integration)', () => {
 
     const { json: acmeJson } = await inject(app, {
       method: 'GET',
-      url: '/v1/workify/dashboard/stats',
+      url: '/v1/hr/dashboard/stats',
       headers: { Authorization: `Bearer ${acmeOwnerToken}` },
     })
     const { json: betaJson } = await inject(app, {
       method: 'GET',
-      url: '/v1/workify/dashboard/stats',
+      url: '/v1/hr/dashboard/stats',
       headers: { Authorization: `Bearer ${betaOwnerToken}` },
     })
 
@@ -173,10 +173,10 @@ describe('PLAN-25: Dashboard data completeness (integration)', () => {
     expect(betaJson.totalEmployees).toBe(betaCount)
   })
 
-  it('GET /v1/workify/dashboard/stats without auth returns 401', async () => {
+  it('GET /v1/hr/dashboard/stats without auth returns 401', async () => {
     const { res } = await inject(app, {
       method: 'GET',
-      url: '/v1/workify/dashboard/stats',
+      url: '/v1/hr/dashboard/stats',
     })
     expect(res.statusCode).toBe(401)
   })

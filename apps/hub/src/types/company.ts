@@ -12,8 +12,8 @@ export type Company = {
     lastName: string;
     name: string;
   } | null;
-  /** @deprecated Use modules.workify */
-  workifyEnabled?: boolean;
+  /** @deprecated Use modules.hr */
+  hrEnabled?: boolean;
   /** @deprecated Use modules.pos */
   posEnabled?: boolean;
   /** @deprecated Use modules.techservices */
@@ -71,7 +71,7 @@ export type User = {
 
 export type UpdateCompanyInput = {
   name?: string;
-  workifyEnabled?: boolean;
+  hrEnabled?: boolean;
   posEnabled?: boolean;
   technicalServicesEnabled?: boolean;
   logo?: string;
@@ -82,14 +82,14 @@ export type UpdateCompanyInput = {
 // Re-export for consumers
 export type { CompanyModules } from "@hubilee/contracts";
 
-/** Resolve whether a module is enabled (supports both modules.* and legacy workifyEnabled etc.) */
+/** Resolve whether a module is enabled (supports both modules.* and legacy hrEnabled etc.) */
 export function isModuleEnabled(
   company: Company,
-  module: "workify" | "pos" | "techservices"
+  module: "hr" | "pos" | "techservices"
 ): boolean {
   const m = company.modules;
-  if (m) return module === "workify" ? m.workify : module === "pos" ? m.pos : m.techservices;
-  if (module === "workify") return company.workifyEnabled ?? false;
+  if (m) return module === "hr" ? m.hr : module === "pos" ? m.pos : m.techservices;
+  if (module === "hr") return company.hrEnabled ?? false;
   if (module === "pos") return company.posEnabled ?? false;
   return company.technicalServicesEnabled ?? false;
 }

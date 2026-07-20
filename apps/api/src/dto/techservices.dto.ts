@@ -188,7 +188,7 @@ export type VisitResponse = {
 export type TechServicesMeCompany = {
   id: string
   name: string
-  workifyEnabled: boolean
+  hrEnabled: boolean
   posEnabled: boolean
   technicalServicesEnabled: boolean
 }

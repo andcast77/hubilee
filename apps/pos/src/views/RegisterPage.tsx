@@ -73,7 +73,7 @@ export function RegisterPage() {
         firstName: d.firstName.trim(),
         lastName: d.lastName.trim(),
         companyName: d.companyName.trim(),
-        workifyEnabled: false,
+        hrEnabled: false,
         posEnabled: true,
       });
       setStep("link-pending");
@@ -97,7 +97,7 @@ export function RegisterPage() {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         companyName: form.companyName.trim(),
-        workifyEnabled: false,
+        hrEnabled: false,
         posEnabled: true,
       });
     } catch (err) {

@@ -157,7 +157,7 @@ export type MeUserEntity = {
 export type MeCompanyEntity = {
   id: string
   name: string
-  workifyEnabled: boolean
+  hrEnabled: boolean
   posEnabled: boolean
   technicalServicesEnabled: boolean
 }

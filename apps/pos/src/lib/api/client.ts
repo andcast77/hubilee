@@ -74,7 +74,7 @@ export const accountApi = {
     apiClient.post<{ success: boolean; message?: string }>('/v1/account/accept-privacy', {}),
 }
 
-// Company members API (usuarios de la empresa - misma lista en Workify y Pos)
+// Company members API (usuarios de la empresa - misma lista en Hr y Pos)
 export const companiesApi = {
   getMembers: <T>(companyId: string) => apiClient.get<T>(`/v1/companies/${companyId}/members`),
   createMember: <T>(

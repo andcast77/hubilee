@@ -40,11 +40,11 @@ export function Footer() {
                 </li>
                 <li>
                   <a
-                    href={urls.workify}
+                    href={urls.hr}
                     className="text-white/40 hover:text-white transition-colors duration-150"
                     rel="noopener noreferrer"
                   >
-                    Workify
+                    Hr
                   </a>
                 </li>
                 <li>

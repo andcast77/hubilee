@@ -23,7 +23,7 @@ import { ArrowLeft, Shield, Package, CheckCircle, XCircle } from "lucide-react";
 import type { MemberModuleItem, MemberRoleItem } from "@/lib/api-client";
 
 const MODULE_LABELS: Record<string, string> = {
-  workify: "Workify (RRHH)",
+  hr: "Hr (RRHH)",
   pos: "Pos (Ventas)",
   techservices: "Tech Services",
 };
