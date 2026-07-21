@@ -85,8 +85,6 @@ export const envSchema = {
     REGISTRATION_TICKET_SECRET: { type: 'string', default: '' },
     REGISTRATION_TICKET_EXPIRES_IN: { type: 'string', default: '15m' },
     OTP_CHALLENGE_TTL_SECONDS: { type: 'string', default: '900' },
-    /** true/1/yes reactiva POST /v1/auth/register/otp/* (defecto: desactivado). */
-    REGISTRATION_OTP_ENABLED: { type: 'string', default: 'false' },
     RESEND_API_KEY: { type: 'string', default: '' },
     MAIL_FROM: { type: 'string', default: '' },
     HUB_PUBLIC_URL: { type: 'string', default: 'http://localhost:3001' }

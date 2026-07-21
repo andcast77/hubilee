@@ -137,7 +137,6 @@ JWT_ACCESS_EXPIRES_IN=15m
 
 # Opcional: feature flags
 # ENABLE_API_DOCS=false
-# AUTH_SESSION_INSECURE=0
 
 # Variables de plataforma/test (normalmente las define el entorno)
 # VERCEL=1

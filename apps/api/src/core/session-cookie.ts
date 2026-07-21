@@ -37,7 +37,7 @@ export function attachAuthSessionCookie(reply: FastifyReply, token: string, conf
 
 function cookieSegments(name: string, value: string, maxAge: number, config: AppConfig): string {
   const insecureDev =
-    process.env.AUTH_SESSION_INSECURE === '1' && config.NODE_ENV !== 'production' && !process.env.VERCEL
+    config.NODE_ENV !== 'production' && !process.env.VERCEL
   const segments = [
     `${name}=${encodeURIComponent(value)}`,
     'Path=/',
@@ -52,7 +52,7 @@ function cookieSegments(name: string, value: string, maxAge: number, config: App
 /** Clear httpOnly session on the API host. */
 export function clearAuthSessionCookie(reply: FastifyReply, config: AppConfig): void {
   const insecureDev =
-    process.env.AUTH_SESSION_INSECURE === '1' && config.NODE_ENV !== 'production' && !process.env.VERCEL
+    config.NODE_ENV !== 'production' && !process.env.VERCEL
   const base = ['Path=/', 'HttpOnly', 'Max-Age=0', insecureDev ? 'SameSite=Lax' : 'SameSite=None']
   if (!insecureDev) base.push('Secure')
   appendSetCookie(reply, `${AUTH_SESSION_COOKIE}=; ${base.join('; ')}`)
@@ -65,7 +65,7 @@ export function attachRefreshSessionCookie(reply: FastifyReply, refreshPlain: st
 
 export function clearRefreshSessionCookie(reply: FastifyReply, config: AppConfig): void {
   const insecureDev =
-    process.env.AUTH_SESSION_INSECURE === '1' && config.NODE_ENV !== 'production' && !process.env.VERCEL
+    config.NODE_ENV !== 'production' && !process.env.VERCEL
   const base = ['Path=/', 'HttpOnly', 'Max-Age=0', insecureDev ? 'SameSite=Lax' : 'SameSite=None']
   if (!insecureDev) base.push('Secure')
   appendSetCookie(reply, `${AUTH_REFRESH_COOKIE}=; ${base.join('; ')}`)

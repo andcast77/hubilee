@@ -30,11 +30,6 @@ export type AppConfig = {
   REGISTRATION_TICKET_EXPIRES_IN: string
   /** Redis TTL for OTP challenge (seconds). */
   OTP_CHALLENGE_TTL_SECONDS: number
-  /**
-   * When false (default), `POST /v1/auth/register/otp/*` returns 403 — product uses magic link only.
-   * Set `REGISTRATION_OTP_ENABLED=true` to re-enable pre-registration email codes (PLAN-39).
-   */
-  REGISTRATION_OTP_ENABLED: boolean
   /** Resend API key (https://resend.com/docs/api-reference/emails/send-email). */
   RESEND_API_KEY: string
   /** Remitente verificado en el proveedor, p. ej. `Hubilee <noreply@tudominio.com>`. */
@@ -109,7 +104,6 @@ export function getConfig(): AppConfig {
     REGISTRATION_TICKET_SECRET: (process.env.REGISTRATION_TICKET_SECRET ?? '').trim(),
     REGISTRATION_TICKET_EXPIRES_IN: (process.env.REGISTRATION_TICKET_EXPIRES_IN ?? '').trim() || '15m',
     OTP_CHALLENGE_TTL_SECONDS: parsePositiveInt(process.env.OTP_CHALLENGE_TTL_SECONDS) || 900,
-    REGISTRATION_OTP_ENABLED: parseEnvBool(process.env.REGISTRATION_OTP_ENABLED, false),
     RESEND_API_KEY: (process.env.RESEND_API_KEY ?? '').trim(),
     MAIL_FROM: (process.env.MAIL_FROM ?? '').trim(),
     HUB_PUBLIC_URL: (process.env.HUB_PUBLIC_URL ?? '').trim() || 'http://localhost:3001',

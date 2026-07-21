@@ -1,7 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalEnv": [
-    "AUTH_SESSION_INSECURE",
     "CORS_ORIGIN",
     "CRON_SECRET",
     "DATABASE_URL",
@@ -28,7 +27,6 @@
     "OTP_CHALLENGE_TTL_SECONDS",
     "OTP_PEPPER",
     "REFRESH_TOKEN_EXPIRES_IN",
-    "REGISTRATION_OTP_ENABLED",
     "REGISTRATION_TICKET_EXPIRES_IN",
     "REGISTRATION_TICKET_SECRET",
     "RESEND_API_KEY",
@@ -46,7 +44,7 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**", "generated/**"],
       "env": [
-        "AUTH_SESSION_INSECURE",
+
         "FIELD_ENCRYPTION_KEY",
         "NEXT_PUBLIC_API_URL",
         "NEXT_PUBLIC_HUB_URL",

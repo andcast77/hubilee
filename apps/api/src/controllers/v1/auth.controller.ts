@@ -39,7 +39,7 @@ import { apiOkEnvelope200 } from '../../common/fastify-response-schemas.js'
 import { assertSelfOrSuperuser } from '../../policies/company-authorization.policy.js'
 import { writeAuditLog } from '../../services/audit-log.service.js'
 import { verifyMfaPendingToken, verifyToken } from '../../core/auth.js'
-import { UnauthorizedError, BadRequestError, ForbiddenError } from '../../common/errors/app-error.js'
+import { UnauthorizedError, BadRequestError } from '../../common/errors/app-error.js'
 
 async function attachWebAuthCookies(
   reply: FastifyReply,
@@ -273,12 +273,6 @@ export async function verify(request: FastifyRequest, reply: FastifyReply) {
 }
 
 export async function registerOtpSend(request: FastifyRequest, reply: FastifyReply) {
-  if (!getConfig().REGISTRATION_OTP_ENABLED) {
-    throw new ForbiddenError(
-      'El registro por código de correo no está disponible.',
-      'REGISTRATION_OTP_DISABLED',
-    )
-  }
   const body = validateBody(registerOtpSendBodySchema, request.body)
   await registrationOtpService.sendRegistrationOtp({
     email: body.email,
@@ -289,12 +283,6 @@ export async function registerOtpSend(request: FastifyRequest, reply: FastifyRep
 }
 
 export async function registerOtpVerify(request: FastifyRequest, reply: FastifyReply) {
-  if (!getConfig().REGISTRATION_OTP_ENABLED) {
-    throw new ForbiddenError(
-      'El registro por código de correo no está disponible.',
-      'REGISTRATION_OTP_DISABLED',
-    )
-  }
   const body = validateBody(registerOtpVerifyBodySchema, request.body)
   const { registrationTicket } = await registrationOtpService.verifyRegistrationOtp(body)
   return ok({ registrationTicket })
