@@ -1,5 +1,8 @@
 import { Suspense } from "react";
 import { VerifyEmailPage } from "@/views/VerifyEmailPage";
+import { AUTH_NOINDEX_METADATA } from "@/lib/seo";
+
+export const metadata = AUTH_NOINDEX_METADATA;
 
 function Fallback() {
   return (

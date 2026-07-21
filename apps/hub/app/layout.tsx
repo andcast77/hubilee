@@ -1,15 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import { Providers } from "./providers";
+import {
+  buildHubRootMetadata,
+  resolveHubMetadataBaseUrl,
+} from "@/lib/seo";
 import "../src/globals.css";
 
-export const metadata: Metadata = {
-  title: "Hubilee",
-  description:
-    "Hubilee — plataforma unificada para gestión de módulos",
-  icons: {
-    icon: "/favicon.ico",
-  },
-};
+export const metadata: Metadata = buildHubRootMetadata(
+  resolveHubMetadataBaseUrl(),
+);
 
 export const viewport: Viewport = {
   themeColor: "#6366F1",

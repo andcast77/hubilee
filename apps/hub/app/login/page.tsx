@@ -1,5 +1,8 @@
 import { Suspense } from "react";
 import { LoginPage } from "@/views/LoginPage";
+import { AUTH_NOINDEX_METADATA } from "@/lib/seo";
+
+export const metadata = AUTH_NOINDEX_METADATA;
 
 function LoginFallback() {
   return (

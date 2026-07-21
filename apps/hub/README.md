@@ -13,6 +13,19 @@ Forma parte del **monorepo** (`pnpm` workspaces); no es un repo aislado.
 
 La API es **`@hubilee/api`** (Fastify). En desarrollo, **Next rewrites** envían `/v1/*` → `http://127.0.0.1:3000/v1/*` (misma idea que el proxy de Vite). Si `NEXT_PUBLIC_API_URL` está vacío, el cliente usa la misma origen (`/v1/...`) y evita CORS.
 
+## SEO (landing)
+
+Marketing `/` exposes crawlable metadata via the root layout:
+
+- `metadataBase` from `NEXT_PUBLIC_HUB_URL` (fallback `http://localhost:3001`)
+- Title `{ default, template }`, description, `applicationName`
+- Open Graph + Twitter `summary` cards (absolute URLs under `metadataBase`)
+- `app/robots.ts` — allow `/`; disallow auth routes (`/login`, `/register`, `/forgot-password`, `/reset-password`, `/verify-email`)
+- `app/sitemap.ts` — lists `/` only
+- Auth pages export `robots: { index: false, follow: false }`
+
+**PWA** (dashboard-scoped manifest/SW) is a follow-up slice; this README does not claim Hub PWA installability until that lands.
+
 ## Stack
 
 - **Next.js 16** (App Router), **TanStack Query**, **react-hook-form** + **Zod**
@@ -26,7 +39,8 @@ La API es **`@hubilee/api`** (Fastify). En desarrollo, **Next rewrites** envían
 | `pnpm dev` | Next dev **Turbopack**, puerto **3001** |
 | `pnpm build` | `next build` → `.next/` |
 | `pnpm start` | `next start` en puerto **3001** |
-| `pnpm lint` | `next lint` |
+| `pnpm lint` | `tsc --noEmit` |
+| `pnpm test` | Vitest unit tests (`src/**/*.test.ts`) |
 
 ```bash
 pnpm --filter @hubilee/hub dev
@@ -41,7 +55,7 @@ Crear **`.env`** en `apps/hub/` usando **`.env.example`** como plantilla:
 | Variable | Uso |
 |----------|-----|
 | `NEXT_PUBLIC_API_URL` | Base URL absoluta de la API si no usas el rewrite en dev. En **dev**, vacío o `http://localhost:3000` = mismo origen + rewrite `/v1`. En **build** sin valor, cae a `http://localhost:3000`. |
-| `NEXT_PUBLIC_HUB_URL` | URL pública del Hub (p. ej. dev **`http://localhost:3001`**). Usada en enlaces del ecosistema cuando aplica. |
+| `NEXT_PUBLIC_HUB_URL` | URL pública del Hub (p. ej. dev **`http://localhost:3001`**). Enlaces del ecosistema **y** SEO `metadataBase` / OG / sitemap absolutos. |
 | `NEXT_PUBLIC_POS_URL` | Pos (p. ej. **`http://localhost:3002`**). Landing y dashboard. |
 | `NEXT_PUBLIC_HR_URL` | Hr (**`http://localhost:3003`**). |
 | `NEXT_PUBLIC_TECH_URL` | Tech (p. ej. `http://localhost:3004`). |
