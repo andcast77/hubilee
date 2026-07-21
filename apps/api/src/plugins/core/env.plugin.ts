@@ -1,8 +1,8 @@
-import { existsSync } from 'fs'
 import { join } from 'path'
 import env from '@fastify/env'
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify'
 import type { AppConfig } from '../../core/config.js'
+import { loadApiEnvFiles } from '../../core/load-api-env.js'
 
 /** Sin defaults: cada key debe existir en el entorno (puede ser string vacío si el feature es opcional). */
 export const envSchema = {
@@ -72,8 +72,8 @@ export const envSchema = {
 
 export type EnvPluginOptions = {
   /**
-   * Used to find `../.env` relative to the running entrypoint.
-   * In `src/server.ts`, pass `__dirnameApi`.
+   * API root is `join(entryDir, '..')`. Chooses `.env` vs `.env.local`
+   * from `process.env.NODE_ENV` / `VERCEL`. In `src/server.ts`, pass `__dirnameApi`.
    */
   entryDir: string
 }
@@ -82,13 +82,14 @@ export const envPlugin: FastifyPluginAsync<EnvPluginOptions> = async (
   fastify: FastifyInstance,
   opts
 ) => {
-  const envPath = join(opts.entryDir, '..', '.env')
-  const dotenvConfig =
-    process.env.VITEST !== 'true' && existsSync(envPath) ? { path: envPath } : false
+  // Preload the single env file into process.env; disable @fastify/env's dotenv.
+  if (process.env.VITEST !== 'true') {
+    loadApiEnvFiles(join(opts.entryDir, '..'))
+  }
 
   await fastify.register(env, {
     schema: envSchema,
-    dotenv: dotenvConfig,
+    dotenv: false,
   })
 }
 

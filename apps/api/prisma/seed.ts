@@ -1,12 +1,16 @@
-import 'dotenv/config'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { PrismaClient } from '../src/generated/prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaNeon } from '@prisma/adapter-neon'
 import { neonConfig } from '@neondatabase/serverless'
 import ws from 'ws'
 import bcrypt from 'bcryptjs'
+import { loadApiEnvFiles } from '../src/core/load-api-env.js'
 import { resolveDbUrls } from '../scripts/prisma/db-target-env'
 import { usePgAdapter } from '../src/db/adapter-selection'
+
+loadApiEnvFiles(join(dirname(fileURLToPath(import.meta.url)), '..'))
 
 // Resolve URL from DB_TARGET so commands never cross local/prod boundaries.
 const { databaseUrl: connectionString } = resolveDbUrls()

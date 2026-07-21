@@ -1,7 +1,8 @@
 /**
- * Configuración centralizada desde `process.env` (cargado desde `apps/api/.env` en local).
- * Lista de variables: `.env.example` (referencia). Local: `apps/api/.env`. Vercel: panel.
- * Sin defaults en código: cada valor debe venir del entorno.
+ * Configuración centralizada desde `process.env`.
+ * El archivo se elige con el NODE_ENV/VERCEL del **launcher** (scripts/`package.json`),
+ * no con el NODE_ENV escrito dentro del .env. Dev → `.env.local`; prod → `.env`.
+ * Keys ya seteadas en el proceso no se pisan. Lista: `.env.example`.
  */
 export type AppConfig = {
   PORT: string

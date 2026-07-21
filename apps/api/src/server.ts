@@ -1,15 +1,5 @@
-import { existsSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
-import { config as loadDotenv } from 'dotenv'
-
-// Cargar .env de la API antes de cualquier import que use Prisma (p. ej. controllers)
-const __dirnameApi = dirname(fileURLToPath(import.meta.url))
-const envPath = join(__dirnameApi, '..', '.env')
-if (!process.env.VITEST && existsSync(envPath)) {
-  loadDotenv({ path: envPath })
-}
-
 import Fastify from 'fastify'
 import { corsPlugin } from './plugins/core/cors.plugin.js'
 import { envPlugin, getValidatedConfig } from './plugins/core/env.plugin.js'
@@ -21,7 +11,14 @@ import { swaggerPlugin } from './plugins/core/swagger.plugin.js'
 import { healthPlugin } from './plugins/health/health.plugin.js'
 import { registerV1 } from './controllers/v1/index.js'
 import { getConfig, parseTrustProxy, type AppConfig } from './core/config.js'
+import { loadApiEnvFiles } from './core/load-api-env.js'
 import { startJobRunner, stopJobRunner } from './jobs/runner.js'
+
+// File chosen via process.env (NODE_ENV / VERCEL): prod → `.env`, else → `.env.local`.
+const __dirnameApi = dirname(fileURLToPath(import.meta.url))
+if (!process.env.VITEST) {
+  loadApiEnvFiles(join(__dirnameApi, '..'))
+}
 
 const __dirname = __dirnameApi
 
