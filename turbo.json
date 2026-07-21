@@ -42,7 +42,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**", "generated/**"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**", "src/generated/**"],
       "env": [
 
         "FIELD_ENCRYPTION_KEY",
