@@ -24,7 +24,16 @@ Marketing `/` exposes crawlable metadata via the root layout:
 - `app/sitemap.ts` — lists `/` only
 - Auth pages export `robots: { index: false, follow: false }`
 
-**PWA** (dashboard-scoped manifest/SW) is a follow-up slice; this README does not claim Hub PWA installability until that lands.
+## PWA (dashboard webapp)
+
+Installability is **dashboard-scoped** so the marketing landing stays SEO-only:
+
+- `app/manifest.ts` — `start_url` and `scope` are `/dashboard/`; icons 192×192 and 512×512 under `public/icons/`
+- `public/sw.js` — install/activate only (`skipWaiting` + `clients.claim`); **no** offline fetch cache and **no** Hub Web Push/VAPID
+- Registration runs only from `app/dashboard/layout.tsx` via `useRegisterHubServiceWorker` with hardcoded `{ scope: '/dashboard/' }`
+- CSP includes `worker-src 'self'` so the SW can register
+
+**Follow-up (out of scope here):** Pos still registers its SW with `scope: '/'`; that should be narrowed separately and is not required for Hub acceptance.
 
 ## Stack
 
