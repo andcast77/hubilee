@@ -31,8 +31,9 @@ describe('registration-ticket.service (PLAN-39)', () => {
   beforeEach(() => {
     redisBacking.map.clear()
     process.env.JWT_SECRET = 'ticket-test-secret-key-min-length-ok'
-    process.env.REGISTRATION_TICKET_SECRET = ''
+    process.env.REGISTRATION_TICKET_SECRET = 'ticket-test-registration-secret'
     process.env.NODE_ENV = 'test'
+    process.env.REGISTRATION_TICKET_EXPIRES_IN = '15m'
   })
 
   it('verifyAndConsumeRegistrationTicket: rejects when email does not match JWT sub (REGISTRATION_EMAIL_MISMATCH)', async () => {
@@ -83,6 +84,5 @@ describe('registration-ticket.service (PLAN-39)', () => {
 })
 
 function cfgSecret(): string {
-  const c = getConfig()
-  return c.REGISTRATION_TICKET_SECRET?.trim() || c.JWT_SECRET
+  return getConfig().REGISTRATION_TICKET_SECRET.trim()
 }

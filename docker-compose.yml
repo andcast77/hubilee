@@ -1,6 +1,10 @@
-# Unified hubilee stack — shared Postgres, central API, Caddy, six Next.js apps.
+# Unified hubilee stack — optional self-hosted path (Postgres, API, Caddy, four Next apps).
+# Production target is Vercel + Neon; use each app's env on Vercel (see apps/*/ .env.example).
+#
 # Usage: docker compose up --build -d
-# Copy .env.example to .env and adjust values per environment.
+# Root `.env` = Compose infra/URLs only. API secrets = apps/api/.env
+#   cp .env.example .env
+#   cp apps/api/.env.example apps/api/.env   # then fill JWT_SECRET, FIELD_ENCRYPTION_KEY, …
 
 x-app-env: &app-env
   NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3000}
@@ -41,15 +45,19 @@ services:
       dockerfile: docker/Dockerfile.api
     container_name: ${STACK_NAME:-hubilee}-api
     restart: unless-stopped
+    # Same keys as Vercel / local pnpm dev — do not duplicate them in root .env
+    env_file:
+      - path: ./apps/api/.env
+        required: true
     environment:
       PORT: '3000'
       NODE_ENV: ${NODE_ENV:-production}
+      # Always use the Compose Postgres service (overrides DATABASE_URL from env_file)
       DATABASE_URL: postgresql://${POSTGRES_USER:-hubilee}:${POSTGRES_PASSWORD:-hubilee}@postgres:5432/${POSTGRES_DB:-hubilee}
       PRISMA_USE_PG_ADAPTER: 'true'
-      JWT_SECRET: ${JWT_SECRET?JWT_SECRET is required}
-      FIELD_ENCRYPTION_KEY: ${FIELD_ENCRYPTION_KEY?FIELD_ENCRYPTION_KEY is required}
-      CORS_ORIGIN: ${CORS_ORIGIN?CORS_ORIGIN is required}
       TRUST_PROXY: 'true'
+      # Prefer Hub public URL from Compose when set
+      HUB_PUBLIC_URL: ${HUB_URL:-http://localhost:3001}
     ports:
       - '3000:3000'
     depends_on:

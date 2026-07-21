@@ -12,8 +12,8 @@ if (existsSync(envPath)) {
   loadDotenv({ path: envPath })
 }
 
-// Integration tests must not call Upstash; cache layer falls back to DB when unset.
+// Integration tests must not call Upstash; empty values keep env schema valid and skip Redis.
 if (process.env.VITEST === 'true' || process.env.NODE_ENV === 'test') {
-  delete process.env.UPSTASH_REDIS_REST_URL
-  delete process.env.UPSTASH_REDIS_REST_TOKEN
+  process.env.UPSTASH_REDIS_REST_URL = ''
+  process.env.UPSTASH_REDIS_REST_TOKEN = ''
 }
