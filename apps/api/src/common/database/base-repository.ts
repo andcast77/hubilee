@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@hubilee/database'
+import type { PrismaClient } from '@/db'
 import type { TransactionClient } from './unit-of-work.js'
 import { parsePagination, paginatedResult, type PaginationParams, type PaginatedResult } from './pagination.js'
 

@@ -9,7 +9,7 @@
  * cashSessionId/sellerId inputs. Settlement itself never touches StoreInventory.
  */
 import { describe, it, expect, beforeAll } from 'vitest'
-import { prisma } from '@hubilee/database'
+import { prisma } from '@/db'
 
 import './setup'
 

@@ -8,7 +8,7 @@
  */
 import { describe, it, expect, beforeAll } from 'vitest'
 import type { FastifyInstance } from 'fastify'
-import { prisma } from '@hubilee/database'
+import { prisma } from '@/db'
 
 import './setup'
 import { generateToken } from '../../core/auth.js'

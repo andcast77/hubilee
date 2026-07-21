@@ -5,7 +5,7 @@
  * - At most one OPEN CashSession per CashRegister (enforced via partial unique index).
  */
 import { describe, it, expect, beforeAll } from 'vitest'
-import { prisma } from '@hubilee/database'
+import { prisma } from '@/db'
 
 import './setup'
 

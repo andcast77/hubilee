@@ -11,7 +11,7 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import bcrypt from 'bcryptjs'
 import type { FastifyInstance } from 'fastify'
-import { prisma } from '@hubilee/database'
+import { prisma } from '@/db'
 
 import './setup'
 

@@ -19,7 +19,7 @@
  */
 
 import { createCipheriv, createDecipheriv, createHmac, randomBytes } from 'node:crypto'
-import { prisma } from '@hubilee/database'
+import { prisma } from '../src/db'
 
 const ALGORITHM = 'aes-256-gcm'
 const IV_LENGTH = 12

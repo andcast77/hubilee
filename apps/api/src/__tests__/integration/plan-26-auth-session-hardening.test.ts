@@ -7,7 +7,7 @@ import { describe, it, expect, beforeAll } from 'vitest'
 import { randomUUID } from 'node:crypto'
 import bcrypt from 'bcryptjs'
 import type { FastifyInstance } from 'fastify'
-import { prisma } from '@hubilee/database'
+import { prisma } from '@/db'
 
 import './setup'
 

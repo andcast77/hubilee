@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "start": "node dist/server.js",
     "test": "vitest run",
     "test:unit": "vitest run src/__tests__/unit",
@@ -14,7 +14,20 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "test:endpoints": "node scripts/test-endpoints.js",
-    "load:smoke": "node scripts/load-smoke.mjs"
+    "load:smoke": "node scripts/load-smoke.mjs",
+    "db:generate": "prisma generate",
+    "db:migrate": "DB_TARGET=dev prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:push": "prisma db push",
+    "db:push:dev": "DB_TARGET=dev prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:seed:dev": "DB_TARGET=dev tsx prisma/seed.ts",
+    "db:reset": "prisma migrate reset --force",
+    "db:reset:dev": "DB_TARGET=dev prisma migrate reset --force",
+    "db:studio": "prisma studio",
+    "studio": "prisma studio",
+    "migrate:deploy": "prisma migrate deploy",
+    "migrate:dev": "DB_TARGET=dev prisma migrate dev"
   },
   "dependencies": {
     "@fastify/cookie": "catalog:",
@@ -22,7 +35,6 @@
     "@fastify/env": "catalog:",
     "@fastify/rate-limit": "catalog:",
     "@hubilee/contracts": "workspace:*",
-    "@hubilee/database": "workspace:*",
     "@neondatabase/serverless": "catalog:",
     "@prisma/adapter-neon": "catalog:",
     "@prisma/adapter-pg": "catalog:",
@@ -53,7 +65,9 @@
     "@types/web-push": "catalog:",
     "@types/ws": "catalog:",
     "autocannon": "catalog:",
+    "cross-env": "catalog:",
     "esbuild": "catalog:",
+    "prisma": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

@@ -1,3 +1,0 @@
--- This migration was recorded as applied in the dev database but the SQL file
--- was missing. Restored as a no-op to reconcile migration history.
--- The intended schema changes were never actually applied.

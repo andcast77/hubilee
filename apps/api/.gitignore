@@ -44,6 +44,7 @@ coverage/
 
 # Prisma
 prisma/migrations/
+src/generated/
 
 # Misc
 .cache/

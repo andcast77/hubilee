@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@hubilee/database'
+import type { PrismaClient } from '@/db'
 
 export type TransactionClient = Parameters<Parameters<PrismaClient['$transaction']>[0]>[0]
 

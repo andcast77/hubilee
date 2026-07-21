@@ -1,6 +1,6 @@
 # Hubilee API
 
-API compartida **Fastify 5** para Hubilee: JWT, multi-empresa (contexto de compañía/miembro) y rutas agrupadas por módulo (**pos**, **hr**, **tech**). Acceso a datos con **@hubilee/database** (Prisma).
+API compartida **Fastify 5** para Hubilee: JWT, multi-empresa (contexto de compañía/miembro) y rutas agrupadas por módulo (**pos**, **hr**, **tech**). Acceso a datos con **Prisma** (generado localmente).
 
 **Producción / preview:** el camino oficial es **Vercel** (esta API) + **Neon** (PostgreSQL). Otros hosts (p. ej. Render) y **`.env.render.example`** se documentan como **legado**; no sustituyen esa historia de despliegue.
 
@@ -214,7 +214,7 @@ Alternativa PaaS documentada solo por compatibilidad. Desde la raíz del monorep
 ## 📝 Notas
 
 - **Fastify 5**, TypeScript, **Zod** donde aplica.
-- **Prisma** vía `@hubilee/database`; adaptadores Neon/pg según entorno.
+- **Prisma** con adaptadores Neon/pg según entorno.
 - **Rate limit:** ver sección arriba.
 - CORS desde `CORS_ORIGIN` (lista separada por comas).
 

@@ -4,7 +4,7 @@
  * pos-cash-session-api.test.ts).
  */
 import { describe, it, expect, beforeAll } from 'vitest'
-import { prisma } from '@hubilee/database'
+import { prisma } from '@/db'
 
 import './setup'
 

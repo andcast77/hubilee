@@ -9,7 +9,7 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import type { FastifyInstance } from 'fastify'
 import bcrypt from 'bcryptjs'
-import { prisma } from '@hubilee/database'
+import { prisma } from '@/db'
 import { Buffer } from 'node:buffer'
 
 import './setup'
