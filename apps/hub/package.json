@@ -6,7 +6,8 @@
     "dev": "next dev -p 3001 --turbo",
     "build": "next build",
     "start": "next start -p 3001",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@marsidev/react-turnstile": "catalog:",
@@ -33,6 +34,7 @@
     "postcss": "catalog:",
     "sass": "catalog:",
     "tailwindcss": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }
