@@ -31,15 +31,29 @@ export type LoginResponse = {
   tokens?: DesktopAuthTokens
 }
 
-/** Public POST /v1/auth/floor-login body (types only in PR1; route wired in PR2). */
+/** Public POST /v1/auth/login — exactly one of email | userCode. */
+export type LoginRequest = {
+  email?: string
+  userCode?: string
+  password: string
+  companyId?: string
+  captchaToken?: string
+}
+
+/**
+ * @deprecated Prefer `LoginRequest` with `userCode` via POST /v1/auth/login.
+ * Public POST /v1/auth/floor-login — thin alias of code login.
+ */
 export type FloorLoginRequest = {
-  companyCode: string
-  employeeCode: string
+  userCode: string
   password: string
   captchaToken?: string
 }
 
-/** Same success envelope as email login (cookies/JWT issued by API). */
+/**
+ * @deprecated Prefer `LoginResponse` from POST /v1/auth/login.
+ * Same success envelope as email/code login (cookies/JWT issued by API).
+ */
 export type FloorLoginResponse = LoginResponse
 
 export type RegisterResponse = {

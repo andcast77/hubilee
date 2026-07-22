@@ -6,11 +6,11 @@ type MemberRow = {
   userId: string
   membershipRole: string
   createdAt: Date
-  employeeCode?: string | null
-  user: { email: string | null; firstName: string; lastName: string }
+  user: { email: string | null; firstName: string; lastName: string; userCode?: string | null }
 }
 
 export function toMemberResponse(m: MemberRow, storeIds?: string[]): MemberResponse {
+  const userCode = m.user.userCode ?? null
   const base: MemberResponse = {
     id: m.id,
     userId: m.userId,
@@ -20,7 +20,7 @@ export function toMemberResponse(m: MemberRow, storeIds?: string[]): MemberRespo
     name: userDisplayName(m.user),
     membershipRole: m.membershipRole,
     createdAt: m.createdAt,
-    employeeCode: m.employeeCode ?? null,
+    userCode,
   }
   if (m.membershipRole === 'USER' && storeIds !== undefined) {
     return { ...base, storeIds }

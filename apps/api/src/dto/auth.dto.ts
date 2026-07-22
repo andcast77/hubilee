@@ -1,18 +1,42 @@
 import { z } from 'zod'
 
-/** Input DTO: login */
-export const loginBodySchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
-  companyId: z.string().uuid().optional(),
-})
+/**
+ * Unified login: either globally unique userCode OR email (when the user has one).
+ * Captcha is required for userCode after failed attempts (same policy as former floor-login).
+ */
+export const loginBodySchema = z
+  .object({
+    email: z.string().email().optional(),
+    userCode: z
+      .string()
+      .trim()
+      .min(1, 'El código de usuario es requerido')
+      .max(32)
+      .optional(),
+    password: z.string().min(1),
+    companyId: z.string().uuid().optional(),
+    captchaToken: z.string().min(1).optional(),
+  })
+  .superRefine((data, ctx) => {
+    const hasEmail = Boolean(data.email?.trim())
+    const hasCode = Boolean(data.userCode?.trim())
+    if (hasEmail === hasCode) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Indicá email o código de usuario (uno solo).',
+        path: hasEmail ? ['userCode'] : ['email'],
+      })
+    }
+  })
 
 export type LoginBody = z.infer<typeof loginBodySchema>
 
-/** Input DTO: floor staff codes+password login (POST /v1/auth/floor-login) */
+/**
+ * Alias of code+password login (POST /v1/auth/floor-login).
+ * Prefer POST /v1/auth/login with userCode; this route stays for POS clients.
+ */
 export const floorLoginBodySchema = z.object({
-  companyCode: z.string().min(1),
-  employeeCode: z.string().regex(/^\d{6}$/, 'El código de empleado debe tener 6 dígitos'),
+  userCode: z.string().trim().min(1, 'El código de usuario es requerido').max(32),
   password: z.string().min(1),
   captchaToken: z.string().min(1).optional(),
 })

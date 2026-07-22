@@ -67,9 +67,12 @@ export class UsersRepository extends TenantScopedRepository {
   }
 
   async createWithCompanyMembership(input: CreateUserInput): Promise<UserRow> {
+    const { allocateUniqueUserCode } = await import('../services/user-code.js')
+    const userCode = await allocateUniqueUserCode()
     return this.db.user.create({
       data: {
         email: input.email,
+        userCode,
         password: input.password,
         firstName: input.firstName,
         lastName: input.lastName,

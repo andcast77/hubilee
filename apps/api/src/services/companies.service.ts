@@ -19,7 +19,7 @@ export async function getById(companyId: string) {
   return company
 }
 
-/** Owner/admin view+copy opaque companyCode for floor staff login. */
+/** Owner/admin: company metadata. Staff login uses User.userCode (not companyCode). */
 export async function getCredentials(companyId: string, caller: TokenPayload) {
   assertCompanyAccess(caller, companyId)
   assertCanManageMembers(caller, 'Solo el owner o un admin pueden ver las credenciales de piso')

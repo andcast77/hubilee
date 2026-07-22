@@ -109,12 +109,27 @@ export async function login(request: FastifyRequest, reply: FastifyReply) {
   return ok(data)
 }
 
+/**
+ * @deprecated Prefer POST /v1/auth/login with `{ userCode, password }`.
+ * Thin alias kept for older clients — maps to authService.floorLogin → login({ userCode }).
+ */
 export async function floorLogin(request: FastifyRequest, reply: FastifyReply) {
   const body = validateBody(floorLoginBodySchema, request.body)
   const ip = request.ip
   const ua = (request.headers['user-agent'] as string | undefined) ?? null
 
   const result = await authService.floorLogin(body)
+
+  if ('mfaRequired' in result && result.mfaRequired) {
+    return ok({
+      mfaRequired: true,
+      tempToken: result.tempToken,
+      user: result.user,
+      companyId: result.companyId,
+      company: result.company,
+      companies: result.companies,
+    })
+  }
 
   if (result.companyId) {
     writeAuditLog({
@@ -559,7 +574,7 @@ export async function registerPublicAuthRoutes(fastify: FastifyInstance) {
     (request, reply) => login(request, reply)
   )
   fastify.post(
-    '/v1/auth/floor-login',
+    '/v1/auth/floor-login' /* @deprecated prefer POST /v1/auth/login with userCode */,
     { schema: authSuccessResponseSchema },
     (request, reply) => floorLogin(request, reply),
   )

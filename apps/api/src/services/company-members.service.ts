@@ -1,5 +1,4 @@
 import bcrypt from 'bcryptjs'
-import { randomInt } from 'node:crypto'
 import { prisma } from '../db/index.js'
 import type { TokenPayload } from '../core/auth.js'
 import type {
@@ -10,26 +9,9 @@ import type {
 } from '../dto/company-members.dto.js'
 import { ForbiddenError, NotFoundError, BadRequestError } from '../common/errors/app-error.js'
 import { assertCanManageMembers, assertCompanyAccess } from '../policies/company-authorization.policy.js'
+import { allocateUniqueUserCode } from './user-code.js'
 
 const roleOrder = { OWNER: 0, ADMIN: 1, USER: 2 } as const
-const EMPLOYEE_CODE_MAX_ATTEMPTS = 20
-
-/** 6-digit floor employee code (company-scoped uniqueness enforced at insert). */
-export function generateEmployeeCode(): string {
-  return String(randomInt(0, 1_000_000)).padStart(6, '0')
-}
-
-async function allocateUniqueEmployeeCode(companyId: string): Promise<string> {
-  for (let i = 0; i < EMPLOYEE_CODE_MAX_ATTEMPTS; i++) {
-    const code = generateEmployeeCode()
-    const clash = await prisma.companyMember.findFirst({
-      where: { companyId, employeeCode: code },
-      select: { id: true },
-    })
-    if (!clash) return code
-  }
-  throw new BadRequestError('No se pudo generar un código de empleado único. Intenta de nuevo.')
-}
 
 /**
  * Floor USER store assignment:
@@ -116,11 +98,12 @@ export async function create(companyId: string, caller: TokenPayload, body: Crea
   }
 
   const hashed = await bcrypt.hash(body.password, 10)
-  const employeeCode = isFloorUser ? await allocateUniqueEmployeeCode(companyId) : null
+  const userCode = await allocateUniqueUserCode()
 
   const user = await prisma.user.create({
     data: {
       email,
+      userCode,
       password: hashed,
       firstName: body.firstName ?? '',
       lastName: body.lastName ?? '',
@@ -128,7 +111,7 @@ export async function create(companyId: string, caller: TokenPayload, body: Crea
       isActive: true,
       isSuperuser: false,
     },
-    select: { id: true, email: true, firstName: true, lastName: true },
+    select: { id: true, email: true, firstName: true, lastName: true, userCode: true },
   })
 
   await prisma.companyMember.create({
@@ -136,7 +119,6 @@ export async function create(companyId: string, caller: TokenPayload, body: Crea
       userId: user.id,
       companyId,
       membershipRole: body.membershipRole,
-      employeeCode,
     },
   })
 
@@ -153,7 +135,7 @@ export async function create(companyId: string, caller: TokenPayload, body: Crea
   return {
     user,
     membershipRole: body.membershipRole,
-    employeeCode,
+    userCode: user.userCode,
     storeIds: floorStoreIds,
   }
 }
@@ -202,7 +184,12 @@ async function resolveManagedMember(companyId: string, userId: string, caller: T
   assertCanManageMembers(caller, 'Solo el owner o un admin pueden gestionar este usuario')
   const member = await prisma.companyMember.findUnique({
     where: { userId_companyId: { userId, companyId } },
-    select: { id: true, userId: true, membershipRole: true, employeeCode: true },
+    select: {
+      id: true,
+      userId: true,
+      membershipRole: true,
+      user: { select: { userCode: true } },
+    },
   })
   if (!member) throw new NotFoundError('Usuario no encontrado en esta empresa')
   return member
@@ -229,8 +216,8 @@ export async function resetMemberPassword(
 }
 
 /**
- * Attach a unique email to a codes-only floor user.
- * Enables email+password login while keeping employeeCode / floor-login.
+ * Attach a unique email to a codes-only user.
+ * Enables email+password login while keeping userCode.
  */
 export async function attachMemberEmail(
   companyId: string,
@@ -238,7 +225,7 @@ export async function attachMemberEmail(
   caller: TokenPayload,
   body: AttachMemberEmailBody,
 ) {
-  const member = await resolveManagedMember(companyId, userId, caller)
+  await resolveManagedMember(companyId, userId, caller)
   const email = body.email.trim().toLowerCase()
   const taken = await prisma.user.findFirst({
     where: { email, NOT: { id: userId } },
@@ -249,12 +236,12 @@ export async function attachMemberEmail(
   const user = await prisma.user.update({
     where: { id: userId },
     data: { email },
-    select: { id: true, email: true, firstName: true, lastName: true },
+    select: { id: true, email: true, firstName: true, lastName: true, userCode: true },
   })
 
   return {
     userId: user.id,
     email: user.email,
-    employeeCode: member.employeeCode,
+    userCode: user.userCode,
   }
 }

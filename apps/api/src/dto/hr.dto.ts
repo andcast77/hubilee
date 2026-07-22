@@ -197,7 +197,7 @@ export type HrMeRole = z.infer<typeof hrMeRoleSchema>
 
 export const hrMeUserSchema = z.object({
   id: uuid,
-  email: z.string(),
+  email: z.string().nullable(),
   name: z.string(),
   companyId: z.string().optional(),
   membershipRole: z.string().optional(),

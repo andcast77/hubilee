@@ -1,6 +1,6 @@
 import { authApi } from '@/lib/api/client'
 import { ApiError, ErrorCodes } from '@/lib/utils/errors'
-import type { FloorLoginInput, LoginInput } from '@/lib/validations/auth'
+import type { CodeLoginInput, LoginInput } from '@/lib/validations/auth'
 import type { FloorLoginResponse, LoginResponse } from '@hubilee/contracts'
 
 type AuthLoginEnvelope = {
@@ -10,7 +10,10 @@ type AuthLoginEnvelope = {
 }
 
 export async function login(credentials: LoginInput) {
-  const response = await authApi.post<AuthLoginEnvelope>('/login', credentials)
+  const response = await authApi.post<AuthLoginEnvelope>('/login', {
+    email: credentials.email,
+    password: credentials.password,
+  })
 
   if (!response.success || !response.data) {
     throw new ApiError(401, response.error || 'Invalid credentials', ErrorCodes.UNAUTHORIZED)
@@ -19,24 +22,28 @@ export async function login(credentials: LoginInput) {
   return response.data
 }
 
-/** POST /v1/auth/floor-login — codes + password (same session envelope as email login). */
-export async function floorLogin(credentials: FloorLoginInput): Promise<FloorLoginResponse> {
-  const body: FloorLoginInput = {
-    companyCode: credentials.companyCode.trim(),
-    employeeCode: credentials.employeeCode.trim(),
+/** POST /v1/auth/login with userCode (Pos must never call /floor-login). */
+export async function codeLogin(credentials: CodeLoginInput): Promise<FloorLoginResponse> {
+  const body: CodeLoginInput = {
+    userCode: credentials.userCode.trim(),
     password: credentials.password,
   }
   if (credentials.captchaToken) {
     body.captchaToken = credentials.captchaToken
   }
 
-  const response = await authApi.post<AuthLoginEnvelope>('/floor-login', body)
+  const response = await authApi.post<AuthLoginEnvelope>('/login', body)
 
   if (!response.success || !response.data) {
     throw new ApiError(401, response.error || 'Invalid credentials', ErrorCodes.UNAUTHORIZED)
   }
 
   return response.data
+}
+
+/** @deprecated Use codeLogin — kept for transitional call sites. */
+export async function floorLogin(credentials: CodeLoginInput): Promise<FloorLoginResponse> {
+  return codeLogin(credentials)
 }
 
 export async function getCurrentUser(token: string) {

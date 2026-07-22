@@ -2,27 +2,33 @@ import { z } from 'zod'
 import { UserRole } from '@/types'
 
 export const loginSchema = z.object({
-  email: z.string().email('Invalid email format'),
+  email: z.string().email('Email inválido'),
   password: z.string().min(1, 'Password is required'),
 })
 
 export type LoginInput = z.infer<typeof loginSchema>
 
-/** Floor staff: companyCode + 6-digit employeeCode + password (+ optional Turnstile). */
-export const floorLoginSchema = z.object({
-  companyCode: z.string().min(1, 'El código de empresa es requerido'),
-  employeeCode: z
-    .string()
-    .regex(/^\d{6}$/, 'El código de empleado debe tener 6 dígitos'),
+/** Unified code login: globally unique userCode + password (+ optional Turnstile). */
+export const codeLoginSchema = z.object({
+  userCode: z.string().trim().min(1, 'El código de usuario es requerido').max(32),
   password: z.string().min(1, 'Password is required'),
   captchaToken: z.string().min(1).optional(),
 })
 
-export type FloorLoginInput = z.infer<typeof floorLoginSchema>
+export type CodeLoginInput = z.infer<typeof codeLoginSchema>
+
+/** @deprecated Use codeLoginSchema */
+export const floorLoginSchema = codeLoginSchema
+export type FloorLoginInput = CodeLoginInput
 
 /** API requires Turnstile after failedLoginAttempts >= 1 — show after first UI failure. */
-export function shouldShowFloorTurnstile(failedAttempts: number): boolean {
+export function shouldShowCodeTurnstile(failedAttempts: number): boolean {
   return failedAttempts >= 1
+}
+
+/** @deprecated Use shouldShowCodeTurnstile */
+export function shouldShowFloorTurnstile(failedAttempts: number): boolean {
+  return shouldShowCodeTurnstile(failedAttempts)
 }
 
 export type MembershipRole = 'ADMIN' | 'USER'
@@ -33,7 +39,7 @@ export function mapUiRoleToMembershipRole(role: UserRole): MembershipRole {
   return 'USER'
 }
 
-export type CreateFloorMemberFormInput = {
+export type CreateShopMemberFormInput = {
   name: string
   email?: string
   password: string
@@ -41,6 +47,9 @@ export type CreateFloorMemberFormInput = {
   active?: boolean
   storeIds?: string[]
 }
+
+/** @deprecated Use CreateShopMemberFormInput */
+export type CreateFloorMemberFormInput = CreateShopMemberFormInput
 
 export type CreateCompanyMemberPayload = {
   email?: string
@@ -63,10 +72,10 @@ function splitName(name: string): { firstName: string; lastName?: string } {
 
 /**
  * Build createCompanyMember body from UserForm values.
- * Floor Cajero: omit email; membership USER. Admin: require email.
+ * Cajero: omit email; membership USER. Admin: require email.
  */
-export function buildCreateFloorMemberPayload(
-  form: CreateFloorMemberFormInput,
+export function buildCreateShopMemberPayload(
+  form: CreateShopMemberFormInput,
 ): CreateCompanyMemberPayload {
   const membershipRole = mapUiRoleToMembershipRole(form.role)
   const { firstName, lastName } = splitName(form.name)
@@ -84,6 +93,13 @@ export function buildCreateFloorMemberPayload(
     payload.email = email
   }
   return payload
+}
+
+/** @deprecated Use buildCreateShopMemberPayload */
+export function buildCreateFloorMemberPayload(
+  form: CreateShopMemberFormInput,
+): CreateCompanyMemberPayload {
+  return buildCreateShopMemberPayload(form)
 }
 
 export const registerSchema = z

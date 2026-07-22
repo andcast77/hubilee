@@ -5,12 +5,11 @@ import { Link } from '@tanstack/react-router'
 import { useUser } from '@/hooks/useUser'
 import {
   useAttachMemberEmail,
-  useCompanyCredentials,
   useCompanyMembers,
   useDeleteUser,
   useResetMemberPassword,
 } from '@/hooks/useUsers'
-import { formatFloorCodesForDisplay, memberHasFloorCodes } from '@/lib/floor-staff'
+import { formatUserCodeForDisplay, memberHasUserCode } from '@/lib/user-code'
 import { Button } from '@hubilee/ui'
 import { Input } from '@hubilee/ui'
 import {
@@ -76,7 +75,7 @@ type MemberRow = {
   email: string | null
   role: string
   active: boolean
-  employeeCode?: string | null
+  userCode?: string | null
 }
 
 export function UserList() {
@@ -94,12 +93,10 @@ export function UserList() {
   const { data: currentUser, isLoading: isLoadingUser } = useUser()
   const companyId = currentUser?.companyId
   const companyMembersQuery = useCompanyMembers(companyId)
-  const credentialsQuery = useCompanyCredentials(companyId)
   const deleteUser = useDeleteUser()
   const resetPasswordMutation = useResetMemberPassword(companyId)
   const attachEmailMutation = useAttachMemberEmail(companyId)
 
-  const companyCode = credentialsQuery.data?.companyCode ?? null
   const allMembers = companyMembersQuery.data?.users ?? []
   const filteredAndPaginated = useMemo(() => {
     let list = allMembers
@@ -109,7 +106,7 @@ export function UserList() {
         (u) =>
           (u.email ?? '').toLowerCase().includes(q) ||
           (u.name ?? '').toLowerCase().includes(q) ||
-          (u.employeeCode ?? '').includes(q),
+          (u.userCode ?? '').includes(q),
       )
     }
     if (roleFilter !== 'all') {
@@ -217,18 +214,8 @@ export function UserList() {
     }
   }
 
-  const copyCompanyCode = async () => {
-    if (!companyCode) return
-    const display = formatFloorCodesForDisplay({
-      companyCode,
-      employeeCode: '------',
-    })
-    await navigator.clipboard.writeText(display.companyCode)
-  }
-
-  const copyMemberCodes = async (employeeCode: string) => {
-    if (!companyCode) return
-    const display = formatFloorCodesForDisplay({ companyCode, employeeCode })
+  const copyUserCode = async (userCode: string) => {
+    const display = formatUserCodeForDisplay(userCode)
     await navigator.clipboard.writeText(display.copyText)
   }
 
@@ -329,19 +316,6 @@ export function UserList() {
 
   return (
     <div className="space-y-4">
-      {companyCode ? (
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-muted/40 px-4 py-3 text-sm">
-          <div>
-            <span className="font-medium">Código de empresa (piso): </span>
-            <code className="select-all">{companyCode}</code>
-          </div>
-          <Button type="button" variant="outline" size="sm" onClick={() => void copyCompanyCode()}>
-            <Copy className="mr-2 h-4 w-4" />
-            Copiar
-          </Button>
-        </div>
-      ) : null}
-
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-center gap-2">
           <div className="relative flex-1 max-w-sm">
@@ -391,7 +365,7 @@ export function UserList() {
                       <SortIcon column="email" />
                     </Button>
                   </TableHead>
-                  <TableHead>Código empleado</TableHead>
+                  <TableHead>Código de usuario</TableHead>
                   <TableHead>
                     <Button variant="ghost" className="-ml-3 h-8 font-semibold" onClick={() => toggleSort('role')}>
                       Rol
@@ -408,7 +382,9 @@ export function UserList() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users.map((user) => (
+                {users.map((user) => {
+                  const userCode = user.userCode ?? null
+                  return (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
@@ -418,8 +394,8 @@ export function UserList() {
                     </TableCell>
                     <TableCell>{user.email || '—'}</TableCell>
                     <TableCell>
-                      {user.employeeCode ? (
-                        <code className="select-all text-sm">{user.employeeCode}</code>
+                      {userCode ? (
+                        <code className="select-all text-sm">{userCode}</code>
                       ) : (
                         '—'
                       )}
@@ -436,17 +412,17 @@ export function UserList() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
-                        {memberHasFloorCodes(user) && user.employeeCode && companyCode ? (
+                        {userCode ? (
                           <Button
                             variant="ghost"
                             size="sm"
-                            title="Copiar códigos"
-                            onClick={() => void copyMemberCodes(user.employeeCode!)}
+                            title="Copiar código"
+                            onClick={() => void copyUserCode(userCode)}
                           >
                             <Copy className="h-4 w-4" />
                           </Button>
                         ) : null}
-                        {memberHasFloorCodes(user) ? (
+                        {memberHasUserCode(user) ? (
                           <Button
                             variant="ghost"
                             size="sm"
@@ -460,7 +436,7 @@ export function UserList() {
                             <KeyRound className="h-4 w-4" />
                           </Button>
                         ) : null}
-                        {memberHasFloorCodes(user) && !user.email ? (
+                        {memberHasUserCode(user) && !user.email ? (
                           <Button
                             variant="ghost"
                             size="sm"
@@ -506,7 +482,8 @@ export function UserList() {
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                  )
+                })}
               </TableBody>
             </Table>
           </div>
@@ -525,9 +502,9 @@ export function UserList() {
       ) : (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12">
           <UserIcon className="h-12 w-12 text-gray-400" />
-          <h3 className="mt-4 text-lg font-semibold">No hay usuarios</h3>
+          <h3 className="mt-4 text-lg font-semibold">No hay usuarios de la tienda</h3>
           <p className="mt-2 text-sm text-gray-500">
-            {search ? 'No se encontraron usuarios.' : 'Comienza agregando tu primer usuario.'}
+            {search ? 'No se encontraron usuarios.' : 'Comienza agregando el primer usuario de la tienda.'}
           </p>
           {!search && (
             <Link to="/admin/users/new" className="mt-4">
@@ -540,10 +517,10 @@ export function UserList() {
       <Dialog open={!!resetTarget} onOpenChange={(open) => !open && setResetTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Restablecer contraseña de piso</DialogTitle>
+            <DialogTitle>Restablecer contraseña</DialogTitle>
             <DialogDescription>
               Nueva contraseña para {resetTarget?.name}
-              {resetTarget?.employeeCode ? ` (código ${resetTarget.employeeCode})` : ''}.
+              {resetTarget?.userCode ? ` (código ${resetTarget.userCode})` : ''}.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
@@ -577,7 +554,7 @@ export function UserList() {
           <DialogHeader>
             <DialogTitle>Asociar email</DialogTitle>
             <DialogDescription>
-              Habilita login por email además de códigos de piso para {attachTarget?.name}.
+              Habilita login por email además del código de usuario para {attachTarget?.name}.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">

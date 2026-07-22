@@ -160,7 +160,7 @@ export function toHrMeCompany(row: {
 
 export function toHrMeUser(payload: {
   id: string
-  email: string
+  email: string | null
   name: string
   companyId?: string | null
   membershipRole?: string | null

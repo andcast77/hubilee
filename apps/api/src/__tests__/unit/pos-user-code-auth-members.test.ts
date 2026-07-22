@@ -53,8 +53,9 @@ import {
   create,
   resetMemberPassword,
   attachMemberEmail,
-  generateEmployeeCode,
 } from '../../services/company-members.service.js'
+import { generateUserCode } from '../../services/user-code.js'
+import { toMemberResponse } from '../../helpers/company-members.helper.js'
 import { createMemberBodySchema, resetMemberPasswordBodySchema, attachMemberEmailBodySchema } from '../../dto/company-members.dto.js'
 import { generateOpaqueCompanyCode } from '../../services/company-code.js'
 import { getCredentials } from '../../services/companies.service.js'
@@ -108,14 +109,14 @@ describe('createMemberBodySchema — optional email (floor)', () => {
   })
 })
 
-describe('generateEmployeeCode', () => {
-  it('returns a 6-digit numeric string', () => {
-    const code = generateEmployeeCode()
-    expect(code).toMatch(/^\d{6}$/)
+describe('generateUserCode', () => {
+  it('returns an 8-digit numeric string', () => {
+    const code = generateUserCode()
+    expect(code).toMatch(/^\d{8}$/)
   })
 
   it('is not a fixed constant across calls (triangulate randomness)', () => {
-    const codes = new Set(Array.from({ length: 20 }, () => generateEmployeeCode()))
+    const codes = new Set(Array.from({ length: 20 }, () => generateUserCode()))
     expect(codes.size).toBeGreaterThan(1)
   })
 })
@@ -142,18 +143,18 @@ describe('company-members.create — floor USER without email', () => {
       email: null,
       firstName: 'Ana',
       lastName: 'Caja',
+      userCode: '12345678',
     })
     mockMemberCreate.mockResolvedValue({
       id: 'member-1',
       userId: USER_ID,
       companyId: COMPANY_ID,
       membershipRole: 'USER',
-      employeeCode: '123456',
     })
     mockUserStoreUpsert.mockResolvedValue({})
   })
 
-  it('codes-only: omit email → null email, 6-digit employeeCode, USER, exactly one UserStore', async () => {
+  it('codes-only: omit email → null email, userCode, USER, exactly one UserStore', async () => {
     mockStoreFindMany.mockResolvedValue([{ id: STORE_A }])
 
     const result = await create(COMPANY_ID, ownerCaller, {
@@ -167,6 +168,7 @@ describe('company-members.create — floor USER without email', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           email: null,
+          userCode: expect.stringMatching(/^\d{8}$/),
           firstName: 'Ana',
           lastName: 'Caja',
           role: 'USER',
@@ -177,12 +179,13 @@ describe('company-members.create — floor USER without email', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           membershipRole: 'USER',
-          employeeCode: expect.stringMatching(/^\d{6}$/),
           companyId: COMPANY_ID,
           userId: USER_ID,
         }),
       }),
     )
+    const memberCreateData = mockMemberCreate.mock.calls[0][0].data as Record<string, unknown>
+    expect(memberCreateData).not.toHaveProperty('employeeCode')
     expect(mockUserStoreUpsert).toHaveBeenCalledTimes(1)
     expect(mockUserStoreUpsert).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -190,7 +193,8 @@ describe('company-members.create — floor USER without email', () => {
       }),
     )
     expect(result.user.email).toBeNull()
-    expect(result.employeeCode).toMatch(/^\d{6}$/)
+    expect(result.userCode).toMatch(/^\d{8}$/)
+    expect(result).not.toHaveProperty('employeeCode')
     expect(result.membershipRole).toBe('USER')
     expect(result.storeIds).toEqual([STORE_A])
   })
@@ -259,7 +263,7 @@ describe('admin password reset + email attach', () => {
       id: 'member-1',
       userId: USER_ID,
       membershipRole: 'USER',
-      employeeCode: '123456',
+      user: { userCode: '12345678' },
     })
     mockUserUpdate.mockResolvedValue({ id: USER_ID })
 
@@ -285,12 +289,12 @@ describe('admin password reset + email attach', () => {
     expect(() => attachMemberEmailBodySchema.parse({ email: 'not-an-email' })).toThrow()
   })
 
-  it('attach email sets User.email; member employeeCode unchanged', async () => {
+  it('attach email sets User.email; userCode preserved', async () => {
     mockMemberFindUnique.mockResolvedValue({
       id: 'member-1',
       userId: USER_ID,
       membershipRole: 'USER',
-      employeeCode: '654321',
+      user: { userCode: '87654321' },
     })
     mockUserFindFirst.mockResolvedValue(null)
     mockUserUpdate.mockResolvedValue({
@@ -298,6 +302,7 @@ describe('admin password reset + email attach', () => {
       email: 'ana@example.com',
       firstName: 'Ana',
       lastName: 'Caja',
+      userCode: '87654321',
     })
 
     const result = await attachMemberEmail(COMPANY_ID, USER_ID, ownerCaller, {
@@ -311,7 +316,8 @@ describe('admin password reset + email attach', () => {
       }),
     )
     expect(result.email).toBe('ana@example.com')
-    expect(result.employeeCode).toBe('654321')
+    expect(result.userCode).toBe('87654321')
+    expect(result).not.toHaveProperty('employeeCode')
   })
 
   it('attach email rejects when email already taken', async () => {
@@ -319,7 +325,7 @@ describe('admin password reset + email attach', () => {
       id: 'member-1',
       userId: USER_ID,
       membershipRole: 'USER',
-      employeeCode: '654321',
+      user: { userCode: '87654321' },
     })
     mockUserFindFirst.mockResolvedValue({ id: 'other-user' })
 
@@ -370,3 +376,64 @@ describe('register path uses allocateUniqueCompanyCode helper', () => {
     expect(src).toMatch(/attachEmail/)
   })
 })
+
+describe('PR3 DROP — member responses use User.userCode only', () => {
+  it('toMemberResponse exposes userCode and omits employeeCode (happy path)', () => {
+    const row = {
+      id: 'member-1',
+      userId: USER_ID,
+      membershipRole: 'USER',
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      user: {
+        email: null,
+        firstName: 'Ana',
+        lastName: 'Caja',
+        userCode: '12345678',
+      },
+    }
+    const res = toMemberResponse(row, [STORE_A])
+    expect(res.userCode).toBe('12345678')
+    expect(res).not.toHaveProperty('employeeCode')
+    expect(Object.keys(res)).not.toContain('employeeCode')
+  })
+
+  it('toMemberResponse yields null userCode when User.userCode is missing (edge)', () => {
+    const row = {
+      id: 'member-2',
+      userId: USER_ID,
+      membershipRole: 'ADMIN',
+      createdAt: new Date('2026-01-02T00:00:00.000Z'),
+      user: {
+        email: 'admin@example.com',
+        firstName: 'Ada',
+        lastName: 'Min',
+        userCode: null,
+      },
+    }
+    const res = toMemberResponse(row)
+    expect(res.userCode).toBeNull()
+    expect(res).not.toHaveProperty('employeeCode')
+  })
+
+  it('createMemberBodySchema does not accept employeeCode as a validated field', () => {
+    const parsed = createMemberBodySchema.parse({
+      password: PASSWORD,
+      membershipRole: 'USER',
+      storeIds: [STORE_A],
+      // @ts-expect-error — employeeCode must not be part of the public create DTO
+      employeeCode: 'should-be-stripped',
+    } as { password: string; membershipRole: 'USER'; storeIds: string[] })
+    expect(parsed).not.toHaveProperty('employeeCode')
+  })
+})
+
+
+
+describe('PR1 stop-expose — controller create response mapping', () => {
+  it('company-members.controller create does not echo employeeCode', () => {
+    const src = readFileSync(join(__dirname, '../../controllers/v1/company-members.controller.ts'), 'utf8')
+    expect(src).toMatch(/userCode:\s*result\.userCode/)
+    expect(src).not.toMatch(/employeeCode:\s*result\.userCode/)
+  })
+})
+

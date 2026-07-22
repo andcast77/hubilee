@@ -215,6 +215,8 @@ enum ServiceVisitStatus {
 
 model User {
   id                String   @id @default(uuid())
+  /// Globally unique user code (owner + floor). Used with password; email login is optional when email is set.
+  userCode          String   @unique @default(cuid())
   /// Nullable for floor staff (codes-only). Uniqueness via partial unique index
   /// `users_email_unique_not_null` (WHERE email IS NOT NULL) — not expressible as @unique in Prisma.
   email             String?
@@ -409,8 +411,6 @@ model CompanyMember {
   userId         String
   companyId      String
   membershipRole MembershipRole
-  /// 6-digit floor staff code; null for owners/admins without codes. Unique per company when set.
-  employeeCode   String?
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
@@ -421,7 +421,6 @@ model CompanyMember {
    modules        CompanyMemberModule[]
 
   @@unique([userId, companyId])
-  @@unique([companyId, employeeCode])
   @@index([userId])
   @@index([companyId])
   @@map("company_members")

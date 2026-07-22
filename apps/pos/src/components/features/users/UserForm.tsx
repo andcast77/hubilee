@@ -19,11 +19,11 @@ import { useStoreContextOptional } from '@/components/providers/StoreContext'
 import { UserRole } from '@/types'
 
 interface UserFormProps {
-  initialData?: Partial<CreateUserInput & { storeIds?: string[]; employeeCode?: string | null }>
+  initialData?: Partial<CreateUserInput & { storeIds?: string[]; userCode?: string | null }>
   onSubmit: (data: CreateUserInput | UpdateUserInput) => Promise<void>
   isLoading?: boolean
   isEdit?: boolean
-  /** Shown after create / for floor staff */
+  /** @deprecated Login uses per-user userCode; kept for call-site compat */
   companyCode?: string | null
 }
 
@@ -32,7 +32,6 @@ export function UserForm({
   onSubmit,
   isLoading,
   isEdit = false,
-  companyCode,
 }: UserFormProps) {
   const storeContext = useStoreContextOptional()
   const stores = storeContext?.stores ?? []
@@ -60,9 +59,10 @@ export function UserForm({
 
   const role = watch('role')
   const storeIds = watch('storeIds') ?? []
-  const isFloorRole = role === UserRole.CASHIER || role === UserRole.SUPERVISOR
+  const isShopStaffRole = role === UserRole.CASHIER || role === UserRole.SUPERVISOR
   const emailRequired = role === UserRole.ADMIN
-  const needsStoreAssignment = isFloorRole
+  const needsStoreAssignment = isShopStaffRole
+  const displayUserCode = initialData?.userCode ?? null
 
   const selectSingleStore = (storeId: string) => {
     setValue('storeIds', [storeId])
@@ -70,20 +70,12 @@ export function UserForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {companyCode || initialData?.employeeCode ? (
+      {displayUserCode ? (
         <div className="rounded-md border bg-muted/40 p-3 text-sm space-y-1">
-          {companyCode ? (
-            <p>
-              <span className="font-medium">Código de empresa:</span>{' '}
-              <code className="select-all">{companyCode}</code>
-            </p>
-          ) : null}
-          {initialData?.employeeCode ? (
-            <p>
-              <span className="font-medium">Código de empleado:</span>{' '}
-              <code className="select-all">{initialData.employeeCode}</code>
-            </p>
-          ) : null}
+          <p>
+            <span className="font-medium">Código de usuario:</span>{' '}
+            <code className="select-all">{displayUserCode}</code>
+          </p>
         </div>
       ) : null}
 
@@ -122,9 +114,9 @@ export function UserForm({
             </SelectContent>
           </Select>
           {errors.role && <p className="text-sm text-red-500">{errors.role.message}</p>}
-          {isFloorRole && (
+          {isShopStaffRole && (
             <p className="text-xs text-muted-foreground">
-              El cajero se crea como membresía USER (códigos de piso), sin rol CASHIER en la API.
+              El cajero se crea como membresía USER (código de usuario), sin rol CASHIER en la API.
             </p>
           )}
         </div>

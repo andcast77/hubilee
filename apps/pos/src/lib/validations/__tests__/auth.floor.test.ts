@@ -1,15 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import {
+  codeLoginSchema,
   floorLoginSchema,
   loginSchema,
   mapUiRoleToMembershipRole,
+  buildCreateShopMemberPayload,
   buildCreateFloorMemberPayload,
+  shouldShowCodeTurnstile,
   shouldShowFloorTurnstile,
 } from '../auth'
 import { UserRole } from '@/types'
 
-describe('POS dual-login validations (floor staff auth)', () => {
-  describe('loginSchema — owner email path', () => {
+describe('POS unified login validations (userCode + email)', () => {
+  describe('loginSchema — email path', () => {
     it('accepts valid email + password', () => {
       const result = loginSchema.safeParse({
         email: 'owner@empresa.com',
@@ -30,33 +33,46 @@ describe('POS dual-login validations (floor staff auth)', () => {
     })
   })
 
-  describe('floorLoginSchema — companyCode + employeeCode + password', () => {
-    it('accepts opaque companyCode, 6-digit employeeCode, and password', () => {
-      const result = floorLoginSchema.safeParse({
-        companyCode: 'a1b2c3d4e5f6a7b8',
-        employeeCode: '123456',
+  describe('codeLoginSchema — userCode + password', () => {
+    it('accepts userCode and password', () => {
+      const result = codeLoginSchema.safeParse({
+        userCode: '12345678',
         password: 'pin-secret',
       })
       expect(result.success).toBe(true)
       if (result.success) {
-        expect(result.data.employeeCode).toBe('123456')
-        expect(result.data.companyCode).toBe('a1b2c3d4e5f6a7b8')
+        expect(result.data.userCode).toBe('12345678')
       }
     })
 
-    it('rejects non-6-digit employeeCode', () => {
+    it('floorLoginSchema is a deprecated alias of codeLoginSchema', () => {
       const result = floorLoginSchema.safeParse({
+        userCode: '87654321',
+        password: 'pin-secret',
+      })
+      expect(result.success).toBe(true)
+    })
+
+    it('rejects empty userCode', () => {
+      const result = codeLoginSchema.safeParse({
+        userCode: '   ',
+        password: 'pin-secret',
+      })
+      expect(result.success).toBe(false)
+    })
+
+    it('rejects legacy companyCode + employeeCode body', () => {
+      const result = codeLoginSchema.safeParse({
         companyCode: 'a1b2c3d4e5f6a7b8',
-        employeeCode: '12',
+        employeeCode: '123456',
         password: 'pin-secret',
       })
       expect(result.success).toBe(false)
     })
 
     it('accepts optional captchaToken after failures', () => {
-      const result = floorLoginSchema.safeParse({
-        companyCode: 'a1b2c3d4e5f6a7b8',
-        employeeCode: '654321',
+      const result = codeLoginSchema.safeParse({
+        userCode: '12345678',
         password: 'pin-secret',
         captchaToken: 'turnstile-token',
       })
@@ -67,13 +83,14 @@ describe('POS dual-login validations (floor staff auth)', () => {
     })
   })
 
-  describe('shouldShowFloorTurnstile', () => {
-    it('is false before any floor login failure', () => {
+  describe('shouldShowCodeTurnstile', () => {
+    it('is false before any code login failure', () => {
+      expect(shouldShowCodeTurnstile(0)).toBe(false)
       expect(shouldShowFloorTurnstile(0)).toBe(false)
     })
 
-    it('is true after at least one failed floor login attempt', () => {
-      expect(shouldShowFloorTurnstile(1)).toBe(true)
+    it('is true after at least one failed code login attempt', () => {
+      expect(shouldShowCodeTurnstile(1)).toBe(true)
       expect(shouldShowFloorTurnstile(3)).toBe(true)
     })
   })
@@ -84,7 +101,7 @@ describe('Cajero create → membership USER (no API CASHIER/SUPERVISOR)', () => 
     expect(mapUiRoleToMembershipRole(UserRole.CASHIER)).toBe('USER')
   })
 
-  it('maps UI Supervisor to membership USER (floor day-1)', () => {
+  it('maps UI Supervisor to membership USER', () => {
     expect(mapUiRoleToMembershipRole(UserRole.SUPERVISOR)).toBe('USER')
   })
 
@@ -92,8 +109,8 @@ describe('Cajero create → membership USER (no API CASHIER/SUPERVISOR)', () => 
     expect(mapUiRoleToMembershipRole(UserRole.ADMIN)).toBe('ADMIN')
   })
 
-  it('buildCreateFloorMemberPayload omits email for Cajero and sends USER', () => {
-    const payload = buildCreateFloorMemberPayload({
+  it('buildCreateShopMemberPayload omits email for Cajero and sends USER', () => {
+    const payload = buildCreateShopMemberPayload({
       name: 'Ana Caja',
       email: '',
       password: 'caja-pass-1',
@@ -112,7 +129,7 @@ describe('Cajero create → membership USER (no API CASHIER/SUPERVISOR)', () => 
     expect(JSON.stringify(payload)).not.toMatch(/CASHIER|SUPERVISOR/)
   })
 
-  it('buildCreateFloorMemberPayload includes email for ADMIN', () => {
+  it('deprecated buildCreateFloorMemberPayload aliases shop member builder', () => {
     const payload = buildCreateFloorMemberPayload({
       name: 'Admin User',
       email: 'admin@empresa.com',

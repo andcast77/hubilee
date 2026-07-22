@@ -197,7 +197,7 @@ export type TechMeCompany = {
 export type TechMeResponse = {
   user: {
     id: string
-    email: string
+    email: string | null
     name: string
     companyId: string
     membershipRole: string | null

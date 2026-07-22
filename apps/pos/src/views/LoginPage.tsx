@@ -23,16 +23,16 @@ import {
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import type { ApiResponse, LoginResponse } from "@hubilee/contracts";
 import {
-  floorLoginSchema,
+  codeLoginSchema,
   loginSchema,
-  shouldShowFloorTurnstile,
+  shouldShowCodeTurnstile,
 } from "@/lib/validations/auth";
 import { authApi } from "@/lib/api/client";
-import { floorLogin } from "@/lib/services/authService";
+import { codeLogin } from "@/lib/services/authService";
 import { getLandingUrls } from "@/lib/landingUrls";
 import { RegistrationTurnstile } from "@/components/auth/RegistrationTurnstile";
 
-type LoginMode = "owner" | "floor";
+type LoginMode = "owner" | "code";
 
 function safeNextPath(raw: string | null): string | null {
   if (!raw || !raw.startsWith("/")) return null;
@@ -55,11 +55,10 @@ export function LoginPage() {
   const [loginMode, setLoginMode] = useState<LoginMode>("owner");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [companyCode, setCompanyCode] = useState("");
-  const [employeeCode, setEmployeeCode] = useState("");
+  const [userCode, setUserCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [floorFailCount, setFloorFailCount] = useState(0);
+  const [codeFailCount, setCodeFailCount] = useState(0);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [mfaStep, setMfaStep] = useState(false);
   const [mfaTempToken, setMfaTempToken] = useState<string | null>(null);
@@ -69,7 +68,7 @@ export function LoginPage() {
   const [mfaCode, setMfaCode] = useState("");
   const [mfaBackup, setMfaBackup] = useState(false);
 
-  const showFloorTurnstile = shouldShowFloorTurnstile(floorFailCount);
+  const showCodeTurnstile = shouldShowCodeTurnstile(codeFailCount);
 
   const decorativePanel = (
     <AuthBrandDecorativePanel
@@ -134,12 +133,11 @@ export function LoginPage() {
     }
   }
 
-  async function handleFloorLoginSubmit(e: FormEvent) {
+  async function handleCodeLoginSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    const parsed = floorLoginSchema.safeParse({
-      companyCode,
-      employeeCode,
+    const parsed = codeLoginSchema.safeParse({
+      userCode,
       password,
       ...(captchaToken ? { captchaToken } : {}),
     });
@@ -147,16 +145,16 @@ export function LoginPage() {
       setError(parsed.error.issues[0]?.message || "Datos inválidos");
       return;
     }
-    if (showFloorTurnstile && !captchaToken) {
+    if (showCodeTurnstile && !captchaToken) {
       setError("Completa la verificación de seguridad");
       return;
     }
     setIsLoading(true);
     try {
-      await floorLogin(parsed.data);
+      await codeLogin(parsed.data);
       void navigate({ to: nextPath ?? "/dashboard", replace: true });
     } catch (err) {
-      setFloorFailCount((n) => n + 1);
+      setCodeFailCount((n) => n + 1);
       setCaptchaToken(null);
       setError(
         err instanceof Error ? err.message : "No se pudo iniciar sesión",
@@ -209,8 +207,8 @@ export function LoginPage() {
             ? mfaBackup
               ? "Introduce un código de respaldo de un solo uso."
               : "Introduce el código de tu app autenticadora."
-            : loginMode === "floor"
-              ? "Código de empresa, empleado y contraseña"
+            : loginMode === "code"
+              ? "Código de usuario y contraseña"
               : "Introduce tus credenciales"
         }
         footer={
@@ -314,16 +312,16 @@ export function LoginPage() {
               </Button>
               <Button
                 type="button"
-                variant={loginMode === "floor" ? "default" : "outline"}
+                variant={loginMode === "code" ? "default" : "outline"}
                 className={
-                  loginMode === "floor"
+                  loginMode === "code"
                     ? AUTH_BRAND_PRIMARY_BUTTON_CLASS
                     : AUTH_BRAND_OUTLINE_BUTTON_CLASS
                 }
-                onClick={() => switchMode("floor")}
+                onClick={() => switchMode("code")}
                 disabled={isLoading}
               >
-                Personal de piso
+                Código de usuario
               </Button>
             </div>
 
@@ -386,7 +384,7 @@ export function LoginPage() {
                 </Button>
               </form>
             ) : (
-              <form onSubmit={handleFloorLoginSubmit} className="space-y-4">
+              <form onSubmit={handleCodeLoginSubmit} className="space-y-4">
                 {error ? (
                   <AuthBrandErrorAlert variant="error">
                     <p className="text-sm text-red-200">{error}</p>
@@ -394,36 +392,17 @@ export function LoginPage() {
                 ) : null}
                 <div className="space-y-2">
                   <Label
-                    htmlFor="sf-company-code"
+                    htmlFor="sf-user-code"
                     className={AUTH_BRAND_LABEL_CLASS}
                   >
-                    Código de empresa
+                    Código de usuario
                   </Label>
                   <Input
-                    id="sf-company-code"
+                    id="sf-user-code"
                     type="text"
-                    value={companyCode}
-                    onChange={(e) => setCompanyCode(e.target.value)}
-                    placeholder="Código de la empresa"
-                    autoComplete="off"
-                    disabled={isLoading}
-                    className={AUTH_BRAND_INPUT_CLASS}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="sf-employee-code"
-                    className={AUTH_BRAND_LABEL_CLASS}
-                  >
-                    Código de empleado
-                  </Label>
-                  <Input
-                    id="sf-employee-code"
-                    type="text"
-                    inputMode="numeric"
-                    value={employeeCode}
-                    onChange={(e) => setEmployeeCode(e.target.value)}
-                    placeholder="000000"
+                    value={userCode}
+                    onChange={(e) => setUserCode(e.target.value)}
+                    placeholder="Tu código de usuario"
                     autoComplete="username"
                     disabled={isLoading}
                     className={AUTH_BRAND_INPUT_CLASS}
@@ -431,13 +410,13 @@ export function LoginPage() {
                 </div>
                 <div className="space-y-2">
                   <Label
-                    htmlFor="sf-floor-password"
+                    htmlFor="sf-code-password"
                     className={AUTH_BRAND_LABEL_CLASS}
                   >
                     Contraseña
                   </Label>
                   <Input
-                    id="sf-floor-password"
+                    id="sf-code-password"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -447,7 +426,7 @@ export function LoginPage() {
                     className={AUTH_BRAND_INPUT_CLASS}
                   />
                 </div>
-                {showFloorTurnstile ? (
+                {showCodeTurnstile ? (
                   <RegistrationTurnstile onToken={setCaptchaToken} />
                 ) : null}
                 <Button

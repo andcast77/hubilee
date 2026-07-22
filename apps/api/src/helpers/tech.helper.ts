@@ -148,7 +148,7 @@ export function toVisitResponse(row: VisitEntity): VisitResponse {
 /** Me: build response from user + company */
 export type MeUserEntity = {
   id: string
-  email: string
+  email: string | null
   firstName: string | null
   lastName: string | null
   isActive: boolean
@@ -167,7 +167,7 @@ export function toMeResponse(
   company: TechMeCompany | undefined,
   ctx: { companyId: string; membershipRole: string | null; isSuperuser: boolean }
 ): TechMeResponse {
-  const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email
+  const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email || ''
   return {
     user: {
       id: user.id,

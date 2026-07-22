@@ -17,6 +17,7 @@ import { findModulesByKeys, getCompanyModules } from '../core/modules.js'
 import type { LoginBody, RegisterBody, ChangePasswordBody, FloorLoginBody } from '../dto/auth.dto.js'
 import { verifyAndConsumeRegistrationTicket } from './registration-ticket.service.js'
 import { allocateUniqueCompanyCode } from './company-code.js'
+import { allocateUniqueUserCode } from './user-code.js'
 import type { CompanyRow } from '../core/auth-context.js'
 import {
   UnauthorizedError,
@@ -174,13 +175,21 @@ export type LoginResult =
     }
 
 export type RegisterResult = {
-  user: { id: string; email: string | null; name: string; role: string; companyId?: string }
+  user: {
+    id: string
+    email: string | null
+    name: string
+    role: string
+    companyId?: string
+    /** Globally unique login id (owner can use code or email). */
+    userCode?: string
+  }
   token: string
   company?: {
     id: string
     name: string
     modules: { hr: boolean; pos: boolean; tech: boolean }
-    /** Opaque floor-login company code (owner may view/copy) */
+    /** Opaque company identifier (not required for login). */
     companyCode: string
   }
 }
@@ -199,35 +208,57 @@ export type MeResult = {
   company?: { id: string; name: string; modules: { hr: boolean; pos: boolean; tech: boolean } }
 }
 
-export async function login(body: LoginBody): Promise<LoginResult> {
-  const { email, password, companyId: bodyCompanyId } = body
+const loginUserSelect = {
+  id: true,
+  email: true,
+  userCode: true,
+  password: true,
+  role: true,
+  isActive: true,
+  isSuperuser: true,
+  firstName: true,
+  lastName: true,
+  posPreferredCompanyId: true,
+  twoFactorEnabled: true,
+  failedLoginAttempts: true,
+  lockedUntil: true,
+} as const
 
-  const user = await prisma.user.findFirst({
-    where: { email },
-    select: {
-      id: true,
-      email: true,
-      password: true,
-      role: true,
-      isActive: true,
-      isSuperuser: true,
-      firstName: true,
-      lastName: true,
-      posPreferredCompanyId: true,
-      twoFactorEnabled: true,
-      failedLoginAttempts: true,
-      lockedUntil: true,
-    },
-  })
+/**
+ * Unified login: userCode+password (all users) or email+password (when email is set).
+ * userCode path: Turnstile after failed attempts; deny if OPEN CashSession;
+ * revoke other sessions for codes-only (null email) users.
+ */
+export async function login(body: LoginBody): Promise<LoginResult> {
+  const { password, companyId: bodyCompanyId, captchaToken } = body
+  const viaCode = Boolean(body.userCode?.trim())
+  const now = new Date()
+
+  const user = viaCode
+    ? await prisma.user.findUnique({
+        where: { userCode: body.userCode!.trim() },
+        select: loginUserSelect,
+      })
+    : await prisma.user.findFirst({
+        where: { email: body.email!.trim().toLowerCase() },
+        select: loginUserSelect,
+      })
 
   if (!user) throw new UnauthorizedError('Credenciales inválidas')
-  // Floor (codes-only) users must not authenticate via email+password.
-  if (user.email == null) throw new UnauthorizedError('Credenciales inválidas')
+  // Email path must not authenticate codes-only accounts (they have null email).
+  if (!viaCode && user.email == null) throw new UnauthorizedError('Credenciales inválidas')
 
-  const now = new Date()
   assertNotLocked(user, now)
 
   if (!user.isActive) throw new UnauthorizedError('Usuario inactivo')
+
+  if (viaCode && user.failedLoginAttempts >= 1) {
+    const cap = captchaToken?.trim()
+    if (!cap) {
+      throw new BadRequestError('Captcha requerido', 'CAPTCHA_FAILED')
+    }
+    await verifyTurnstileToken(cap)
+  }
 
   const isValidPassword = await bcrypt.compare(password, user.password)
   if (!isValidPassword) {
@@ -235,9 +266,27 @@ export async function login(body: LoginBody): Promise<LoginResult> {
     await recordFailedPasswordAttempt(user, auditCo, now)
   }
 
+  if (viaCode) {
+    const openCash = await prisma.cashSession.findFirst({
+      where: { openedByUserId: user.id, status: 'OPEN' },
+      select: { id: true },
+    })
+    if (openCash) {
+      throw new ConflictError(
+        'Tienes una caja abierta. Ciérrala antes de iniciar sesión en otro terminal.',
+        'CASH_SESSION_OPEN',
+      )
+    }
+  }
+
   const wasLocked = user.lockedUntil != null
   const auditCoClear = await resolveAuditCompanyId(user.id, bodyCompanyId)
   await clearLoginLockout(user.id, wasLocked, auditCoClear)
+
+  // One terminal for codes-only floor staff.
+  if (viaCode && user.email == null) {
+    await revokeAllUserSessions(user.id)
+  }
 
   const companies = await getUserCompanies(user.id, user.isSuperuser ?? false)
   const preferredCompanyId = bodyCompanyId ?? user.posPreferredCompanyId ?? undefined
@@ -245,7 +294,10 @@ export async function login(body: LoginBody): Promise<LoginResult> {
   const selectedCompany = selected?.selectedCompany ?? null
   const selectedMembershipRole = selected?.selectedMembershipRole ?? null
 
-  const name = [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || user.email
+  const name =
+    [user.firstName, user.lastName].filter(Boolean).join(' ').trim() ||
+    user.email ||
+    `Usuario ${user.userCode}`
 
   if (user.twoFactorEnabled) {
     const tempToken = generateMfaPendingToken(user.id)
@@ -305,129 +357,13 @@ export async function login(body: LoginBody): Promise<LoginResult> {
   return result
 }
 
-/**
- * Floor staff login: companyCode + employeeCode + password.
- * Reuses User lockout columns; requires Turnstile when failedLoginAttempts >= 1.
- * Revokes other Sessions; denies while user has an OPEN CashSession.
- */
-export async function floorLogin(body: FloorLoginBody): Promise<Extract<LoginResult, { token: string }>> {
-  const { companyCode, employeeCode, password, captchaToken } = body
-  const now = new Date()
-
-  const company = await prisma.company.findUnique({
-    where: { companyCode },
-    select: { id: true, name: true, isActive: true },
+/** Alias: code+password login via POST /v1/auth/floor-login. */
+export async function floorLogin(body: FloorLoginBody): Promise<LoginResult> {
+  return login({
+    userCode: body.userCode,
+    password: body.password,
+    captchaToken: body.captchaToken,
   })
-  if (!company || !company.isActive) {
-    throw new UnauthorizedError('Credenciales inválidas')
-  }
-
-  const member = await prisma.companyMember.findUnique({
-    where: {
-      companyId_employeeCode: { companyId: company.id, employeeCode },
-    },
-    select: {
-      id: true,
-      companyId: true,
-      membershipRole: true,
-      user: {
-        select: {
-          id: true,
-          email: true,
-          password: true,
-          role: true,
-          isActive: true,
-          isSuperuser: true,
-          firstName: true,
-          lastName: true,
-          posPreferredCompanyId: true,
-          twoFactorEnabled: true,
-          failedLoginAttempts: true,
-          lockedUntil: true,
-        },
-      },
-    },
-  })
-
-  if (!member?.user) {
-    throw new UnauthorizedError('Credenciales inválidas')
-  }
-
-  const user = member.user
-  assertNotLocked(user, now)
-
-  if (!user.isActive) throw new UnauthorizedError('Usuario inactivo')
-
-  if (user.failedLoginAttempts >= 1) {
-    const cap = captchaToken?.trim()
-    if (!cap) {
-      throw new BadRequestError('Captcha requerido', 'CAPTCHA_FAILED')
-    }
-    await verifyTurnstileToken(cap)
-  }
-
-  const isValidPassword = await bcrypt.compare(password, user.password)
-  if (!isValidPassword) {
-    await recordFailedPasswordAttempt(user, company.id, now)
-  }
-
-  const openCash = await prisma.cashSession.findFirst({
-    where: { openedByUserId: user.id, status: 'OPEN' },
-    select: { id: true },
-  })
-  if (openCash) {
-    throw new ConflictError(
-      'Tienes una caja abierta. Ciérrala antes de iniciar sesión en otro terminal.',
-      'CASH_SESSION_OPEN',
-    )
-  }
-
-  const wasLocked = user.lockedUntil != null
-  await clearLoginLockout(user.id, wasLocked, company.id)
-  await revokeAllUserSessions(user.id)
-
-  const companies = await getUserCompanies(user.id, user.isSuperuser ?? false)
-  const selected = selectCompanyForUser(companies, company.id)
-  const selectedCompany = selected?.selectedCompany ?? {
-    id: company.id,
-    name: company.name,
-    modules: { hr: false, pos: false, tech: false },
-  }
-  const selectedMembershipRole = selected?.selectedMembershipRole ?? member.membershipRole
-
-  // Floor MFA is out of scope for day-1; codes login issues a full session.
-  const name =
-    [user.firstName, user.lastName].filter(Boolean).join(' ').trim() ||
-    user.email ||
-    `Empleado ${employeeCode}`
-
-  const tokenPayload: TokenPayload = {
-    id: user.id,
-    email: user.email,
-    role: user.role,
-    isSuperuser: user.isSuperuser ?? false,
-    companyId: selectedCompany.id,
-    membershipRole: selectedMembershipRole,
-  }
-  const token = generateToken(tokenPayload)
-
-  const result: LoginResult = {
-    user: {
-      id: user.id,
-      email: user.email,
-      name,
-      role: user.role,
-      isSuperuser: user.isSuperuser ?? false,
-    },
-    token,
-    companyId: selectedCompany.id,
-    company: selectedCompany,
-    membershipRole: selectedMembershipRole,
-  }
-  if (companies.length > 1 || user.isSuperuser) {
-    result.companies = companies
-  }
-  return result
 }
 
 export type MfaVerifyBody = {
@@ -575,11 +511,13 @@ export async function register(body: RegisterBody): Promise<RegisterResult> {
     const posMod = modulesMap.get('pos')
     const techMod = modulesMap.get('tech')
     const companyCode = await allocateUniqueCompanyCode()
+    const userCode = await allocateUniqueUserCode()
 
     const { user, company } = await prisma.$transaction(async (tx) => {
       const u = await tx.user.create({
         data: {
           email,
+          userCode,
           password: hashedPassword,
           firstName,
           lastName,
@@ -642,6 +580,7 @@ export async function register(body: RegisterBody): Promise<RegisterResult> {
         name,
         role: user.role,
         companyId: company.id,
+        userCode: user.userCode,
       },
       token,
       company: {
@@ -653,9 +592,11 @@ export async function register(body: RegisterBody): Promise<RegisterResult> {
     }
   }
 
+  const userCode = await allocateUniqueUserCode()
   const user = await prisma.user.create({
     data: {
       email,
+      userCode,
       password: hashedPassword,
       firstName,
       lastName,

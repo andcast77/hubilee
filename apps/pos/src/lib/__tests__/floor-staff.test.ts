@@ -1,30 +1,41 @@
 import { describe, expect, it } from 'vitest'
 import {
+  formatUserCodeForDisplay,
   formatFloorCodesForDisplay,
   buildResetFloorPasswordPayload,
   buildAttachFloorEmailPayload,
   memberHasFloorCodes,
+  memberHasUserCode,
 } from '../floor-staff'
 
-describe('Floor codes visible/copyable', () => {
-  it('formatFloorCodesForDisplay surfaces companyCode and employeeCode for copy', () => {
-    const display = formatFloorCodesForDisplay({
-      companyCode: 'a1b2c3d4e5f6a7b8',
-      employeeCode: '123456',
-    })
-    expect(display.companyCode).toBe('a1b2c3d4e5f6a7b8')
-    expect(display.employeeCode).toBe('123456')
-    expect(display.copyText).toContain('a1b2c3d4e5f6a7b8')
-    expect(display.copyText).toContain('123456')
+describe('user-code helpers (via floor-staff re-export)', () => {
+  it('formatUserCodeForDisplay surfaces userCode for copy', () => {
+    const display = formatUserCodeForDisplay('12345678')
+    expect(display.userCode).toBe('12345678')
+    expect(display.copyText).toContain('12345678')
   })
 
-  it('memberHasFloorCodes is true when employeeCode is present', () => {
-    expect(memberHasFloorCodes({ employeeCode: '654321', email: null })).toBe(true)
-    expect(memberHasFloorCodes({ employeeCode: null, email: 'a@b.com' })).toBe(false)
+  it('formatFloorCodesForDisplay ignores employeeCode (uses userCode only)', () => {
+    const display = formatFloorCodesForDisplay({
+      userCode: '12345678',
+      employeeCode: '999999',
+      companyCode: 'ignored',
+    })
+    expect(display.employeeCode).toBe('12345678')
+    expect(display.copyText).toContain('12345678')
+    expect(display.copyText).not.toContain('999999')
+  })
+
+  it('memberHasUserCode / memberHasFloorCodes ignore employeeCode-only rows', () => {
+    expect(memberHasUserCode({ userCode: '12345678', email: null })).toBe(true)
+    expect(memberHasFloorCodes({ employeeCode: '654321', email: null })).toBe(false)
+    expect(memberHasFloorCodes({ userCode: null, employeeCode: null, email: 'a@b.com' })).toBe(
+      false,
+    )
   })
 })
 
-describe('Admin floor password reset + optional email attach', () => {
+describe('Admin shop-user password reset + optional email attach', () => {
   it('buildResetFloorPasswordPayload requires new password only', () => {
     expect(buildResetFloorPasswordPayload({ password: 'new-floor-pass' })).toEqual({
       password: 'new-floor-pass',

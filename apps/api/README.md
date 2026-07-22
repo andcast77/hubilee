@@ -21,7 +21,7 @@ API compartida **Fastify 5** para Hubilee: JWT, multi-empresa (contexto de compa
 
 - **Global:** 100 req/min por IP en el resto de rutas.
 - **`POST /v1/auth/login`**, **`register`**, **`verify`:** excluidas del bucket global; bucket dedicado **20 req/min** (`ms-auth-public`).
-
+- **`POST /v1/auth/floor-login`:** **deprecated** thin alias of code login (`login({ userCode })`). Prefer **`POST /v1/auth/login`**. Still rate-limited in the same `ms-auth-public` bucket while the alias remains.
 ## 🚀 Inicio Rápido
 
 ### Prerrequisitos

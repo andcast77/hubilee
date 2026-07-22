@@ -11,8 +11,8 @@ export type MemberResponse = {
   membershipRole: string
   createdAt: Date
   storeIds?: string[]
-  /** Present for floor USER members with codes login */
-  employeeCode?: string | null
+  /** Globally unique login id (User.userCode) */
+  userCode?: string | null
 }
 
 /** Input: create member (user + add to company). Email optional for floor USER. */

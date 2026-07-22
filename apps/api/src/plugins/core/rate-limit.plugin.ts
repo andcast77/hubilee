@@ -16,6 +16,7 @@ export function isAuthPublicPath(url: string): boolean {
   const p = pathOnly(url)
   return (
     p === '/v1/auth/login' ||
+    // @deprecated thin alias of login({ userCode }); keep rate-limited with public auth until removed
     p === '/v1/auth/floor-login' ||
     p === '/v1/auth/register' ||
     p === '/v1/auth/verify' ||

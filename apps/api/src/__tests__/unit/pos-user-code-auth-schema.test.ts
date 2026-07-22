@@ -34,7 +34,7 @@ function extractModelBlock(schema: string, modelName: string): string {
   return after.slice(0, end)
 }
 
-describe('pos-floor-staff-auth schema (PR1)', () => {
+describe('pos-user-code-auth schema (PR1 identity + PR3 DROP)', () => {
   it('User.email is nullable and not a full-table @unique (partial unique in SQL)', () => {
     const user = extractModelBlock(readSchema(), 'User')
     expect(user).toMatch(/email\s+String\?/)
@@ -47,6 +47,22 @@ describe('pos-floor-staff-auth schema (PR1)', () => {
     expect(sql).toMatch(
       /CREATE UNIQUE INDEX\s+"users_email_unique_not_null"\s+ON\s+"users"\s*\(\s*"email"\s*\)\s+WHERE\s+"email"\s+IS\s+NOT\s+NULL/i,
     )
+  })
+
+  it('User.userCode is required and unique in schema', () => {
+    const user = extractModelBlock(readSchema(), 'User')
+    expect(user).toMatch(/userCode\s+String\s+@unique/)
+  })
+
+  it('migrations introduce userCode (add as loginCode then rename, or direct)', () => {
+    const sql = readAllMigrationSql()
+    const hasDirect =
+      /ALTER TABLE\s+"users"\s+ADD COLUMN\s+"userCode"/i.test(sql) &&
+      /ALTER TABLE\s+"users"\s+ALTER COLUMN\s+"userCode"\s+SET NOT NULL/i.test(sql)
+    const hasRenamePath =
+      /ALTER TABLE\s+"users"\s+ADD COLUMN\s+"loginCode"/i.test(sql) &&
+      /RENAME COLUMN\s+"loginCode"\s+TO\s+"userCode"/i.test(sql)
+    expect(hasDirect || hasRenamePath).toBe(true)
   })
 
   it('Company.companyCode is required and unique in schema', () => {
@@ -63,10 +79,20 @@ describe('pos-floor-staff-auth schema (PR1)', () => {
     )
   })
 
-  it('CompanyMember.employeeCode is nullable with unique(companyId, employeeCode)', () => {
+  it('CompanyMember has no employeeCode field or companyId+employeeCode unique (PR3 DROP)', () => {
     const member = extractModelBlock(readSchema(), 'CompanyMember')
-    expect(member).toMatch(/employeeCode\s+String\?/)
-    expect(member).toMatch(/@@unique\(\s*\[\s*companyId\s*,\s*employeeCode\s*\]\s*\)/)
+    expect(member).not.toMatch(/\bemployeeCode\b/)
+    expect(member).not.toMatch(/@@unique\(\s*\[\s*companyId\s*,\s*employeeCode\s*\]\s*\)/)
+  })
+
+  it('migration drops company_members.employeeCode and its unique index', () => {
+    const sql = readAllMigrationSql()
+    expect(sql).toMatch(
+      /DROP INDEX\s+(IF EXISTS\s+)?"company_members_companyId_employeeCode_key"/i,
+    )
+    expect(sql).toMatch(
+      /ALTER TABLE\s+"company_members"\s+DROP COLUMN\s+(IF EXISTS\s+)?"employeeCode"/i,
+    )
   })
 
   it('migration defines partial unique one OPEN CashSession per openedByUserId', () => {

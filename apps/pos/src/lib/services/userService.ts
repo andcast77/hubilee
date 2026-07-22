@@ -3,9 +3,9 @@ import { ApiError, ErrorCodes } from '@/lib/utils/errors'
 import type { CreateUserInput, UpdateUserInput, UserQueryInput } from '@/lib/validations/user'
 import type { CreateCompanyMemberPayload } from '@/lib/validations/auth'
 import {
-  buildAttachFloorEmailPayload,
-  buildResetFloorPasswordPayload,
-} from '@/lib/floor-staff'
+  buildAttachShopUserEmailPayload,
+  buildResetShopUserPasswordPayload,
+} from '@/lib/user-code'
 
 export type CompanyMemberRow = {
   id: string
@@ -14,10 +14,10 @@ export type CompanyMemberRow = {
   role: string
   active: boolean
   storeIds: string[]
-  employeeCode?: string | null
+  userCode?: string | null
 }
 
-/** Company members (usuarios de la empresa) - misma lista en Hr y Pos */
+/** Company members (usuarios de la tienda) - misma lista en Hr y Pos */
 export async function getCompanyMembers(companyId: string) {
   const response = await companiesApi.getMembers<{ success: boolean; data: any[]; error?: string }>(companyId)
   if (!response.success) {
@@ -32,7 +32,7 @@ export async function getCompanyMembers(companyId: string) {
       role: m.membershipRole ?? 'USER',
       active: true,
       storeIds: m.storeIds ?? [],
-      employeeCode: m.employeeCode ?? null,
+      userCode: m.userCode ?? null,
     })),
     pagination: { page: 1, limit: data.length, total: data.length, totalPages: 1 },
   }
@@ -63,7 +63,7 @@ export async function createCompanyMember(companyId: string, data: CreateCompany
 }
 
 export async function resetMemberPassword(companyId: string, userId: string, password: string) {
-  const body = buildResetFloorPasswordPayload({ password })
+  const body = buildResetShopUserPasswordPayload({ password })
   const response = await companiesApi.resetMemberPassword<{
     success: boolean
     data?: unknown
@@ -80,7 +80,7 @@ export async function resetMemberPassword(companyId: string, userId: string, pas
 }
 
 export async function attachMemberEmail(companyId: string, userId: string, email: string) {
-  const body = buildAttachFloorEmailPayload({ email })
+  const body = buildAttachShopUserEmailPayload({ email })
   const response = await companiesApi.attachMemberEmail<{
     success: boolean
     data?: unknown

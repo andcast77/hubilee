@@ -30,7 +30,7 @@ export async function create(request: FastifyRequest<{ Params: { companyId: stri
     lastName: result.user.lastName,
     name: userDisplayName(result.user),
     membershipRole: result.membershipRole,
-    employeeCode: result.employeeCode,
+    userCode: result.userCode,
     storeIds: result.storeIds,
   })
 }

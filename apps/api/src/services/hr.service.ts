@@ -69,7 +69,7 @@ export async function getMe(ctx: CompanyContext): Promise<{ user: HrMeUser } | {
     }
   }
 
-  const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email
+  const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email || ''
   const safeUser = hrHelper.toHrMeUser({
     id: user.id,
     email: user.email,

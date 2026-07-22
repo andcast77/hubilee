@@ -37,12 +37,11 @@ import { useCategories, useCreateCategory, useDeleteCategory } from "@/hooks/use
 import { useCreateCustomer, useCustomer, useUpdateCustomer } from "@/hooks/useCustomers";
 import { useCreateSupplier, useSupplier, useUpdateSupplier } from "@/hooks/useSuppliers";
 import {
-  useCompanyCredentials,
   useCreateCompanyMember,
   useUser,
   useUpdateUser,
 } from "@/hooks/useUsers";
-import { buildCreateFloorMemberPayload } from "@/lib/validations/auth";
+import { buildCreateShopMemberPayload } from "@/lib/validations/auth";
 import { useUser as useCurrentUser } from "@/hooks/useUser";
 import type { CreateUserInput } from "@/lib/validations/user";
 import { useSale, useSales } from "@/hooks/useSales";
@@ -329,51 +328,35 @@ export function UserCreatePage() {
   const navigate = useNavigate();
   const { data: currentUser } = useCurrentUser();
   const companyId = currentUser?.companyId;
-  const credentials = useCompanyCredentials(companyId);
   const mutation = useCreateCompanyMember(companyId);
-  const [createdCodes, setCreatedCodes] = useState<{
-    employeeCode?: string | null;
-    companyCode?: string | null;
-  } | null>(null);
+  const [createdUserCode, setCreatedUserCode] = useState<string | null>(null);
 
   return (
     <PageFrame
-      title="Nuevo Usuario"
+      title="Nuevo usuario de la tienda"
       breadcrumbs={[
         { label: "Usuarios", href: "/admin/users" },
         { label: "Nuevo" },
       ]}
     >
-      {createdCodes ? (
+      {createdUserCode ? (
         <div className="mb-4 space-y-2 rounded-md border bg-muted/40 p-4 text-sm">
-          <p className="font-medium">Usuario de piso creado</p>
-          {createdCodes.companyCode ? (
-            <p>
-              Código de empresa:{" "}
-              <code className="select-all">{createdCodes.companyCode}</code>
-            </p>
-          ) : null}
-          {createdCodes.employeeCode ? (
-            <p>
-              Código de empleado:{" "}
-              <code className="select-all">{createdCodes.employeeCode}</code>
-            </p>
-          ) : null}
+          <p className="font-medium">Usuario de la tienda creado</p>
+          <p>
+            Código de usuario:{" "}
+            <code className="select-all">{createdUserCode}</code>
+          </p>
           <Button type="button" onClick={() => void navigate({ to: "/admin/users" })}>
             Ir a la lista
           </Button>
         </div>
       ) : (
         <UserForm
-          companyCode={credentials.data?.companyCode}
           onSubmit={async (data) => {
-            const payload = buildCreateFloorMemberPayload(data as CreateUserInput);
+            const payload = buildCreateShopMemberPayload(data as CreateUserInput);
             const result = await mutation.mutateAsync(payload);
-            if (result?.employeeCode) {
-              setCreatedCodes({
-                employeeCode: result.employeeCode,
-                companyCode: credentials.data?.companyCode ?? null,
-              });
+            if (result?.userCode) {
+              setCreatedUserCode(String(result.userCode));
               return;
             }
             void navigate({ to: "/admin/users" });

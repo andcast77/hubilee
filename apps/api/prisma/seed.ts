@@ -412,6 +412,7 @@ async function main() {
   const superuser = await prisma.user.create({
     data: {
       email: 'admin@multiflow.com',
+      userCode: '90000001',
       password: hashedPassword,
       firstName: 'Admin',
       lastName: 'Multiflow',
@@ -424,6 +425,7 @@ async function main() {
   const acmeGerente = await prisma.user.create({
     data: {
       email: 'gerente@acme.com',
+      userCode: '90000002',
       password: hashedPassword,
       firstName: 'Roberto',
       lastName: 'Acme',
@@ -435,6 +437,7 @@ async function main() {
   const acmeVentas = await prisma.user.create({
     data: {
       email: 'ventas@acme.com',
+      userCode: '90000003',
       password: hashedPassword,
       firstName: 'Laura',
       lastName: 'Acme',
@@ -1423,6 +1426,7 @@ async function main() {
   const gerenteBeta = await prisma.user.create({
     data: {
       email: 'gerente@betacorp.com',
+      userCode: '90000004',
       password: hashedPassword,
       firstName: 'Carmen',
       lastName: 'Beta',
@@ -1435,6 +1439,7 @@ async function main() {
   const ventasBeta = await prisma.user.create({
     data: {
       email: 'ventas@betacorp.com',
+      userCode: '90000005',
       password: hashedPassword,
       firstName: 'Diego',
       lastName: 'Beta',
