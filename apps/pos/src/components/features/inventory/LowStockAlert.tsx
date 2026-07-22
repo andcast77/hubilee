@@ -1,6 +1,6 @@
 'use client'
 
-import { Link } from '@tanstack/react-router'
+import { Link } from '@/lib/next-nav'
 import { useLowStockProducts } from '@/hooks/useInventory'
 import {
   Table,

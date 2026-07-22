@@ -67,7 +67,20 @@ export default function RootLayout({
       >
         <QueryProvider>
           <ServiceInitializer />
-          <Toaster richColors position="top-center" closeButton />
+          <Toaster
+            richColors
+            position="top-center"
+            closeButton
+            duration={4000}
+            visibleToasts={3}
+            toastOptions={{
+              duration: 4000,
+              classNames: {
+                toast: "z-[100001]",
+              },
+            }}
+            style={{ zIndex: 100001 }}
+          />
           {children}
         </QueryProvider>
       </body>

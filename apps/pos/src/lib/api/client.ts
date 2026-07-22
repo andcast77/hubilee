@@ -29,8 +29,8 @@ function withStoreIdHeader(options?: RequestInit): RequestInit {
   return { ...(options ?? {}), headers }
 }
 
-// Cookie transport (web, default) or Bearer transport backed by Tauri secure
-// storage (desktop) — see `sdd/web-desktop-vite-tauri/design` ADR-A3 and
+// Cookie transport (web, default) or Bearer transport backed by Electron
+// secure storage (desktop) — see `pos-desktop-auth-transport` / platform.ts.
 // `platform.ts`. `createApiClientOptions()` returns `{}` on web, so this is
 // byte-identical to `new SharedApiClient(API_URL)` there.
 const sharedClient = new SharedApiClient(API_URL, createApiClientOptions())

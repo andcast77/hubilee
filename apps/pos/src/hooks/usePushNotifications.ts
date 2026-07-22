@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { useUser } from '@/hooks/useUser'
 import { posApi } from '@/lib/api/client'
+import { getPosServiceWorkerRegistration } from '@/lib/pwa'
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY as string | undefined;
 
@@ -38,9 +39,8 @@ export function usePushNotifications() {
     }
 
     try {
-      const registration = await navigator.serviceWorker.register('/sw.js', {
-        scope: '/',
-      })
+      const { scriptUrl, options } = getPosServiceWorkerRegistration()
+      const registration = await navigator.serviceWorker.register(scriptUrl, options)
       return registration
     } catch (error) {
       console.error('Service Worker registration failed:', error)

@@ -53,7 +53,7 @@ describe("getHubServiceWorkerRegistration", () => {
     expect(registration.options.scope).toBe(HUB_SW_SCOPE);
   });
 
-  it("never uses root scope like Pos follow-up debt", () => {
+  it("never uses root scope", () => {
     const { options } = getHubServiceWorkerRegistration();
     expect(options.scope).not.toBe("/");
   });

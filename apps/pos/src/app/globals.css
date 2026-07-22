@@ -107,3 +107,119 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+@keyframes pos-blob {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(12px, -18px) scale(1.06);
+  }
+}
+
+@keyframes pos-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Email login dialog — match Spike-style Pos login card */
+.pos-login-email-dialog.ui-dialog-content {
+  gap: 1.5rem;
+  max-width: 26rem;
+  border: 1px solid rgb(226 232 240 / 0.9);
+  border-radius: 1.75rem;
+  background-color: #ffffff;
+  padding: 1.75rem 1.75rem 1.5rem;
+  box-shadow: 0 20px 60px -20px rgb(15 23 42 / 0.22);
+}
+
+.pos-login-email-dialog .ui-dialog__header {
+  gap: 0.375rem;
+  text-align: left;
+}
+
+.pos-login-email-dialog .ui-dialog__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: rgb(15 23 42);
+}
+
+.pos-login-email-dialog .ui-dialog__description {
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: rgb(100 116 139);
+}
+
+.pos-login-email-dialog .ui-dialog-close {
+  right: 1.25rem;
+  top: 1.25rem;
+  border-radius: 0.75rem;
+  color: rgb(100 116 139);
+}
+
+.pos-login-email-dialog .ui-dialog-close:hover {
+  background-color: rgb(241 245 249);
+  color: rgb(15 23 42);
+}
+
+.pos-login-email-dialog .ui-dialog-close:focus {
+  box-shadow:
+    0 0 0 2px #ffffff,
+    0 0 0 4px rgb(0 133 219 / 0.35);
+}
+
+.pos-login-email-dialog .ui-input {
+  height: 3rem;
+  border-radius: 0.75rem;
+  border-color: rgb(226 232 240);
+  background-color: #ffffff;
+  color: rgb(15 23 42);
+  box-shadow: none;
+}
+
+.pos-login-email-dialog .ui-input::placeholder {
+  color: rgb(148 163 184);
+}
+
+.pos-login-email-dialog .ui-input:focus-visible {
+  border-color: #0085db;
+  box-shadow: 0 0 0 3px rgb(0 133 219 / 0.25);
+}
+
+.pos-login-email-dialog .ui-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgb(71 85 105);
+}
+
+.pos-login-email-dialog .ui-btn {
+  height: 3rem;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.pos-login-email-dialog .ui-btn--variant-default,
+.pos-login-email-dialog button[type="submit"] {
+  background-color: #0085db;
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgb(0 133 219 / 0.25);
+}
+
+.pos-login-email-dialog .ui-btn--variant-default:hover:not(:disabled),
+.pos-login-email-dialog button[type="submit"]:hover:not(:disabled) {
+  background-color: #0074c2;
+}
+
+.ui-dialog-overlay:has(+ .pos-login-email-dialog),
+.ui-dialog-overlay:has(~ .pos-login-email-dialog) {
+  background-color: rgb(15 23 42 / 0.45);
+  backdrop-filter: blur(4px);
+}

@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "@/lib/next-nav";
 import { ShoppingCart, Users, Wrench, LayoutDashboard, ArrowRight } from "lucide-react";
 import { getLandingUrls } from "@/lib/landingUrls";
 import { HubHero } from "@/components/landing/HubHero";

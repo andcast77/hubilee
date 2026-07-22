@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link } from '@/lib/next-nav'
 import { Badge, Button } from '@hubilee/ui'
 import { PageFrame } from '@/views/PageFrame'
 import { ProductPanel } from '@/components/features/pos/ProductPanel'

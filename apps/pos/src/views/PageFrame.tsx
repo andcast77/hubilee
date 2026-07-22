@@ -1,6 +1,6 @@
 "use client";
 
-import { Link } from "@tanstack/react-router";
+import { Link } from "@/lib/next-nav";
 import { AppBreadcrumb } from "@hubilee/ui";
 
 export type PageFrameBreadcrumb = { label: string; href?: string };

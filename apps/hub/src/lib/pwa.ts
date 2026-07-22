@@ -8,7 +8,6 @@ export const HUB_SW_SCRIPT_URL = "/sw.js";
 
 /**
  * Hardcoded SW registration scope — dashboard webapp only.
- * Do not widen to `/` (Pos follow-up debt).
  */
 export const HUB_SW_SCOPE = "/dashboard/";
 

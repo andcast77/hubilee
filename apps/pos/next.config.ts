@@ -1,5 +1,7 @@
 import path from "path";
 import type { NextConfig } from "next";
+import { buildPosLegacyAppRedirects } from "./src/lib/app-paths";
+import { buildPosContentSecurityPolicy } from "./src/lib/pwa";
 
 const monorepoRoot = path.join(__dirname, "..", "..");
 
@@ -35,8 +37,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' http://localhost:* https: wss: ws: https://challenges.cloudflare.com; frame-src 'self' https://challenges.cloudflare.com; frame-ancestors 'none';",
+            value: buildPosContentSecurityPolicy(),
           },
         ],
       },
@@ -53,6 +54,10 @@ const nextConfig: NextConfig = {
 
   typescript: {
     ignoreBuildErrors: false,
+  },
+
+  async redirects() {
+    return buildPosLegacyAppRedirects();
   },
 
   async rewrites() {

@@ -11,7 +11,7 @@ export function PlaceholderPage({ title }: { title: string }) {
           <CardTitle>{title}</CardTitle>
         </CardHeader>
         <CardContent className="text-slate-600">
-          Esta vista esta en proceso de migracion a Vite/API unificada.
+          Esta vista esta en proceso de migracion a Next/API unificada.
         </CardContent>
       </Card>
     </PageFrame>

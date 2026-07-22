@@ -1,80 +1,61 @@
-import { describe, expect, it, vi, afterEach } from 'vitest'
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
-import {
-  createMemoryHistory,
-  createRootRoute,
-  createRoute,
-  createRouter,
-  RouterProvider,
-} from '@tanstack/react-router'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { describe, expect, it, vi, afterEach, beforeEach } from "vitest";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
-// Characterization test (PR3, route-tree migration): locks in the spec
-// scenario "Unauthenticated access redirects" — `GIVEN no valid
-// session/token, WHEN the user navigates to a protected route, THEN the
-// router redirects to /login; the protected view does not render."
-//
-// `ProtectedRoute` (reused as-is from the pre-migration Next.js version,
-// only its `next/navigation` primitives were swapped to
-// `@tanstack/react-router`) performs this redirect as a client-side
-// `useEffect`, not a router `beforeLoad` guard, so this needs an actual
-// render (via `@testing-library/react`) rather than a router-only
-// `router.load()` check.
-vi.mock('@/hooks/useUser', () => ({
+const replaceMock = vi.fn();
+const pushMock = vi.fn();
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: pushMock, replace: replaceMock }),
+  usePathname: () => "/app/dashboard",
+  useParams: () => ({}),
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+vi.mock("@/hooks/useUser", () => ({
   useUser: () => ({ data: undefined, isLoading: false }),
-}))
+}));
 
-afterEach(() => cleanup())
+afterEach(() => {
+  cleanup();
+  replaceMock.mockClear();
+  pushMock.mockClear();
+});
 
-function buildTestRouter(initialPath: string) {
-  const rootRoute = createRootRoute()
-  const protectedRoute = createRoute({
-    getParentRoute: () => rootRoute,
-    path: '/dashboard',
-    component: () => (
+describe("ProtectedRoute (unauthenticated redirect)", () => {
+  beforeEach(() => {
+    replaceMock.mockClear();
+  });
+
+  it("redirects to /login and does not render the protected view", async () => {
+    render(
       <ProtectedRoute>
         <div>Protected dashboard content</div>
-      </ProtectedRoute>
-    ),
-  })
-  const loginRoute = createRoute({
-    getParentRoute: () => rootRoute,
-    path: '/login',
-    component: () => <div>Login screen</div>,
-  })
-  const routeTree = rootRoute.addChildren([protectedRoute, loginRoute])
-
-  return createRouter({
-    routeTree,
-    history: createMemoryHistory({ initialEntries: [initialPath] }),
-  })
-}
-
-describe('ProtectedRoute (unauthenticated redirect)', () => {
-  it('redirects to /login and does not render the protected view', async () => {
-    const router = buildTestRouter('/dashboard')
-    render(<RouterProvider router={router} />)
+      </ProtectedRoute>,
+    );
 
     await waitFor(() => {
-      expect(router.state.location.pathname).toBe('/login')
-    })
+      expect(replaceMock).toHaveBeenCalled();
+    });
 
-    // Plain chai assertions (no `@testing-library/jest-dom` custom matchers)
-    // so this test does not depend on that package's ambient type
-    // augmentation resolving correctly. `getByText` already throws if the
-    // element is missing, so a successful call is proof of presence.
-    expect(screen.getByText('Login screen')).not.toBeNull()
-    expect(screen.queryByText('Protected dashboard content')).toBeNull()
-  })
+    const arg = replaceMock.mock.calls[0]?.[0] as string;
+    expect(arg.startsWith("/login")).toBe(true);
+    expect(screen.queryByText("Protected dashboard content")).toBeNull();
+  });
 
-  it('carries the original path as the `next` search param', async () => {
-    const router = buildTestRouter('/dashboard')
-    render(<RouterProvider router={router} />)
+  it("carries the original path as the `next` search param", async () => {
+    render(
+      <ProtectedRoute>
+        <div>Protected dashboard content</div>
+      </ProtectedRoute>,
+    );
 
     await waitFor(() => {
-      expect(router.state.location.pathname).toBe('/login')
-    })
+      expect(replaceMock).toHaveBeenCalled();
+    });
 
-    expect(router.state.location.search).toMatchObject({ next: '/dashboard' })
-  })
-})
+    const arg = replaceMock.mock.calls[0]?.[0] as string;
+    expect(arg).toContain("next=");
+    expect(decodeURIComponent(arg)).toContain("/app/dashboard");
+  });
+});

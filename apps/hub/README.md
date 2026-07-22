@@ -33,7 +33,7 @@ Installability is **dashboard-scoped** so the marketing landing stays SEO-only:
 - Registration runs only from `app/dashboard/layout.tsx` via `useRegisterHubServiceWorker` with hardcoded `{ scope: '/dashboard/' }`
 - CSP includes `worker-src 'self'` so the SW can register
 
-**Follow-up (out of scope here):** Pos still registers its SW with `scope: '/'`; that should be narrowed separately and is not required for Hub acceptance.
+**Follow-up:** Pos PWA is scoped to `/app/` (see `@hubilee/pos` / change `pos-pwa-electron`).
 
 ## Stack
 

@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "@/lib/next-nav";
 import { ArrowRight, Zap } from "lucide-react";
 
 export type HubHeroProps = {

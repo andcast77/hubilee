@@ -1,6 +1,6 @@
 "use client";
 
-import { Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { Link, useNavigate, useSearch } from "@/lib/next-nav";
 import { useCallback, useEffect, useState } from "react";
 import { ApiError, runRegisterVerifyDeduped } from "@hubilee/shared";
 import type { ApiResponse, RegisterResponse } from "@hubilee/contracts";

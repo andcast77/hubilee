@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "@tanstack/react-router";
+import { useLocation, useNavigate } from "@/lib/next-nav";
 import { authApi } from "@/lib/api/client";
 
 /**
@@ -27,7 +27,7 @@ export function DashboardSessionGate({ children }: { children: React.ReactNode }
         if (!cancelled)
           void navigate({
             to: "/login",
-            search: { next: initialPathnameRef.current || "/dashboard" },
+            search: { next: initialPathnameRef.current || "/app/dashboard" },
             replace: true,
           });
       }

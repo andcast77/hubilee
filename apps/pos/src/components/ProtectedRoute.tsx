@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useLocation, useNavigate } from "@tanstack/react-router";
+import { useLocation, useNavigate } from "@/lib/next-nav";
 import { useUser } from "@/hooks/useUser";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -21,7 +21,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     if (isLoading || user) return;
     void navigate({
       to: "/login",
-      search: { next: initialPathnameRef.current || "/dashboard" },
+      search: { next: initialPathnameRef.current || "/app/dashboard" },
       replace: true,
     });
   }, [isLoading, user, navigate]);

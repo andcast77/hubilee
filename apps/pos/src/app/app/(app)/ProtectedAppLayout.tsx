@@ -6,12 +6,15 @@ import { DashboardSessionGate } from "@/components/auth/DashboardSessionGate";
 import { PosModuleGuard } from "@/components/layout/POSModuleGuard";
 import { CompanyContextBootstrap } from "@/components/providers/CompanyContextBootstrap";
 import { StoreProvider } from "@/components/providers/StoreContext";
+import { useRegisterPosServiceWorker } from "@/hooks/useRegisterPosServiceWorker";
 
 export default function ProtectedAppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  useRegisterPosServiceWorker();
+
   return (
     <ProtectedRoute>
       <DashboardSessionGate>

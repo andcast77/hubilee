@@ -1,6 +1,6 @@
 "use client";
 
-import { Link } from "@tanstack/react-router";
+import { Link } from "@/lib/next-nav";
 import { Button, Card, CardContent } from "@hubilee/ui";
 
 export function TermsPage() {

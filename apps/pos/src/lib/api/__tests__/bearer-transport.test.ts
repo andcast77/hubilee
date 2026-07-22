@@ -7,7 +7,7 @@ import type { AuthTransport } from '@hubilee/shared'
  * (design `sdd/web-desktop-vite-tauri/design` ADR-A2/ADR-A3, PR4).
  *
  * These tests exercise `ApiClient` directly (not `platform.ts`) so the
- * cookie-vs-bearer contract is verified independently of the Tauri
+ * cookie-vs-bearer contract is verified independently of the Electron
  * detection seam. `platform.test.ts` covers the `isDesktop()`-driven
  * transport selection built on top of this.
  */

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link } from '@/lib/next-nav'
 import { useSuppliers, useDeleteSupplier } from '@/hooks/useSuppliers'
 import { Button } from '@hubilee/ui'
 import { Input } from '@hubilee/ui'

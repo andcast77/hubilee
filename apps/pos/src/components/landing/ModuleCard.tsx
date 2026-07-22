@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "@tanstack/react-router";
+import { Link } from "@/lib/next-nav";
 import { ArrowRight, Lock } from "lucide-react";
 
 type ModuleCardProps = {

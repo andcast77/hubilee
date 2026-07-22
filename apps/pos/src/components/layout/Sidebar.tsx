@@ -36,7 +36,7 @@ import {
   SelectValue,
 } from '@hubilee/ui'
 import { useInAppNotifications } from '@/hooks/useInAppNotifications'
-import { Link, useLocation } from '@tanstack/react-router'
+import { Link, useLocation } from '@/lib/next-nav'
 
 /**
  * `@hubilee/ui`'s Sidebar already calls its injected `Link` with both
@@ -45,7 +45,8 @@ import { Link, useLocation } from '@tanstack/react-router'
  * directly with no adapter.
  */
 function useRouterPathname(): string {
-  return useLocation({ select: (location) => location.pathname }) || '/'
+  const selected = useLocation({ select: (location) => location.pathname })
+  return (typeof selected === 'string' ? selected : '/') || '/'
 }
 
 // Navigation groups - Only add routes that actually exist!
