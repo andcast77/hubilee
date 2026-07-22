@@ -55,12 +55,20 @@ export function useOpenCashSession(storeId?: string | null, registerId?: string 
   }
 }
 
-/** All OPEN sessions for the store, across every register — used to show each register's open/closed state in a register selector (at most one per register, per D5). */
+/** All OPEN sessions for a store, across every register — used to show each register's open/closed state in a register selector (at most one per register, per D5). */
 export function useOpenCashSessionsByStore(storeId?: string | null) {
   return useQuery({
     queryKey: [CASH_SESSIONS_QUERY_KEY, storeId, 'all-registers', CashSessionStatus.OPEN],
     queryFn: () => listCashSessions({ storeId, status: CashSessionStatus.OPEN }),
     enabled: !!storeId,
+  })
+}
+
+/** OPEN sessions company-wide (no store filter) — operator switch gate for current user. */
+export function useOpenCashSessionsForSwitch() {
+  return useQuery({
+    queryKey: [CASH_SESSIONS_QUERY_KEY, 'operator-switch', CashSessionStatus.OPEN],
+    queryFn: () => listCashSessions({ status: CashSessionStatus.OPEN }),
   })
 }
 

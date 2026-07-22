@@ -17,7 +17,7 @@ import { CustomerSelector } from "@/components/features/pos/CustomerSelector";
 import { StoreSelector } from "@/components/features/pos/StoreSelector";
 import { CashSessionBar } from "@/components/features/pos/CashSessionBar";
 import { RegisterSelector } from "@/components/features/pos/RegisterSelector";
-import { useOpenCashSession } from "@/hooks/useCashSession";
+import { useOpenCashSession, useOpenCashSessionsForSwitch } from "@/hooks/useCashSession";
 import { useSelectedRegisterId } from "@/hooks/useSelectedRegister";
 import { ProductForm } from "@/components/features/products/ProductForm";
 import { CustomerForm } from "@/components/features/customers/CustomerForm";
@@ -51,6 +51,10 @@ import { useLoyaltyConfig, useUpdateLoyaltyConfig } from "@/hooks/useLoyalty";
 import { useStoreConfig as usePosStoreConfig } from "@/hooks/useStoreConfig";
 import { authApi } from "@/lib/api/client";
 import { clearDesktopSession } from "@/lib/platform";
+import {
+  canBeginOperatorSwitch,
+  operatorSwitchBlockMessage,
+} from "@/lib/operator-switch";
 
 export function DashboardPage() {
   const [period, setPeriod] = useState<"today" | "week" | "month">("today");
@@ -684,18 +688,54 @@ export function LoyaltyPage() {
 
 export function AccountPage() {
   const navigate = useNavigate();
+  const { data: currentUser } = useCurrentUser();
+  const { data: openSessions = [] } = useOpenCashSessionsForSwitch();
+  const [switchBlock, setSwitchBlock] = useState<string | null>(null);
+
+  const hasOpenCashForMe = openSessions.some(
+    (session) => session.openedByUserId === currentUser?.id && session.status === "OPEN",
+  );
+
   const handleLogout = async () => {
-    try { await authApi.post("/logout"); } catch {}
-    // Desktop has no session cookie for the API to clear server-side alone —
-    // wipe the locally stored Bearer tokens too (no-op on web).
+    // Cash close is independent of logout — never auto-close here.
+    try {
+      await authApi.post("/logout");
+    } catch {
+      /* proceed */
+    }
     await clearDesktopSession();
     void navigate({ to: "/login", replace: true });
   };
+
+  const handleOperatorSwitch = async () => {
+    if (!canBeginOperatorSwitch({ hasOpenCash: hasOpenCashForMe })) {
+      setSwitchBlock(operatorSwitchBlockMessage({ hasOpenCash: true }));
+      return;
+    }
+    setSwitchBlock(null);
+    await handleLogout();
+  };
+
   return (
     <PageFrame title="Mi Cuenta" breadcrumbs={[{ label: "Panel", href: "/dashboard" }, { label: "Mi cuenta" }]}>
       <Card>
-        <CardHeader><CardTitle>Sesion</CardTitle><CardDescription>Gestion de sesion y datos de usuario.</CardDescription></CardHeader>
-        <CardContent><Button variant="outline" onClick={handleLogout}>Cerrar sesion</Button></CardContent>
+        <CardHeader>
+          <CardTitle>Sesion</CardTitle>
+          <CardDescription>
+            Cerrar sesion no cierra la caja. Para cambiar de operador, cierra la caja primero.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {switchBlock ? <p className="text-sm text-amber-800" role="alert">{switchBlock}</p> : null}
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={handleLogout}>
+              Cerrar sesion
+            </Button>
+            <Button variant="secondary" onClick={handleOperatorSwitch}>
+              Cambiar operador
+            </Button>
+          </div>
+        </CardContent>
       </Card>
     </PageFrame>
   );
