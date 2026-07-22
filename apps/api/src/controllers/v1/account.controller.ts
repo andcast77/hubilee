@@ -2,6 +2,7 @@ import type { FastifyRequest, FastifyReply, FastifyInstance } from 'fastify'
 import { requireAuth } from '../../core/auth.js'
 import { validateBody } from '../../core/validate.js'
 import { ok } from '../../common/api-response.js'
+import { BadRequestError } from '../../common/errors/app-error.js'
 import * as accountService from '../../services/account.service.js'
 import * as accountMfaService from '../../services/account-mfa.service.js'
 import {
@@ -32,6 +33,9 @@ async function acceptPrivacy(request: FastifyRequest, reply: FastifyReply) {
 
 async function postMfaSetup(request: FastifyRequest, reply: FastifyReply) {
   const u = request.user!
+  if (!u.email) {
+    throw new BadRequestError('MFA requiere una cuenta con email')
+  }
   const result = await accountMfaService.setupMfa(u.id, u.email)
   return ok(result)
 }

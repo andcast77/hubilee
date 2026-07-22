@@ -95,7 +95,7 @@ export async function listAuditLogs(companyId: string, query: ListAuditLogsQuery
   ])
 
   const uniqueUserIds = [...new Set(items.map(i => i.userId).filter((id): id is string => id != null))]
-  let userMap = new Map<string, { id: string; email: string; firstName: string; lastName: string }>()
+  let userMap = new Map<string, { id: string; email: string | null; firstName: string; lastName: string }>()
   if (uniqueUserIds.length > 0) {
     const users = await prisma.user.findMany({
       where: { id: { in: uniqueUserIds } },

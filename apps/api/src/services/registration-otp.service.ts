@@ -52,7 +52,7 @@ export async function sendRegistrationOtp(params: {
     )
   }
 
-  const existingUser = await prisma.user.findUnique({ where: { email }, select: { id: true } })
+  const existingUser = await prisma.user.findFirst({ where: { email }, select: { id: true } })
   if (existingUser) {
     throw new BadRequestError('Ya existe un usuario con este email')
   }

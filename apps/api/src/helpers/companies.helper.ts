@@ -13,13 +13,13 @@ type CompanyWithOwner = {
   phone: string | null
   createdAt: Date
   updatedAt: Date
-  owner: { email: string; firstName: string; lastName: string } | null
+  owner: { email: string | null; firstName: string; lastName: string } | null
 }
 
 export async function toCompanyResponse(company: CompanyWithOwner): Promise<CompanyResponse> {
   const modules = await getCompanyModules(company.id)
   const ownerName = company.owner
-    ? `${company.owner.firstName || ''} ${company.owner.lastName || ''}`.trim() || company.owner.email
+    ? `${company.owner.firstName || ''} ${company.owner.lastName || ''}`.trim() || company.owner.email || ''
     : ''
   return {
     id: company.id,
@@ -29,7 +29,7 @@ export async function toCompanyResponse(company: CompanyWithOwner): Promise<Comp
     owner: company.ownerUserId
       ? {
           id: company.ownerUserId,
-          email: company.owner?.email ?? '',
+          email: company.owner?.email ?? null,
           firstName: company.owner?.firstName ?? '',
           lastName: company.owner?.lastName ?? '',
           name: ownerName,
@@ -47,11 +47,16 @@ export async function toCompanyResponse(company: CompanyWithOwner): Promise<Comp
 }
 
 export function toCompanyStatsLastMember(
-  lastMember: { userId: string; user: { email: string; firstName: string; lastName: string }; membershipRole: string; createdAt: Date } | null
+  lastMember: {
+    userId: string
+    user: { email: string | null; firstName: string; lastName: string }
+    membershipRole: string
+    createdAt: Date
+  } | null,
 ): CompanyStatsResponse['lastMember'] {
   if (!lastMember) return null
   const u = lastMember.user
-  const name = `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email
+  const name = `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email || ''
   return {
     userId: lastMember.userId,
     email: u.email,

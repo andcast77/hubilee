@@ -36,12 +36,12 @@ export async function verifyEmailWithToken(token: string): Promise<{ message: st
  */
 export async function resendVerificationEmail(email: string): Promise<{ message: string }> {
   const norm = email.trim().toLowerCase()
-  const user = await prisma.user.findUnique({
+  const user = await prisma.user.findFirst({
     where: { email: norm },
     select: { id: true, email: true, emailVerified: true },
   })
   const generic = { message: 'Si existe una cuenta con ese email, recibirás instrucciones en breve.' }
-  if (!user || user.emailVerified) {
+  if (!user || user.emailVerified || !user.email) {
     return generic
   }
   const plain = randomBytes(32).toString('hex')

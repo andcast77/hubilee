@@ -3,7 +3,12 @@ import { findModulesByKeys, getCompanyModules } from '../core/modules.js'
 import type { TokenPayload } from '../core/auth.js'
 import type { UpdateCompanyBody } from '../dto/companies.dto.js'
 import { ForbiddenError, NotFoundError } from '../common/errors/app-error.js'
-import { assertCanManageCompany, assertCompanyAccess, assertOwner } from '../policies/company-authorization.policy.js'
+import {
+  assertCanManageCompany,
+  assertCanManageMembers,
+  assertCompanyAccess,
+  assertOwner,
+} from '../policies/company-authorization.policy.js'
 
 export async function getById(companyId: string) {
   const company = await prisma.company.findUnique({
@@ -12,6 +17,18 @@ export async function getById(companyId: string) {
   })
   if (!company) throw new NotFoundError('Empresa no encontrada')
   return company
+}
+
+/** Owner/admin view+copy opaque companyCode for floor staff login. */
+export async function getCredentials(companyId: string, caller: TokenPayload) {
+  assertCompanyAccess(caller, companyId)
+  assertCanManageMembers(caller, 'Solo el owner o un admin pueden ver las credenciales de piso')
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { id: true, companyCode: true },
+  })
+  if (!company) throw new NotFoundError('Empresa no encontrada')
+  return { companyId: company.id, companyCode: company.companyCode }
 }
 
 export async function getStats(companyId: string) {

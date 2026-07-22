@@ -1,6 +1,5 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { randomBytes } from 'crypto'
 import { prisma } from '../db/index.js'
 import {
   generateToken,
@@ -17,6 +16,7 @@ import { getUserCompanies, selectCompanyForUser } from '../core/auth-context.js'
 import { findModulesByKeys, getCompanyModules } from '../core/modules.js'
 import type { LoginBody, RegisterBody, ChangePasswordBody, FloorLoginBody } from '../dto/auth.dto.js'
 import { verifyAndConsumeRegistrationTicket } from './registration-ticket.service.js'
+import { allocateUniqueCompanyCode } from './company-code.js'
 import type { CompanyRow } from '../core/auth-context.js'
 import {
   UnauthorizedError,
@@ -176,7 +176,13 @@ export type LoginResult =
 export type RegisterResult = {
   user: { id: string; email: string | null; name: string; role: string; companyId?: string }
   token: string
-  company?: { id: string; name: string; modules: { hr: boolean; pos: boolean; tech: boolean } }
+  company?: {
+    id: string
+    name: string
+    modules: { hr: boolean; pos: boolean; tech: boolean }
+    /** Opaque floor-login company code (owner may view/copy) */
+    companyCode: string
+  }
 }
 
 export type MeResult = {
@@ -568,6 +574,7 @@ export async function register(body: RegisterBody): Promise<RegisterResult> {
     const hrMod = modulesMap.get('hr')
     const posMod = modulesMap.get('pos')
     const techMod = modulesMap.get('tech')
+    const companyCode = await allocateUniqueCompanyCode()
 
     const { user, company } = await prisma.$transaction(async (tx) => {
       const u = await tx.user.create({
@@ -588,8 +595,7 @@ export async function register(body: RegisterBody): Promise<RegisterResult> {
           name: companyName.trim(),
           ownerUserId: u.id,
           isActive: true,
-          // Opaque companyCode required by schema (full register UX in Phase 3).
-          companyCode: randomBytes(8).toString('hex'),
+          companyCode,
         },
       })
 
@@ -642,6 +648,7 @@ export async function register(body: RegisterBody): Promise<RegisterResult> {
         id: company.id,
         name: company.name,
         modules: { hr: hrEnabled, pos: posEnabled, tech: technicalServicesEnabled },
+        companyCode: company.companyCode,
       },
     }
   }

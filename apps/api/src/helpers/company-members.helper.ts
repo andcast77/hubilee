@@ -6,7 +6,8 @@ type MemberRow = {
   userId: string
   membershipRole: string
   createdAt: Date
-  user: { email: string; firstName: string; lastName: string }
+  employeeCode?: string | null
+  user: { email: string | null; firstName: string; lastName: string }
 }
 
 export function toMemberResponse(m: MemberRow, storeIds?: string[]): MemberResponse {
@@ -19,6 +20,7 @@ export function toMemberResponse(m: MemberRow, storeIds?: string[]): MemberRespo
     name: userDisplayName(m.user),
     membershipRole: m.membershipRole,
     createdAt: m.createdAt,
+    employeeCode: m.employeeCode ?? null,
   }
   if (m.membershipRole === 'USER' && storeIds !== undefined) {
     return { ...base, storeIds }

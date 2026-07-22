@@ -53,13 +53,13 @@ export class UsersRepository extends TenantScopedRepository {
   }
 
   async findByEmail(email: string): Promise<{ id: string } | null> {
-    return this.db.user.findUnique({
+    return this.db.user.findFirst({
       where: { email },
       select: { id: true },
     })
   }
 
-  async findIdentityById(id: string): Promise<{ id: string; email: string } | null> {
+  async findIdentityById(id: string): Promise<{ id: string; email: string | null } | null> {
     return this.db.user.findUnique({
       where: { id },
       select: { id: true, email: true },

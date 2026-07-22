@@ -9,7 +9,7 @@ export type CompanyResponse = {
   ownerUserId: string | null
   owner: {
     id: string
-    email: string
+    email: string | null
     firstName: string
     lastName: string
     name: string
@@ -32,7 +32,7 @@ export type CompanyStatsResponse = {
   userCount: number
   lastMember: {
     userId: string
-    email: string
+    email: string | null
     firstName: string
     lastName: string
     name: string
