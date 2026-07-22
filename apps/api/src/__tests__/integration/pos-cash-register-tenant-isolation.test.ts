@@ -88,17 +88,47 @@ describe('Pos cash register: tenant isolation + one-open-session-per-register', 
     expect(sessions).toHaveLength(1)
   })
 
-  it('allows independent OPEN sessions on different registers in the same store', async () => {
+  it('allows independent OPEN sessions on different registers when opened by different cashiers', async () => {
     const registerA = await acmeRepo.createRegister({ storeId: acmeStoreId, name: `Caja MultiA ${Date.now()}` })
     const registerB = await acmeRepo.createRegister({ storeId: acmeStoreId, name: `Caja MultiB ${Date.now()}` })
 
+    const otherCashier = await prisma.user.findFirst({
+      where: { companyMembers: { some: { companyId: acmeCompanyId } }, id: { not: acmeUserId } },
+    })
+    const otherUserId = otherCashier?.id
+    if (!otherUserId) throw new Error('Need a second Acme user for multi-register OPEN test')
+
     await acmeRepo.openSession({ storeId: acmeStoreId, cashRegisterId: registerA.id, openedByUserId: acmeUserId, openingFloat: 200 })
-    await acmeRepo.openSession({ storeId: acmeStoreId, cashRegisterId: registerB.id, openedByUserId: acmeUserId, openingFloat: 300 })
+    await acmeRepo.openSession({ storeId: acmeStoreId, cashRegisterId: registerB.id, openedByUserId: otherUserId, openingFloat: 300 })
 
     const openA = await acmeRepo.findOpenSessionByRegister(registerA.id)
     const openB = await acmeRepo.findOpenSessionByRegister(registerB.id)
     expect(openA?.status).toBe('OPEN')
     expect(openB?.status).toBe('OPEN')
+  })
+
+  it('rejects a second OPEN session for the same cashier on a different register', async () => {
+    const registerA = await acmeRepo.createRegister({ storeId: acmeStoreId, name: `Caja UserA ${Date.now()}` })
+    const registerB = await acmeRepo.createRegister({ storeId: acmeStoreId, name: `Caja UserB ${Date.now()}` })
+
+    await acmeRepo.openSession({
+      storeId: acmeStoreId,
+      cashRegisterId: registerA.id,
+      openedByUserId: acmeUserId,
+      openingFloat: 200,
+    })
+
+    await expect(
+      acmeRepo.openSession({
+        storeId: acmeStoreId,
+        cashRegisterId: registerB.id,
+        openedByUserId: acmeUserId,
+        openingFloat: 300,
+      }),
+    ).rejects.toMatchObject({
+      name: 'ConflictError',
+      code: 'CASH_SESSION_OPEN',
+    })
   })
 
   it('allows opening a new session on a register after the previous one is CLOSED', async () => {

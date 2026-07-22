@@ -1,7 +1,7 @@
 import { prisma } from '../db/index.js'
 import { createRepositories } from '../repositories/index.js'
 import type { PosContext } from '../core/auth-context.js'
-import { NotFoundError, BadRequestError } from '../common/errors/index.js'
+import { NotFoundError, BadRequestError, ConflictError } from '../common/errors/index.js'
 import { toNumber } from '../common/database/index.js'
 import {
   assertStoreBelongsToCompany,
@@ -79,6 +79,15 @@ export async function openCashSession(ctx: PosContext, input: OpenCashSessionInp
   if (!register) throw new NotFoundError('Caja no encontrada')
 
   assertStoreMatchForScopedUser(ctx, register.storeId, 'Solo puedes abrir sesiones de caja en tu local de venta asignado')
+
+  // One cashier ↔ one OPEN caja (DB unique `cash_sessions_one_open_opened_by` backs the race).
+  const existingOpen = await cash.findOpenSessionByUser(ctx.userId)
+  if (existingOpen) {
+    throw new ConflictError(
+      'Ya tienes una sesión de caja abierta. Ciérrala antes de abrir otra.',
+      'CASH_SESSION_OPEN',
+    )
+  }
 
   return cash.openSession({
     storeId: register.storeId,

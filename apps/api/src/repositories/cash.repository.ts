@@ -13,6 +13,9 @@ import { ConflictError } from '../common/errors/index.js'
  */
 const ONE_OPEN_SESSION_PER_REGISTER_INDEX = 'cash_sessions_one_open_register'
 const ONE_OPEN_SESSION_PER_REGISTER_COLUMN = 'cashRegisterId'
+/** Partial unique: at most one OPEN CashSession per cashier (openedByUserId). */
+const ONE_OPEN_SESSION_PER_OPENED_BY_INDEX = 'cash_sessions_one_open_opened_by'
+const ONE_OPEN_SESSION_PER_OPENED_BY_COLUMN = 'openedByUserId'
 
 export type CashRegisterRow = {
   id: string
@@ -137,7 +140,8 @@ export class CashRepository extends TenantScopedRepository {
 
   /**
    * Opens (creates) a CashSession. Rejects with ConflictError if the target
-   * register already has an OPEN session (enforced by the DB partial unique index).
+   * register already has an OPEN session, or if the cashier already has another
+   * OPEN session (DB partial unique indexes back the race).
    */
   async openSession(input: OpenSessionInput): Promise<CashSessionRow> {
     try {
@@ -152,6 +156,12 @@ export class CashRepository extends TenantScopedRepository {
         },
       })) as CashSessionRow
     } catch (err) {
+      if (isOneOpenSessionPerOpenedByViolation(err)) {
+        throw new ConflictError(
+          'Ya tienes una sesión de caja abierta. Ciérrala antes de abrir otra.',
+          'CASH_SESSION_OPEN',
+        )
+      }
       if (isOneOpenSessionViolation(err)) {
         throw new ConflictError('El registro de caja ya tiene una sesión abierta')
       }
@@ -162,6 +172,13 @@ export class CashRepository extends TenantScopedRepository {
   async findSessionById(id: string): Promise<CashSessionRow | null> {
     return this.db.cashSession.findFirst({
       where: { ...this.tenantWhere, id },
+    }) as Promise<CashSessionRow | null>
+  }
+
+  /** OPEN CashSession for this cashier, if any (one-caja-per-user). */
+  async findOpenSessionByUser(openedByUserId: string): Promise<CashSessionRow | null> {
+    return this.db.cashSession.findFirst({
+      where: { ...this.tenantWhere, openedByUserId, status: 'OPEN' },
     }) as Promise<CashSessionRow | null>
   }
 
@@ -218,7 +235,18 @@ function isOneOpenSessionViolation(err: unknown): boolean {
   if (!(err instanceof Prisma.PrismaClientKnownRequestError)) return false
   if (err.code !== 'P2002') return false
   const metaStr = JSON.stringify(err.meta ?? {})
-  return metaStr.includes(ONE_OPEN_SESSION_PER_REGISTER_INDEX) || metaStr.includes(ONE_OPEN_SESSION_PER_REGISTER_COLUMN)
+  if (metaStr.includes(ONE_OPEN_SESSION_PER_REGISTER_INDEX)) return true
+  if (metaStr.includes(ONE_OPEN_SESSION_PER_OPENED_BY_INDEX)) return false
+  return metaStr.includes(ONE_OPEN_SESSION_PER_REGISTER_COLUMN)
+}
+
+function isOneOpenSessionPerOpenedByViolation(err: unknown): boolean {
+  if (!(err instanceof Prisma.PrismaClientKnownRequestError)) return false
+  if (err.code !== 'P2002') return false
+  const metaStr = JSON.stringify(err.meta ?? {})
+  if (metaStr.includes(ONE_OPEN_SESSION_PER_OPENED_BY_INDEX)) return true
+  if (metaStr.includes(ONE_OPEN_SESSION_PER_REGISTER_INDEX)) return false
+  return metaStr.includes(ONE_OPEN_SESSION_PER_OPENED_BY_COLUMN)
 }
 
 const DUPLICATE_REGISTER_NAME_INDEX = 'cash_registers_storeId_name_key'
