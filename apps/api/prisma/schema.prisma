@@ -220,7 +220,8 @@ model User {
   /// Nullable for floor staff (codes-only). Uniqueness via partial unique index
   /// `users_email_unique_not_null` (WHERE email IS NOT NULL) — not expressible as @unique in Prisma.
   email             String?
-  password          String
+  /// Null for OAuth-only users (no password credentials).
+  password          String?
   firstName         String
   lastName          String
   phone             String?
@@ -253,6 +254,7 @@ model User {
   posPreferredCompany Company?  @relation("PosPreferredCompany", fields: [posPreferredCompanyId], references: [id], onDelete: SetNull)
   // Pertenencia a empresas (owner/admin/user por empresa)
   companyMemberships CompanyMember[]
+  oauthAccounts     OAuthAccount[]
 
   // Relaciones Hr
   userRoles         UserRoleAssignment[]
@@ -277,6 +279,22 @@ model User {
   cashSessionsClosed CashSession[] @relation("CashSessionClosedBy")
 
   @@map("users")
+}
+
+/// Linked external identity (e.g. Google `sub`). Unique per provider + providerAccountId.
+model OAuthAccount {
+  id                String   @id @default(uuid())
+  provider          String
+  providerAccountId String
+  userId            String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("oauth_accounts")
 }
 
 /// One-time recovery codes for TOTP MFA (hashed at rest).

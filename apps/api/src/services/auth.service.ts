@@ -260,6 +260,10 @@ export async function login(body: LoginBody): Promise<LoginResult> {
     await verifyTurnstileToken(cap)
   }
 
+  if (user.password == null) {
+    throw new UnauthorizedError('Credenciales inválidas')
+  }
+
   const isValidPassword = await bcrypt.compare(password, user.password)
   if (!isValidPassword) {
     const auditCo = await resolveAuditCompanyId(user.id, bodyCompanyId)
@@ -1060,6 +1064,13 @@ export async function changePassword(userId: string, body: ChangePasswordBody): 
     select: { id: true, password: true, email: true },
   })
   if (!user) throw new NotFoundError('Usuario no encontrado')
+
+  if (user.password == null) {
+    throw new BadRequestError(
+      'Esta cuenta no tiene contraseña. Usá el inicio de sesión con Google.',
+      'PASSWORD_NOT_SET',
+    )
+  }
 
   const currentOk = await bcrypt.compare(body.currentPassword, user.password)
   if (!currentOk) throw new UnauthorizedError('Contraseña actual incorrecta')
