@@ -109,9 +109,7 @@ export const registerSchema = z
     companyName: z.string().optional(),
     email: z.string().email('Email inválido'),
     password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
-    termsAccepted: z.boolean().refine((value) => value, {
-      message: 'Debes aceptar los términos para continuar',
-    }),
+    termsAccepted: z.boolean().optional(),
   })
 
 export type RegisterInput = z.infer<typeof registerSchema>

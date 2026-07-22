@@ -84,10 +84,6 @@ describe("RegisterPage light shell", () => {
     expect(passwordInputs.length).toBeGreaterThanOrEqual(1);
     fireEvent.change(passwordInputs[0], { target: { value: "SecurePass1" } });
 
-    // Accept terms
-    const termsCheckbox = screen.getByRole("checkbox");
-    fireEvent.click(termsCheckbox);
-
     // Submit the form
     const submitBtn = screen.getByRole("button", { name: /registrar empresa/i });
     fireEvent.click(submitBtn);
@@ -133,9 +129,6 @@ describe("RegisterPage light shell", () => {
 
     const passwordInputs = screen.getAllByPlaceholderText("••••••••");
     fireEvent.change(passwordInputs[0], { target: { value: "SecurePass1" } });
-
-    const termsCheckbox = screen.getByRole("checkbox");
-    fireEvent.click(termsCheckbox);
 
     const submitBtn = screen.getByRole("button", { name: /registrar empresa/i });
     fireEvent.click(submitBtn);

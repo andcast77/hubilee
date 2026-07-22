@@ -3,22 +3,16 @@
 import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import {
   Button,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
   Input,
   Label,
 } from "@hubilee/ui";
 import { Link, useNavigate, useSearch } from "@/lib/next-nav";
-import type { ApiResponse, LoginResponse } from "@hubilee/contracts";
+import type { LoginResponse } from "@hubilee/contracts";
 import {
   codeLoginSchema,
-  loginSchema,
   shouldShowFloorTurnstile,
 } from "@/lib/validations/auth";
 import { authApi } from "@/lib/api/client";
-import { codeLogin } from "@/lib/services/authService";
 import { getLandingUrls } from "@/lib/landingUrls";
 import { RegistrationTurnstile } from "@/components/auth/RegistrationTurnstile";
 import { toast } from "sonner";
@@ -27,10 +21,6 @@ const TOAST_MS = 4000;
 
 function notifyError(message: string) {
   toast.error(message, { duration: TOAST_MS });
-}
-
-function notifyInfo(message: string) {
-  toast.message(message, { duration: TOAST_MS });
 }
 
 function safeNextPath(raw: string | null): string | null {
@@ -166,16 +156,11 @@ export function LoginPage() {
     [search.next],
   );
 
-  const [userCode, setUserCode] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [codeFailCount, setCodeFailCount] = useState(0);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-
-  const [emailOpen, setEmailOpen] = useState(false);
-  const [email, setEmail] = useState("");
-  const [emailPassword, setEmailPassword] = useState("");
-  const [emailLoading, setEmailLoading] = useState(false);
 
   const [mfaStep, setMfaStep] = useState(false);
   const [mfaTempToken, setMfaTempToken] = useState<string | null>(null);
@@ -188,7 +173,6 @@ export function LoginPage() {
   const showCodeTurnstile = shouldShowFloorTurnstile(codeFailCount);
 
   function beginMfa(data: LoginResponse) {
-    setEmailOpen(false);
     setMfaStep(true);
     setMfaTempToken(data.tempToken!);
     setMfaCompanyId(data.companyId);
@@ -199,7 +183,7 @@ export function LoginPage() {
   async function handleCodeLoginSubmit(e: FormEvent) {
     e.preventDefault();
     const parsed = codeLoginSchema.safeParse({
-      userCode,
+      userCode: identifier,
       password,
       captchaToken: captchaToken ?? undefined,
     });
@@ -213,13 +197,25 @@ export function LoginPage() {
     }
     setIsLoading(true);
     try {
-      const res = await codeLogin({
-        userCode: parsed.data.userCode,
-        password: parsed.data.password,
-        captchaToken: captchaToken ?? undefined,
-      });
-      if (res.mfaRequired && res.tempToken) {
-        beginMfa(res);
+      const raw = identifier.trim();
+      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw);
+      const body = isEmail
+        ? { email: raw, password }
+        : { userCode: raw, password };
+      if (!isEmail && captchaToken) {
+        (body as Record<string, unknown>).captchaToken = captchaToken;
+      }
+
+      const res = await authApi.post<{ success: boolean; data?: LoginResponse; error?: string }>(
+        "/login",
+        body,
+      );
+      if (!res.success || !res.data) {
+        notifyError(res.error || "Credenciales inválidas");
+        return;
+      }
+      if (res.data.mfaRequired && res.data.tempToken) {
+        beginMfa(res.data);
         return;
       }
       setCodeFailCount(0);
@@ -233,38 +229,10 @@ export function LoginPage() {
     }
   }
 
-  async function handleEmailLoginSubmit(e: FormEvent) {
-    e.preventDefault();
-    const parsed = loginSchema.safeParse({
-      email,
-      password: emailPassword,
+  function handleGoogleClick() {
+    toast.message("El inicio de sesión con Google estará disponible pronto.", {
+      duration: TOAST_MS,
     });
-    if (!parsed.success) {
-      notifyError(parsed.error.issues[0]?.message || "Datos inválidos");
-      return;
-    }
-    setEmailLoading(true);
-    try {
-      const res = await authApi.post<ApiResponse<LoginResponse>>("/login", {
-        email,
-        password: emailPassword,
-      });
-      if (!res.success || !res.data) {
-        notifyError(res.error || "Credenciales inválidas");
-        return;
-      }
-      if (res.data.mfaRequired && res.data.tempToken) {
-        beginMfa(res.data);
-        return;
-      }
-      void navigate({ to: nextPath ?? "/dashboard", replace: true });
-    } catch (err) {
-      notifyError(
-        err instanceof Error ? err.message : "No se pudo iniciar sesión",
-      );
-    } finally {
-      setEmailLoading(false);
-    }
   }
 
   async function handleMfaSubmit(e: FormEvent) {
@@ -275,7 +243,7 @@ export function LoginPage() {
     }
     setIsLoading(true);
     try {
-      const res = await authApi.post<ApiResponse<LoginResponse>>("/mfa/verify", {
+      const res = await authApi.post<{ success: boolean; data?: LoginResponse; error?: string }>("/mfa/verify", {
         tempToken: mfaTempToken,
         code: mfaCode,
         backup: mfaBackup,
@@ -291,10 +259,6 @@ export function LoginPage() {
     } finally {
       setIsLoading(false);
     }
-  }
-
-  function handleGoogleClick() {
-    notifyInfo("El inicio de sesión con Google estará disponible pronto.");
   }
 
   return (
@@ -398,24 +362,34 @@ export function LoginPage() {
                 >
                   <div className="space-y-2">
                     <Label htmlFor="sf-user-code" className={labelClass}>
-                      Código de usuario
+                      Email o código de usuario
                     </Label>
                     <Input
                       id="sf-user-code"
                       type="text"
-                      inputMode="numeric"
-                      value={userCode}
-                      onChange={(e) => setUserCode(e.target.value)}
-                      placeholder="00000000"
+                      inputMode="text"
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                      placeholder="tu@empresa.com o código"
                       autoComplete="username"
                       disabled={isLoading}
                       className={inputClass}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="sf-code-password" className={labelClass}>
-                      Contraseña
-                    </Label>
+                    <div className="flex items-center justify-between gap-2">
+                      <Label htmlFor="sf-code-password" className={labelClass}>
+                        Contraseña
+                      </Label>
+                      <a
+                        href={hubForgotPasswordUrl()}
+                        className="text-xs font-medium text-[#0085db] hover:text-[#0074c2]"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        ¿Olvidaste tu contraseña?
+                      </a>
+                    </div>
                     <Input
                       id="sf-code-password"
                       type="password"
@@ -457,17 +431,6 @@ export function LoginPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    className={outlineBtnClass}
-                    disabled={isLoading}
-                    onClick={() => {
-                      setEmailOpen(true);
-                    }}
-                  >
-                    Continuar con email
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
                     className={`${outlineBtnClass} gap-2.5`}
                     disabled={isLoading}
                     onClick={handleGoogleClick}
@@ -491,86 +454,6 @@ export function LoginPage() {
           </div>
         </div>
       </div>
-
-      <Dialog
-        open={emailOpen}
-        onOpenChange={(open) => {
-          setEmailOpen(open);
-          if (!open) {
-            setEmailPassword("");
-          }
-        }}
-      >
-        <DialogContent className="pos-login-email-dialog sm:max-w-md">
-          <DialogHeader>
-            <div className="mb-1">
-              <BrandMark
-                imgClassName="h-7 w-7"
-                textClassName="text-sm font-bold tracking-tight text-slate-800"
-              />
-            </div>
-            <DialogTitle>Iniciar con email</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleEmailLoginSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="sf-email" className={labelClass}>
-                Email
-              </Label>
-              <Input
-                id="sf-email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="tu@empresa.com"
-                autoComplete="email"
-                disabled={emailLoading}
-                className={inputClass}
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between gap-2">
-                <Label htmlFor="sf-email-password" className={labelClass}>
-                  Contraseña
-                </Label>
-                <a
-                  href={hubForgotPasswordUrl()}
-                  className="text-xs font-medium text-[#0085db] hover:text-[#0074c2]"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  ¿Olvidaste tu contraseña?
-                </a>
-              </div>
-              <Input
-                id="sf-email-password"
-                type="password"
-                value={emailPassword}
-                onChange={(e) => setEmailPassword(e.target.value)}
-                placeholder="••••••••"
-                autoComplete="current-password"
-                disabled={emailLoading}
-                className={inputClass}
-              />
-            </div>
-            <Button
-              type="submit"
-              disabled={emailLoading}
-              className={primaryBtnClass}
-            >
-              {emailLoading ? "Iniciando sesión…" : "Iniciar sesión"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className={outlineBtnClass}
-              disabled={emailLoading}
-              onClick={() => setEmailOpen(false)}
-            >
-              Volver
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

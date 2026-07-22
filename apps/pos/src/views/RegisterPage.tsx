@@ -142,7 +142,6 @@ export function RegisterPage() {
   const [form, setForm] = useState<RegisterInput>({
     email: "",
     password: "",
-    termsAccepted: false,
   });
   const [showTermsDialog, setShowTermsDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -161,7 +160,6 @@ export function RegisterPage() {
       notifyError(parsed.error.issues[0]?.message || "Formulario inválido");
       return;
     }
-    if (!form.termsAccepted) return;
     if (!captchaToken?.trim()) {
       notifyError("Completa la verificación anti-robots (captcha).");
       return;
@@ -253,7 +251,7 @@ export function RegisterPage() {
                   <Button
                     type="button"
                     variant="outline"
-                  disabled={isLoading || !form.termsAccepted}
+                  disabled={isLoading}
                     onClick={() => void resendLink()}
                     className="h-12 w-full rounded-xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                   >
@@ -303,28 +301,6 @@ export function RegisterPage() {
                     />
                   </div>
 
-                  <label className="flex items-center gap-2 text-sm text-slate-600">
-                    <input
-                      type="checkbox"
-                      className="accent-[#0085db]"
-                      checked={form.termsAccepted}
-                      onChange={(e) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          termsAccepted: e.target.checked,
-                        }))
-                      }
-                    />
-                    Acepto los{" "}
-                    <button
-                      type="button"
-                      className="text-[#0085db] underline hover:text-[#0074c2]"
-                      onClick={() => setShowTermsDialog(true)}
-                    >
-                      términos y condiciones
-                    </button>
-                  </label>
-
                   <div className="flex flex-col gap-1.5">
                     <span className="sr-only">
                       Verificación antispam antes de enviar el enlace.
@@ -337,7 +313,7 @@ export function RegisterPage() {
                     <Button
                       type="submit"
                       className={primaryBtnClass}
-                      disabled={isLoading || !form.termsAccepted}
+                      disabled={isLoading}
                     >
                       {isLoading ? "Registrando…" : "Registrar empresa"}
                     </Button>
@@ -362,12 +338,33 @@ export function RegisterPage() {
                   type="button"
                   variant="outline"
                   className={`${outlineBtnClass} gap-2.5`}
-                  disabled={isLoading || !form.termsAccepted}
+                  disabled={isLoading}
                   onClick={handleGoogleClick}
                 >
                   <GoogleMark className="h-4 w-4" />
                   Continuar con Google
                 </Button>
+
+                <p className="mt-6 text-center text-xs text-slate-400">
+                  Al registrarte aceptas nuestros{" "}
+                  <button
+                    type="button"
+                    className="cursor-pointer text-[#0085db] underline hover:text-[#0074c2]"
+                    onClick={() => setShowTermsDialog(true)}
+                  >
+                    términos y condiciones
+                  </button>
+                </p>
+
+                <p className="mt-6 text-center text-sm text-slate-500">
+                  ¿Ya tenés cuenta?{" "}
+                  <Link
+                    to="/login"
+                    className="font-semibold text-[#0085db] hover:text-[#0074c2]"
+                  >
+                    Iniciar sesión
+                  </Link>
+                </p>
               </>
             )}
           </div>
