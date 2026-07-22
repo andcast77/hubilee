@@ -215,7 +215,9 @@ enum ServiceVisitStatus {
 
 model User {
   id                String   @id @default(uuid())
-  email             String   @unique
+  /// Nullable for floor staff (codes-only). Uniqueness via partial unique index
+  /// `users_email_unique_not_null` (WHERE email IS NOT NULL) — not expressible as @unique in Prisma.
+  email             String?
   password          String
   firstName         String
   lastName          String
@@ -320,6 +322,8 @@ model Session {
 model Company {
   id          String   @id @default(uuid())
   name        String   @unique
+  /// Opaque unguessable floor-login company code (~12–16 chars). Backfilled for existing rows.
+  companyCode String   @unique
   parentId    String?
   /// Usuario que registró la empresa (owner). No es un "usuario de empresa" normal.
   ownerUserId String?
@@ -405,6 +409,8 @@ model CompanyMember {
   userId         String
   companyId      String
   membershipRole MembershipRole
+  /// 6-digit floor staff code; null for owners/admins without codes. Unique per company when set.
+  employeeCode   String?
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
@@ -415,6 +421,7 @@ model CompanyMember {
    modules        CompanyMemberModule[]
 
   @@unique([userId, companyId])
+  @@unique([companyId, employeeCode])
   @@index([userId])
   @@index([companyId])
   @@map("company_members")
@@ -1301,6 +1308,9 @@ model CashSession {
   @@unique([id, companyId])
   @@index([companyId, storeId, status])
   @@index([cashRegisterId, status])
+  /// Partial unique indexes (hand-edited in migrations; not expressible as @@unique WHERE):
+  /// - `cash_sessions_one_open_register` ON (cashRegisterId) WHERE status = 'OPEN'
+  /// - `cash_sessions_one_open_opened_by` ON (openedByUserId) WHERE status = 'OPEN'
   @@map("cash_sessions")
 }
 
