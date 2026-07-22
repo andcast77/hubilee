@@ -110,7 +110,7 @@ export const registerLinkSendBodySchema = z.object({
   password: z.string().min(1),
   firstName: z.string().optional(),
   lastName: z.string().optional(),
-  companyName: z.string().min(1, 'El nombre de la empresa es requerido'),
+  companyName: z.string().optional(),
   hrEnabled: z.boolean().optional(),
   posEnabled: z.boolean().optional(),
   technicalServicesEnabled: z.boolean().optional(),

@@ -141,10 +141,7 @@ export async function sendRegistrationLink(params: {
   const draftSource: RegistrationLinkDraft = isResend
     ? prev!.draft
     : (() => {
-        const cn = params.draft.companyName?.trim()
-        if (!cn) {
-          throw new BadRequestError('El nombre de la empresa es requerido')
-        }
+        const cn = params.draft.companyName?.trim() || email.split('@')[0] || 'Mi Empresa'
         return {
           password: params.draft.password,
           firstName: params.draft.firstName?.trim() ?? '',
