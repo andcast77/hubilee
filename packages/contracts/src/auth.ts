@@ -10,11 +10,13 @@ export type DesktopAuthTokens = {
  * Session is an httpOnly cookie on web (no token in JSON there).
  * `tokens` is additive and gated: only present when the request carried
  * `X-Client: desktop` (design `sdd/web-desktop-vite-tauri/design` ADR-A1).
+ *
+ * `user.email` is `string | null` so floor (codes-only) users can share the same envelope.
  */
 export type LoginResponse = {
   user: {
     id: string
-    email: string
+    email: string | null
     name: string
     role: string
     isSuperuser: boolean
@@ -22,16 +24,28 @@ export type LoginResponse = {
   companyId?: string
   company?: CompanyRow
   companies?: CompanyRow[]
+  membershipRole?: string
   /** When true, password was OK but MFA is required — use tempToken with /v1/auth/mfa/verify. */
   mfaRequired?: boolean
   tempToken?: string
   tokens?: DesktopAuthTokens
 }
 
+/** Public POST /v1/auth/floor-login body (types only in PR1; route wired in PR2). */
+export type FloorLoginRequest = {
+  companyCode: string
+  employeeCode: string
+  password: string
+  captchaToken?: string
+}
+
+/** Same success envelope as email login (cookies/JWT issued by API). */
+export type FloorLoginResponse = LoginResponse
+
 export type RegisterResponse = {
   user: {
     id: string
-    email: string
+    email: string | null
     name: string
     role: string
     companyId?: string
@@ -46,7 +60,7 @@ export type RegisterResponse = {
 
 export type MeResponse = {
   id: string
-  email: string
+  email: string | null
   role: string
   isActive: boolean
   name: string
