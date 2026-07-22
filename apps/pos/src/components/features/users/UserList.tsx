@@ -3,7 +3,14 @@
 import { useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useUser } from '@/hooks/useUser'
-import { useCompanyMembers, useDeleteUser } from '@/hooks/useUsers'
+import {
+  useAttachMemberEmail,
+  useCompanyCredentials,
+  useCompanyMembers,
+  useDeleteUser,
+  useResetMemberPassword,
+} from '@/hooks/useUsers'
+import { formatFloorCodesForDisplay, memberHasFloorCodes } from '@/lib/floor-staff'
 import { Button } from '@hubilee/ui'
 import { Input } from '@hubilee/ui'
 import {
@@ -33,7 +40,28 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@hubilee/ui'
-import { Plus, Search, User as UserIcon, Edit, Trash2, ChevronsUpDown, ChevronUp, ChevronDown } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@hubilee/ui'
+import { Label } from '@hubilee/ui'
+import {
+  Plus,
+  Search,
+  User as UserIcon,
+  Edit,
+  Trash2,
+  ChevronsUpDown,
+  ChevronUp,
+  ChevronDown,
+  Copy,
+  KeyRound,
+  Mail,
+} from 'lucide-react'
 import { Badge } from '@hubilee/ui'
 import type { UserRole } from '@/types'
 
@@ -42,18 +70,36 @@ const PAGE_SIZE = 20
 type SortCol = 'name' | 'email' | 'role' | 'active'
 type SortOrder = 'asc' | 'desc'
 
+type MemberRow = {
+  id: string
+  name: string
+  email: string | null
+  role: string
+  active: boolean
+  employeeCode?: string | null
+}
+
 export function UserList() {
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState<string>('all')
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState<SortCol>('name')
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc')
+  const [resetTarget, setResetTarget] = useState<MemberRow | null>(null)
+  const [resetPassword, setResetPassword] = useState('')
+  const [attachTarget, setAttachTarget] = useState<MemberRow | null>(null)
+  const [attachEmail, setAttachEmail] = useState('')
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const { data: currentUser, isLoading: isLoadingUser } = useUser()
   const companyId = currentUser?.companyId
   const companyMembersQuery = useCompanyMembers(companyId)
+  const credentialsQuery = useCompanyCredentials(companyId)
   const deleteUser = useDeleteUser()
+  const resetPasswordMutation = useResetMemberPassword(companyId)
+  const attachEmailMutation = useAttachMemberEmail(companyId)
 
+  const companyCode = credentialsQuery.data?.companyCode ?? null
   const allMembers = companyMembersQuery.data?.users ?? []
   const filteredAndPaginated = useMemo(() => {
     let list = allMembers
@@ -62,18 +108,18 @@ export function UserList() {
       list = list.filter(
         (u) =>
           (u.email ?? '').toLowerCase().includes(q) ||
-          (u.name ?? '').toLowerCase().includes(q)
+          (u.name ?? '').toLowerCase().includes(q) ||
+          (u.employeeCode ?? '').includes(q),
       )
     }
     if (roleFilter !== 'all') {
       list = list.filter((u) => (u.role ?? 'USER') === roleFilter)
     }
-    
-    // Sort the list
+
     list = [...list].sort((a, b) => {
       let aVal: string | boolean
       let bVal: string | boolean
-      
+
       switch (sortBy) {
         case 'name':
           aVal = (a.name ?? '').toLowerCase()
@@ -84,8 +130,8 @@ export function UserList() {
           bVal = (b.email ?? '').toLowerCase()
           break
         case 'role':
-          aVal = (a.role ?? 'USER')
-          bVal = (b.role ?? 'USER')
+          aVal = a.role ?? 'USER'
+          bVal = b.role ?? 'USER'
           break
         case 'active':
           aVal = a.active
@@ -95,11 +141,11 @@ export function UserList() {
           aVal = ''
           bVal = ''
       }
-      
+
       const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0
       return sortOrder === 'asc' ? cmp : -cmp
     })
-    
+
     const total = list.length
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
     const start = (page - 1) * PAGE_SIZE
@@ -134,7 +180,7 @@ export function UserList() {
       case 'OWNER':
         return 'Propietario'
       case 'USER':
-        return 'Usuario'
+        return 'Cajero'
       case 'SUPERVISOR':
         return 'Supervisor'
       case 'CASHIER':
@@ -171,6 +217,57 @@ export function UserList() {
     }
   }
 
+  const copyCompanyCode = async () => {
+    if (!companyCode) return
+    const display = formatFloorCodesForDisplay({
+      companyCode,
+      employeeCode: '------',
+    })
+    await navigator.clipboard.writeText(display.companyCode)
+  }
+
+  const copyMemberCodes = async (employeeCode: string) => {
+    if (!companyCode) return
+    const display = formatFloorCodesForDisplay({ companyCode, employeeCode })
+    await navigator.clipboard.writeText(display.copyText)
+  }
+
+  const handleResetPassword = async () => {
+    if (!resetTarget || resetPassword.length < 6) {
+      setActionError('La contraseña debe tener al menos 6 caracteres')
+      return
+    }
+    setActionError(null)
+    try {
+      await resetPasswordMutation.mutateAsync({
+        userId: resetTarget.id,
+        password: resetPassword,
+      })
+      setResetTarget(null)
+      setResetPassword('')
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'No se pudo restablecer')
+    }
+  }
+
+  const handleAttachEmail = async () => {
+    if (!attachTarget || !attachEmail.trim()) {
+      setActionError('Introduce un email válido')
+      return
+    }
+    setActionError(null)
+    try {
+      await attachEmailMutation.mutateAsync({
+        userId: attachTarget.id,
+        email: attachEmail.trim(),
+      })
+      setAttachTarget(null)
+      setAttachEmail('')
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'No se pudo asociar el email')
+    }
+  }
+
   if (isLoadingUser) {
     return (
       <div className="rounded-md border">
@@ -179,6 +276,7 @@ export function UserList() {
             <TableRow>
               <TableHead>Nombre</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead>Código</TableHead>
               <TableHead>Rol</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
@@ -189,6 +287,7 @@ export function UserList() {
               <TableRow key={i}>
                 <TableCell><Skeleton className="h-5 w-32" /></TableCell>
                 <TableCell><Skeleton className="h-5 w-40" /></TableCell>
+                <TableCell><Skeleton className="h-5 w-16" /></TableCell>
                 <TableCell><Skeleton className="h-5 w-20" /></TableCell>
                 <TableCell><Skeleton className="h-5 w-16" /></TableCell>
                 <TableCell className="text-right"><Skeleton className="h-8 w-12 ml-auto" /></TableCell>
@@ -222,35 +321,27 @@ export function UserList() {
 
   if (companyMembersQuery.isLoading) {
     return (
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Rol</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {Array.from({ length: 5 }).map((_, i) => (
-              <TableRow key={i}>
-                <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-40" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-16" /></TableCell>
-                <TableCell className="text-right"><Skeleton className="h-8 w-12 ml-auto" /></TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      <div className="rounded-md border p-8">
+        <Skeleton className="h-8 w-full" />
       </div>
     )
   }
 
   return (
     <div className="space-y-4">
+      {companyCode ? (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-muted/40 px-4 py-3 text-sm">
+          <div>
+            <span className="font-medium">Código de empresa (piso): </span>
+            <code className="select-all">{companyCode}</code>
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={() => void copyCompanyCode()}>
+            <Copy className="mr-2 h-4 w-4" />
+            Copiar
+          </Button>
+        </div>
+      ) : null}
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-center gap-2">
           <div className="relative flex-1 max-w-sm">
@@ -273,7 +364,7 @@ export function UserList() {
               <SelectItem value="all">Todos</SelectItem>
               <SelectItem value="OWNER">Propietario</SelectItem>
               <SelectItem value="ADMIN">Administrador</SelectItem>
-              <SelectItem value="USER">Usuario</SelectItem>
+              <SelectItem value="USER">Cajero</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -300,6 +391,7 @@ export function UserList() {
                       <SortIcon column="email" />
                     </Button>
                   </TableHead>
+                  <TableHead>Código empleado</TableHead>
                   <TableHead>
                     <Button variant="ghost" className="-ml-3 h-8 font-semibold" onClick={() => toggleSort('role')}>
                       Rol
@@ -324,7 +416,14 @@ export function UserList() {
                         {user.name}
                       </div>
                     </TableCell>
-                    <TableCell>{user.email}</TableCell>
+                    <TableCell>{user.email || '—'}</TableCell>
+                    <TableCell>
+                      {user.employeeCode ? (
+                        <code className="select-all text-sm">{user.employeeCode}</code>
+                      ) : (
+                        '—'
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Badge variant={getRoleBadgeVariant(user.role)}>
                         {getRoleLabel(user.role)}
@@ -336,7 +435,45 @@ export function UserList() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
+                      <div className="flex justify-end gap-1">
+                        {memberHasFloorCodes(user) && user.employeeCode && companyCode ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            title="Copiar códigos"
+                            onClick={() => void copyMemberCodes(user.employeeCode!)}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        ) : null}
+                        {memberHasFloorCodes(user) ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            title="Restablecer contraseña"
+                            onClick={() => {
+                              setActionError(null)
+                              setResetPassword('')
+                              setResetTarget(user)
+                            }}
+                          >
+                            <KeyRound className="h-4 w-4" />
+                          </Button>
+                        ) : null}
+                        {memberHasFloorCodes(user) && !user.email ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            title="Asociar email"
+                            onClick={() => {
+                              setActionError(null)
+                              setAttachEmail('')
+                              setAttachTarget(user)
+                            }}
+                          >
+                            <Mail className="h-4 w-4" />
+                          </Button>
+                        ) : null}
                         <Link to="/admin/users/$id" params={{ id: user.id }}>
                           <Button variant="ghost" size="sm" title="Editar">
                             <Edit className="h-4 w-4" />
@@ -399,6 +536,75 @@ export function UserList() {
           )}
         </div>
       )}
+
+      <Dialog open={!!resetTarget} onOpenChange={(open) => !open && setResetTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Restablecer contraseña de piso</DialogTitle>
+            <DialogDescription>
+              Nueva contraseña para {resetTarget?.name}
+              {resetTarget?.employeeCode ? ` (código ${resetTarget.employeeCode})` : ''}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="reset-password">Nueva contraseña</Label>
+            <Input
+              id="reset-password"
+              type="password"
+              value={resetPassword}
+              onChange={(e) => setResetPassword(e.target.value)}
+              autoComplete="new-password"
+            />
+            {actionError ? <p className="text-sm text-red-500">{actionError}</p> : null}
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setResetTarget(null)}>
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => void handleResetPassword()}
+              disabled={resetPasswordMutation.isPending}
+            >
+              {resetPasswordMutation.isPending ? 'Guardando…' : 'Restablecer'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!attachTarget} onOpenChange={(open) => !open && setAttachTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Asociar email</DialogTitle>
+            <DialogDescription>
+              Habilita login por email además de códigos de piso para {attachTarget?.name}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="attach-email">Email</Label>
+            <Input
+              id="attach-email"
+              type="email"
+              value={attachEmail}
+              onChange={(e) => setAttachEmail(e.target.value)}
+              autoComplete="email"
+            />
+            {actionError ? <p className="text-sm text-red-500">{actionError}</p> : null}
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setAttachTarget(null)}>
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => void handleAttachEmail()}
+              disabled={attachEmailMutation.isPending}
+            >
+              {attachEmailMutation.isPending ? 'Guardando…' : 'Asociar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

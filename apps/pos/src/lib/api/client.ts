@@ -40,6 +40,31 @@ export function getAuthHeaders(): HeadersInit {
   return {}
 }
 
+/** PATCH helper — SharedApiClient has no patch; cookie transport for web POS. */
+async function patchJson<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
+  const init = withStoreIdHeader(options)
+  const headers = new Headers(init.headers)
+  headers.set('Content-Type', 'application/json')
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    ...init,
+    method: 'PATCH',
+    credentials: 'include',
+    headers,
+    body: data !== undefined ? JSON.stringify(data) : undefined,
+  })
+  if (!response.ok) {
+    let errorMessage = `API Error: ${response.status} ${response.statusText}`
+    try {
+      const errorData = (await response.json()) as { error?: string; message?: string }
+      errorMessage = errorData.error || errorData.message || errorMessage
+    } catch {
+      // ignore non-JSON
+    }
+    throw new Error(errorMessage)
+  }
+  return response.json() as Promise<T>
+}
+
 // Unified API Client
 export const apiClient = {
   get: <T>(endpoint: string, options?: RequestInit) => sharedClient.get<T>(endpoint, withStoreIdHeader(options)),
@@ -47,6 +72,8 @@ export const apiClient = {
     sharedClient.post<T>(endpoint, data, withStoreIdHeader(options)),
   put: <T>(endpoint: string, data?: unknown, options?: RequestInit) =>
     sharedClient.put<T>(endpoint, data, withStoreIdHeader(options)),
+  patch: <T>(endpoint: string, data?: unknown, options?: RequestInit) =>
+    patchJson<T>(endpoint, data, options),
   delete: <T>(endpoint: string, data?: unknown, options?: RequestInit) =>
     sharedClient.delete<T>(endpoint, data, withStoreIdHeader(options)),
 }
@@ -77,10 +104,12 @@ export const accountApi = {
 // Company members API (usuarios de la empresa - misma lista en Hr y Pos)
 export const companiesApi = {
   getMembers: <T>(companyId: string) => apiClient.get<T>(`/v1/companies/${companyId}/members`),
+  getCredentials: <T>(companyId: string) =>
+    apiClient.get<T>(`/v1/companies/${companyId}/credentials`),
   createMember: <T>(
     companyId: string,
     data: {
-      email: string
+      email?: string
       password: string
       firstName?: string
       lastName?: string
@@ -90,6 +119,10 @@ export const companiesApi = {
   ) => apiClient.post<T>(`/v1/companies/${companyId}/members`, data),
   updateMemberStores: <T>(companyId: string, userId: string, storeIds: string[]) =>
     apiClient.put<T>(`/v1/companies/${companyId}/members/${userId}/stores`, { storeIds }),
+  resetMemberPassword: <T>(companyId: string, userId: string, password: string) =>
+    apiClient.put<T>(`/v1/companies/${companyId}/members/${userId}/password`, { password }),
+  attachMemberEmail: <T>(companyId: string, userId: string, email: string) =>
+    apiClient.patch<T>(`/v1/companies/${companyId}/members/${userId}/email`, { email }),
 }
 
 // Generic API response types

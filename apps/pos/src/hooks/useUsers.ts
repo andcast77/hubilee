@@ -1,15 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { User } from '@/types'
 import type { CreateUserInput, UpdateUserInput, UserQueryInput } from '@/lib/validations/user'
+import type { CreateCompanyMemberPayload } from '@/lib/validations/auth'
 import {
   getUsers,
   getCompanyMembers,
+  getCompanyCredentials,
   createCompanyMember,
   getUserById,
   createUser as createUserApi,
   updateUser as updateUserApi,
   deleteUser as deleteUserApi,
   updateMemberStores,
+  resetMemberPassword,
+  attachMemberEmail,
 } from '@/lib/services/userService'
 
 async function fetchUsers(query?: UserQueryInput): Promise<{ users: User[]; pagination: any }> {
@@ -48,17 +52,40 @@ export function useCompanyMembers(companyId: string | null | undefined) {
   })
 }
 
+export function useCompanyCredentials(companyId: string | null | undefined) {
+  return useQuery({
+    queryKey: ['companyCredentials', companyId],
+    queryFn: () => getCompanyCredentials(companyId!),
+    enabled: !!companyId,
+  })
+}
+
 export function useCreateCompanyMember(companyId: string | null | undefined) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (data: {
-      email: string
-      password: string
-      firstName?: string
-      lastName?: string
-      membershipRole: 'ADMIN' | 'USER'
-      storeIds?: string[]
-    }) => createCompanyMember(companyId!, data),
+    mutationFn: (data: CreateCompanyMemberPayload) => createCompanyMember(companyId!, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['companyMembers', companyId] })
+    },
+  })
+}
+
+export function useResetMemberPassword(companyId: string | null | undefined) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ userId, password }: { userId: string; password: string }) =>
+      resetMemberPassword(companyId!, userId, password),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['companyMembers', companyId] })
+    },
+  })
+}
+
+export function useAttachMemberEmail(companyId: string | null | undefined) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ userId, email }: { userId: string; email: string }) =>
+      attachMemberEmail(companyId!, userId, email),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['companyMembers', companyId] })
     },

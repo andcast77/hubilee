@@ -19,15 +19,24 @@ import { useStoreContextOptional } from '@/components/providers/StoreContext'
 import { UserRole } from '@/types'
 
 interface UserFormProps {
-  initialData?: Partial<CreateUserInput & { storeIds?: string[] }>
+  initialData?: Partial<CreateUserInput & { storeIds?: string[]; employeeCode?: string | null }>
   onSubmit: (data: CreateUserInput | UpdateUserInput) => Promise<void>
   isLoading?: boolean
   isEdit?: boolean
+  /** Shown after create / for floor staff */
+  companyCode?: string | null
 }
 
-export function UserForm({ initialData, onSubmit, isLoading, isEdit = false }: UserFormProps) {
+export function UserForm({
+  initialData,
+  onSubmit,
+  isLoading,
+  isEdit = false,
+  companyCode,
+}: UserFormProps) {
   const storeContext = useStoreContextOptional()
   const stores = storeContext?.stores ?? []
+  const activeStores = stores.filter((s) => s.active)
 
   const {
     register,
@@ -43,25 +52,41 @@ export function UserForm({ initialData, onSubmit, isLoading, isEdit = false }: U
       password: '',
       role: initialData?.role || UserRole.CASHIER,
       active: initialData?.active ?? true,
-      storeIds: initialData?.storeIds ?? [],
+      storeIds:
+        initialData?.storeIds ??
+        (activeStores.length === 1 ? [activeStores[0]!.id] : []),
     },
   })
 
   const role = watch('role')
   const storeIds = watch('storeIds') ?? []
-  const needsStoreAssignment = role === UserRole.SUPERVISOR || role === UserRole.CASHIER
+  const isFloorRole = role === UserRole.CASHIER || role === UserRole.SUPERVISOR
+  const emailRequired = role === UserRole.ADMIN
+  const needsStoreAssignment = isFloorRole
 
-  const toggleStore = (storeId: string) => {
-    const current = storeIds as string[]
-    if (current.includes(storeId)) {
-      setValue('storeIds', current.filter((id) => id !== storeId))
-    } else {
-      setValue('storeIds', [...current, storeId])
-    }
+  const selectSingleStore = (storeId: string) => {
+    setValue('storeIds', [storeId])
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {companyCode || initialData?.employeeCode ? (
+        <div className="rounded-md border bg-muted/40 p-3 text-sm space-y-1">
+          {companyCode ? (
+            <p>
+              <span className="font-medium">Código de empresa:</span>{' '}
+              <code className="select-all">{companyCode}</code>
+            </p>
+          ) : null}
+          {initialData?.employeeCode ? (
+            <p>
+              <span className="font-medium">Código de empleado:</span>{' '}
+              <code className="select-all">{initialData.employeeCode}</code>
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="name">Nombre Completo <span className="text-red-500">*</span></Label>
@@ -69,7 +94,11 @@ export function UserForm({ initialData, onSubmit, isLoading, isEdit = false }: U
           {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="email">Email <span className="text-red-500">*</span></Label>
+          <Label htmlFor="email">
+            Email {emailRequired ? <span className="text-red-500">*</span> : (
+              <span className="text-muted-foreground font-normal">(opcional para cajero)</span>
+            )}
+          </Label>
           <Input id="email" type="email" {...register('email')} className={errors.email ? 'border-red-500' : ''} />
           {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
         </div>
@@ -89,28 +118,34 @@ export function UserForm({ initialData, onSubmit, isLoading, isEdit = false }: U
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={UserRole.ADMIN}>Administrador</SelectItem>
-              <SelectItem value={UserRole.SUPERVISOR}>Supervisor</SelectItem>
               <SelectItem value={UserRole.CASHIER}>Cajero</SelectItem>
             </SelectContent>
           </Select>
           {errors.role && <p className="text-sm text-red-500">{errors.role.message}</p>}
+          {isFloorRole && (
+            <p className="text-xs text-muted-foreground">
+              El cajero se crea como membresía USER (códigos de piso), sin rol CASHIER en la API.
+            </p>
+          )}
         </div>
       </div>
 
-      {needsStoreAssignment && stores.length > 0 && (
+      {needsStoreAssignment && activeStores.length > 0 && (
         <div className="space-y-2">
-          <Label>Locales asignados</Label>
+          <Label>Local asignado</Label>
           <p className="text-sm text-muted-foreground">
-            Selecciona los locales a los que tendrá acceso este usuario. Si no selecciona ninguno, se asignarán todos.
+            {activeStores.length === 1
+              ? 'Se asignará el único local activo.'
+              : 'Selecciona exactamente un local (obligatorio si hay varios).'}
           </p>
           <ScrollArea className="h-[160px] rounded-md border p-3">
             <div className="space-y-2">
-              {stores.filter((s) => s.active).map((store) => (
+              {activeStores.map((store) => (
                 <div key={store.id} className="flex items-center space-x-2">
                   <Checkbox
                     id={`store-${store.id}`}
                     checked={(storeIds as string[]).includes(store.id)}
-                    onCheckedChange={() => toggleStore(store.id)}
+                    onCheckedChange={() => selectSingleStore(store.id)}
                   />
                   <Label
                     htmlFor={`store-${store.id}`}

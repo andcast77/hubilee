@@ -1,6 +1,21 @@
 import { apiClient, companiesApi, type ApiResult } from '@/lib/api/client'
 import { ApiError, ErrorCodes } from '@/lib/utils/errors'
 import type { CreateUserInput, UpdateUserInput, UserQueryInput } from '@/lib/validations/user'
+import type { CreateCompanyMemberPayload } from '@/lib/validations/auth'
+import {
+  buildAttachFloorEmailPayload,
+  buildResetFloorPasswordPayload,
+} from '@/lib/floor-staff'
+
+export type CompanyMemberRow = {
+  id: string
+  email: string | null
+  name: string
+  role: string
+  active: boolean
+  storeIds: string[]
+  employeeCode?: string | null
+}
 
 /** Company members (usuarios de la empresa) - misma lista en Hr y Pos */
 export async function getCompanyMembers(companyId: string) {
@@ -10,34 +25,75 @@ export async function getCompanyMembers(companyId: string) {
   }
   const data = (response as { data: any[] }).data || []
   return {
-    users: data.map((m) => ({
+    users: data.map((m): CompanyMemberRow => ({
       id: m.userId ?? m.id,
-      email: m.email,
-      name: m.name ?? m.email,
+      email: m.email ?? null,
+      name: m.name ?? m.email ?? 'Sin nombre',
       role: m.membershipRole ?? 'USER',
       active: true,
       storeIds: m.storeIds ?? [],
+      employeeCode: m.employeeCode ?? null,
     })),
     pagination: { page: 1, limit: data.length, total: data.length, totalPages: 1 },
   }
 }
 
-export async function createCompanyMember(
-  companyId: string,
-  data: {
-    email: string
-    password: string
-    firstName?: string
-    lastName?: string
-    membershipRole: 'ADMIN' | 'USER'
-    storeIds?: string[]
+export async function getCompanyCredentials(companyId: string) {
+  const response = await companiesApi.getCredentials<{
+    success: boolean
+    data?: { companyId: string; companyCode: string }
+    error?: string
+  }>(companyId)
+  if (!response.success || !response.data) {
+    throw new ApiError(
+      400,
+      (response as { error?: string }).error || 'Error al obtener credenciales',
+      ErrorCodes.VALIDATION_ERROR,
+    )
   }
-) {
+  return response.data
+}
+
+export async function createCompanyMember(companyId: string, data: CreateCompanyMemberPayload) {
   const response = await companiesApi.createMember<{ success: boolean; data: any; error?: string }>(companyId, data)
   if (!response.success) {
     throw new ApiError(400, (response as { error?: string }).error || 'Error al crear usuario', ErrorCodes.VALIDATION_ERROR)
   }
   return (response as { data: any }).data
+}
+
+export async function resetMemberPassword(companyId: string, userId: string, password: string) {
+  const body = buildResetFloorPasswordPayload({ password })
+  const response = await companiesApi.resetMemberPassword<{
+    success: boolean
+    data?: unknown
+    error?: string
+  }>(companyId, userId, body.password)
+  if (!response.success) {
+    throw new ApiError(
+      400,
+      (response as { error?: string }).error || 'Error al restablecer contraseña',
+      ErrorCodes.VALIDATION_ERROR,
+    )
+  }
+  return (response as { data?: unknown }).data
+}
+
+export async function attachMemberEmail(companyId: string, userId: string, email: string) {
+  const body = buildAttachFloorEmailPayload({ email })
+  const response = await companiesApi.attachMemberEmail<{
+    success: boolean
+    data?: unknown
+    error?: string
+  }>(companyId, userId, body.email)
+  if (!response.success) {
+    throw new ApiError(
+      400,
+      (response as { error?: string }).error || 'Error al asociar email',
+      ErrorCodes.VALIDATION_ERROR,
+    )
+  }
+  return (response as { data?: unknown }).data
 }
 
 export async function updateMemberStores(companyId: string, userId: string, storeIds: string[]) {
@@ -55,23 +111,12 @@ export async function updateMemberStores(companyId: string, userId: string, stor
 export async function getUsers(query: UserQueryInput = { page: 1, limit: 20 }) {
   const { search, role, active, page = 1, limit = 20 } = query
 
-  const params = new URLSearchParams({
-    page: page.toString(),
-    limit: limit.toString(),
-  })
-  if (search) params.append('search', search)
-  if (role) params.append('role', role)
-  if (active !== undefined) params.append('active', active.toString())
-
-  // Note: The current /v1/users endpoint doesn't support pagination/filters yet
-  // This is a simplified version that gets all active users
   const response = await apiClient.get<ApiResult<any[]>>('/v1/users')
 
   if (!response.success) {
     throw new ApiError(500, response.error || 'Error al obtener usuarios', ErrorCodes.INTERNAL_ERROR)
   }
 
-  // Filter and paginate on client side (temporary until API supports it)
   let filtered = response.data
   if (search) {
     filtered = filtered.filter((u) => u.email?.includes(search))

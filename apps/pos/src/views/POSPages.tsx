@@ -36,7 +36,15 @@ import { useCreateProduct, useProduct, useUpdateProduct, useProducts } from "@/h
 import { useCategories, useCreateCategory, useDeleteCategory } from "@/hooks/useCategories";
 import { useCreateCustomer, useCustomer, useUpdateCustomer } from "@/hooks/useCustomers";
 import { useCreateSupplier, useSupplier, useUpdateSupplier } from "@/hooks/useSuppliers";
-import { useCreateUser, useUser, useUpdateUser } from "@/hooks/useUsers";
+import {
+  useCompanyCredentials,
+  useCreateCompanyMember,
+  useUser,
+  useUpdateUser,
+} from "@/hooks/useUsers";
+import { buildCreateFloorMemberPayload } from "@/lib/validations/auth";
+import { useUser as useCurrentUser } from "@/hooks/useUser";
+import type { CreateUserInput } from "@/lib/validations/user";
 import { useSale, useSales } from "@/hooks/useSales";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 import { useLoyaltyConfig, useUpdateLoyaltyConfig } from "@/hooks/useLoyalty";
@@ -315,7 +323,15 @@ export function SupplierEditPage() {
 }
 export function UserCreatePage() {
   const navigate = useNavigate();
-  const mutation = useCreateUser();
+  const { data: currentUser } = useCurrentUser();
+  const companyId = currentUser?.companyId;
+  const credentials = useCompanyCredentials(companyId);
+  const mutation = useCreateCompanyMember(companyId);
+  const [createdCodes, setCreatedCodes] = useState<{
+    employeeCode?: string | null;
+    companyCode?: string | null;
+  } | null>(null);
+
   return (
     <PageFrame
       title="Nuevo Usuario"
@@ -324,7 +340,43 @@ export function UserCreatePage() {
         { label: "Nuevo" },
       ]}
     >
-      <UserForm onSubmit={async (data) => { await mutation.mutateAsync(data as any); void navigate({ to: "/admin/users" }); }} isLoading={mutation.isPending} />
+      {createdCodes ? (
+        <div className="mb-4 space-y-2 rounded-md border bg-muted/40 p-4 text-sm">
+          <p className="font-medium">Usuario de piso creado</p>
+          {createdCodes.companyCode ? (
+            <p>
+              Código de empresa:{" "}
+              <code className="select-all">{createdCodes.companyCode}</code>
+            </p>
+          ) : null}
+          {createdCodes.employeeCode ? (
+            <p>
+              Código de empleado:{" "}
+              <code className="select-all">{createdCodes.employeeCode}</code>
+            </p>
+          ) : null}
+          <Button type="button" onClick={() => void navigate({ to: "/admin/users" })}>
+            Ir a la lista
+          </Button>
+        </div>
+      ) : (
+        <UserForm
+          companyCode={credentials.data?.companyCode}
+          onSubmit={async (data) => {
+            const payload = buildCreateFloorMemberPayload(data as CreateUserInput);
+            const result = await mutation.mutateAsync(payload);
+            if (result?.employeeCode) {
+              setCreatedCodes({
+                employeeCode: result.employeeCode,
+                companyCode: credentials.data?.companyCode ?? null,
+              });
+              return;
+            }
+            void navigate({ to: "/admin/users" });
+          }}
+          isLoading={mutation.isPending}
+        />
+      )}
     </PageFrame>
   );
 }
