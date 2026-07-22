@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import { randomBytes } from 'crypto'
 import { prisma } from '../db/index.js'
 import {
   generateToken,
@@ -14,7 +15,7 @@ import { hashRefreshToken, generateRefreshTokenPlain } from '../core/refresh-tok
 import { blacklistJti, blacklistJtis, isJtiBlacklisted } from '../core/jwt-blacklist.js'
 import { getUserCompanies, selectCompanyForUser } from '../core/auth-context.js'
 import { findModulesByKeys, getCompanyModules } from '../core/modules.js'
-import type { LoginBody, RegisterBody, ChangePasswordBody } from '../dto/auth.dto.js'
+import type { LoginBody, RegisterBody, ChangePasswordBody, FloorLoginBody } from '../dto/auth.dto.js'
 import { verifyAndConsumeRegistrationTicket } from './registration-ticket.service.js'
 import type { CompanyRow } from '../core/auth-context.js'
 import {
@@ -34,6 +35,7 @@ import {
 import { writeAuditLog } from './audit-log.service.js'
 import { summarizeUserAgent } from '../core/user-agent-summary.js'
 import { jwtExpiresInToMaxAgeSeconds } from '../core/session-cookie.js'
+import { verifyTurnstileToken } from './turnstile.service.js'
 
 async function resolveAuditCompanyId(userId: string, bodyCompanyId?: string): Promise<string | null> {
   if (bodyCompanyId) return bodyCompanyId
@@ -50,6 +52,102 @@ function refreshSessionExpiresAt(): Date {
   return new Date(Date.now() + ms)
 }
 
+type LockoutUserFields = {
+  id: string
+  failedLoginAttempts: number
+  lockedUntil: Date | null
+}
+
+/** Throws ACCOUNT_LOCKED when lockedUntil is still in the future. */
+function assertNotLocked(user: Pick<LockoutUserFields, 'lockedUntil'>, now = new Date()): void {
+  if (user.lockedUntil && user.lockedUntil > now) {
+    const retrySec = Math.ceil((user.lockedUntil.getTime() - now.getTime()) / 1000)
+    throw new TooManyRequestsError(
+      'Cuenta bloqueada por demasiados intentos fallidos. Inténtalo más tarde.',
+      retrySec,
+      'ACCOUNT_LOCKED',
+    )
+  }
+}
+
+/**
+ * Bumps failedLoginAttempts / lockedUntil on bad password.
+ * Throws ACCOUNT_LOCKED when threshold reached, otherwise UnauthorizedError.
+ */
+async function recordFailedPasswordAttempt(
+  user: LockoutUserFields,
+  auditCompanyId: string | null,
+  now = new Date(),
+): Promise<never> {
+  const config = getConfig()
+  const attempts = user.failedLoginAttempts + 1
+  const lockUntil =
+    attempts >= config.MAX_LOGIN_ATTEMPTS
+      ? new Date(now.getTime() + config.LOCKOUT_DURATION_MINUTES * 60 * 1000)
+      : null
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      failedLoginAttempts: attempts,
+      lockedUntil: lockUntil,
+    },
+  })
+  writeAuditLog({
+    companyId: auditCompanyId,
+    userId: user.id,
+    action: 'LOGIN_FAILED',
+    entityType: 'auth',
+    entityId: user.id,
+  })
+  if (lockUntil) {
+    writeAuditLog({
+      companyId: auditCompanyId,
+      userId: user.id,
+      action: 'ACCOUNT_LOCKED',
+      entityType: 'auth',
+      entityId: user.id,
+      after: { lockedUntil: lockUntil.toISOString(), attempts },
+    })
+    const retrySec = Math.ceil(config.LOCKOUT_DURATION_MINUTES * 60)
+    throw new TooManyRequestsError(
+      'Cuenta bloqueada por demasiados intentos fallidos. Inténtalo más tarde.',
+      retrySec,
+      'ACCOUNT_LOCKED',
+    )
+  }
+  throw new UnauthorizedError('Credenciales inválidas')
+}
+
+async function clearLoginLockout(userId: string, wasLocked: boolean, auditCompanyId: string | null): Promise<void> {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { failedLoginAttempts: 0, lockedUntil: null },
+  })
+  if (wasLocked) {
+    writeAuditLog({
+      companyId: auditCompanyId,
+      userId,
+      action: 'ACCOUNT_UNLOCKED',
+      entityType: 'auth',
+      entityId: userId,
+    })
+  }
+}
+
+/** Revoke all Session rows for a user (floor login: one cashier / one terminal). */
+async function revokeAllUserSessions(userId: string): Promise<void> {
+  const others = await prisma.session.findMany({
+    where: { userId },
+    select: { accessJti: true },
+  })
+  const accessMaxSec = jwtExpiresInToMaxAgeSeconds(getConfig().JWT_ACCESS_EXPIRES_IN)
+  await blacklistJtis(
+    others.map((o) => o.accessJti),
+    accessMaxSec,
+  )
+  await prisma.session.deleteMany({ where: { userId } })
+}
+
 export function accessJtiFromJwtString(accessToken: string): string | null {
   const decoded = jwt.decode(accessToken) as { jti?: string } | null
   return typeof decoded?.jti === 'string' ? decoded.jti : null
@@ -59,7 +157,7 @@ export type LoginResult =
   | {
       mfaRequired: true
       tempToken: string
-      user: { id: string; email: string; name: string; role: string; isSuperuser: boolean }
+      user: { id: string; email: string | null; name: string; role: string; isSuperuser: boolean }
       companyId?: string
       company?: CompanyRow
       companies?: CompanyRow[]
@@ -67,7 +165,7 @@ export type LoginResult =
     }
   | {
       mfaRequired?: false
-      user: { id: string; email: string; name: string; role: string; isSuperuser: boolean }
+      user: { id: string; email: string | null; name: string; role: string; isSuperuser: boolean }
       token: string
       companyId?: string
       company?: CompanyRow
@@ -76,14 +174,14 @@ export type LoginResult =
     }
 
 export type RegisterResult = {
-  user: { id: string; email: string; name: string; role: string; companyId?: string }
+  user: { id: string; email: string | null; name: string; role: string; companyId?: string }
   token: string
   company?: { id: string; name: string; modules: { hr: boolean; pos: boolean; tech: boolean } }
 }
 
 export type MeResult = {
   id: string
-  email: string
+  email: string | null
   role: string
   isActive: boolean
   name: string
@@ -97,9 +195,8 @@ export type MeResult = {
 
 export async function login(body: LoginBody): Promise<LoginResult> {
   const { email, password, companyId: bodyCompanyId } = body
-  const config = getConfig()
 
-  const user = await prisma.user.findUnique({
+  const user = await prisma.user.findFirst({
     where: { email },
     select: {
       id: true,
@@ -118,75 +215,23 @@ export async function login(body: LoginBody): Promise<LoginResult> {
   })
 
   if (!user) throw new UnauthorizedError('Credenciales inválidas')
+  // Floor (codes-only) users must not authenticate via email+password.
+  if (user.email == null) throw new UnauthorizedError('Credenciales inválidas')
 
   const now = new Date()
-  if (user.lockedUntil && user.lockedUntil > now) {
-    const retrySec = Math.ceil((user.lockedUntil.getTime() - now.getTime()) / 1000)
-    throw new TooManyRequestsError(
-      'Cuenta bloqueada por demasiados intentos fallidos. Inténtalo más tarde.',
-      retrySec,
-      'ACCOUNT_LOCKED',
-    )
-  }
+  assertNotLocked(user, now)
 
   if (!user.isActive) throw new UnauthorizedError('Usuario inactivo')
 
   const isValidPassword = await bcrypt.compare(password, user.password)
   if (!isValidPassword) {
-    const attempts = user.failedLoginAttempts + 1
-    const lockUntil =
-      attempts >= config.MAX_LOGIN_ATTEMPTS
-        ? new Date(now.getTime() + config.LOCKOUT_DURATION_MINUTES * 60 * 1000)
-        : null
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        failedLoginAttempts: attempts,
-        lockedUntil: lockUntil,
-      },
-    })
     const auditCo = await resolveAuditCompanyId(user.id, bodyCompanyId)
-    writeAuditLog({
-      companyId: auditCo,
-      userId: user.id,
-      action: 'LOGIN_FAILED',
-      entityType: 'auth',
-      entityId: user.id,
-    })
-    if (lockUntil) {
-      writeAuditLog({
-        companyId: auditCo,
-        userId: user.id,
-        action: 'ACCOUNT_LOCKED',
-        entityType: 'auth',
-        entityId: user.id,
-        after: { lockedUntil: lockUntil.toISOString(), attempts },
-      })
-      const retrySec = Math.ceil(config.LOCKOUT_DURATION_MINUTES * 60)
-      throw new TooManyRequestsError(
-        'Cuenta bloqueada por demasiados intentos fallidos. Inténtalo más tarde.',
-        retrySec,
-        'ACCOUNT_LOCKED',
-      )
-    }
-    throw new UnauthorizedError('Credenciales inválidas')
+    await recordFailedPasswordAttempt(user, auditCo, now)
   }
 
   const wasLocked = user.lockedUntil != null
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { failedLoginAttempts: 0, lockedUntil: null },
-  })
-  if (wasLocked) {
-    const aCo = await resolveAuditCompanyId(user.id, bodyCompanyId)
-    writeAuditLog({
-      companyId: aCo,
-      userId: user.id,
-      action: 'ACCOUNT_UNLOCKED',
-      entityType: 'auth',
-      entityId: user.id,
-    })
-  }
+  const auditCoClear = await resolveAuditCompanyId(user.id, bodyCompanyId)
+  await clearLoginLockout(user.id, wasLocked, auditCoClear)
 
   const companies = await getUserCompanies(user.id, user.isSuperuser ?? false)
   const preferredCompanyId = bodyCompanyId ?? user.posPreferredCompanyId ?? undefined
@@ -251,6 +296,131 @@ export async function login(body: LoginBody): Promise<LoginResult> {
     result.companies = companies
   }
 
+  return result
+}
+
+/**
+ * Floor staff login: companyCode + employeeCode + password.
+ * Reuses User lockout columns; requires Turnstile when failedLoginAttempts >= 1.
+ * Revokes other Sessions; denies while user has an OPEN CashSession.
+ */
+export async function floorLogin(body: FloorLoginBody): Promise<Extract<LoginResult, { token: string }>> {
+  const { companyCode, employeeCode, password, captchaToken } = body
+  const now = new Date()
+
+  const company = await prisma.company.findUnique({
+    where: { companyCode },
+    select: { id: true, name: true, isActive: true },
+  })
+  if (!company || !company.isActive) {
+    throw new UnauthorizedError('Credenciales inválidas')
+  }
+
+  const member = await prisma.companyMember.findUnique({
+    where: {
+      companyId_employeeCode: { companyId: company.id, employeeCode },
+    },
+    select: {
+      id: true,
+      companyId: true,
+      membershipRole: true,
+      user: {
+        select: {
+          id: true,
+          email: true,
+          password: true,
+          role: true,
+          isActive: true,
+          isSuperuser: true,
+          firstName: true,
+          lastName: true,
+          posPreferredCompanyId: true,
+          twoFactorEnabled: true,
+          failedLoginAttempts: true,
+          lockedUntil: true,
+        },
+      },
+    },
+  })
+
+  if (!member?.user) {
+    throw new UnauthorizedError('Credenciales inválidas')
+  }
+
+  const user = member.user
+  assertNotLocked(user, now)
+
+  if (!user.isActive) throw new UnauthorizedError('Usuario inactivo')
+
+  if (user.failedLoginAttempts >= 1) {
+    const cap = captchaToken?.trim()
+    if (!cap) {
+      throw new BadRequestError('Captcha requerido', 'CAPTCHA_FAILED')
+    }
+    await verifyTurnstileToken(cap)
+  }
+
+  const isValidPassword = await bcrypt.compare(password, user.password)
+  if (!isValidPassword) {
+    await recordFailedPasswordAttempt(user, company.id, now)
+  }
+
+  const openCash = await prisma.cashSession.findFirst({
+    where: { openedByUserId: user.id, status: 'OPEN' },
+    select: { id: true },
+  })
+  if (openCash) {
+    throw new ConflictError(
+      'Tienes una caja abierta. Ciérrala antes de iniciar sesión en otro terminal.',
+      'CASH_SESSION_OPEN',
+    )
+  }
+
+  const wasLocked = user.lockedUntil != null
+  await clearLoginLockout(user.id, wasLocked, company.id)
+  await revokeAllUserSessions(user.id)
+
+  const companies = await getUserCompanies(user.id, user.isSuperuser ?? false)
+  const selected = selectCompanyForUser(companies, company.id)
+  const selectedCompany = selected?.selectedCompany ?? {
+    id: company.id,
+    name: company.name,
+    modules: { hr: false, pos: false, tech: false },
+  }
+  const selectedMembershipRole = selected?.selectedMembershipRole ?? member.membershipRole
+
+  // Floor MFA is out of scope for day-1; codes login issues a full session.
+  const name =
+    [user.firstName, user.lastName].filter(Boolean).join(' ').trim() ||
+    user.email ||
+    `Empleado ${employeeCode}`
+
+  const tokenPayload: TokenPayload = {
+    id: user.id,
+    email: user.email,
+    role: user.role,
+    isSuperuser: user.isSuperuser ?? false,
+    companyId: selectedCompany.id,
+    membershipRole: selectedMembershipRole,
+  }
+  const token = generateToken(tokenPayload)
+
+  const result: LoginResult = {
+    user: {
+      id: user.id,
+      email: user.email,
+      name,
+      role: user.role,
+      isSuperuser: user.isSuperuser ?? false,
+    },
+    token,
+    companyId: selectedCompany.id,
+    company: selectedCompany,
+    membershipRole: selectedMembershipRole,
+  }
+  if (companies.length > 1 || user.isSuperuser) {
+    result.companies = companies
+  }
   return result
 }
 
@@ -341,7 +511,7 @@ export async function completeMfaLogin(body: MfaVerifyBody): Promise<CompleteMfa
   }
   const token = generateToken(tokenPayload)
 
-  const name = [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || user.email
+  const name = [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || user.email || 'Usuario'
 
   const result: Extract<LoginResult, { token: string }> = {
     user: {
@@ -378,7 +548,7 @@ export async function register(body: RegisterBody): Promise<RegisterResult> {
   } = body
   const email = rawEmail.trim().toLowerCase()
 
-  const existing = await prisma.user.findUnique({ where: { email }, select: { id: true } })
+  const existing = await prisma.user.findFirst({ where: { email }, select: { id: true } })
   if (existing) throw new BadRequestError('Ya existe un usuario con este email')
 
   const hashedPassword = await bcrypt.hash(password, 10)
@@ -418,6 +588,8 @@ export async function register(body: RegisterBody): Promise<RegisterResult> {
           name: companyName.trim(),
           ownerUserId: u.id,
           isActive: true,
+          // Opaque companyCode required by schema (full register UX in Phase 3).
+          companyCode: randomBytes(8).toString('hex'),
         },
       })
 
@@ -455,12 +627,12 @@ export async function register(body: RegisterBody): Promise<RegisterResult> {
       membershipRole: 'OWNER',
     })
 
-    const name = [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || user.email
+    const name = [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || user.email || email
 
     return {
       user: {
         id: user.id,
-        email: user.email,
+        email: user.email ?? email,
         name,
         role: user.role,
         companyId: company.id,
@@ -488,14 +660,14 @@ export async function register(body: RegisterBody): Promise<RegisterResult> {
 
   const token = generateToken({
     id: user.id,
-    email: user.email,
+    email: user.email ?? email,
     role: user.role,
   })
 
-  const name = [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || user.email
+  const name = [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || user.email || email
 
   return {
-    user: { id: user.id, email: user.email, name, role: user.role },
+    user: { id: user.id, email: user.email ?? email, name, role: user.role },
     token,
   }
 }
@@ -559,7 +731,7 @@ export async function me(decoded: TokenPayload): Promise<MeResult> {
     }
   }
 
-  const name = [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || user.email
+  const name = [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || user.email || 'Usuario'
 
   return {
     ...user,

@@ -11,10 +11,12 @@ function pathOnly(url: string): string {
   return url.split('?')[0]
 }
 
-function isAuthPublicPath(url: string): boolean {
+/** Public auth paths that use the dedicated `ms-auth-public` bucket (not the global IP bucket). */
+export function isAuthPublicPath(url: string): boolean {
   const p = pathOnly(url)
   return (
     p === '/v1/auth/login' ||
+    p === '/v1/auth/floor-login' ||
     p === '/v1/auth/register' ||
     p === '/v1/auth/verify' ||
     p === '/v1/auth/refresh' ||

@@ -8,7 +8,8 @@ import { prisma } from '../db/index.js'
 
 export type TokenPayload = {
   id: string
-  email: string
+  /** Null for codes-only floor staff; owners/admins keep a real email. */
+  email: string | null
   role: string
   companyId?: string
   isSuperuser?: boolean
@@ -39,17 +40,17 @@ export function generateToken(payload: TokenPayload): string {
   return jwt.sign(rest, secret, { expiresIn, jwtid: jti })
 }
 
-/** Nombre para respuestas API (firstName + lastName o email) */
+/** Nombre para respuestas API (firstName + lastName o email; floor users may have null email) */
 export function userDisplayName(user: {
-  firstName?: string;
-  lastName?: string;
-  email: string;
+  firstName?: string
+  lastName?: string
+  email: string | null
 }): string {
-  if (user.firstName != null && user.lastName != null) {
-    const n = `${user.firstName} ${user.lastName}`.trim();
-    if (n) return n;
+  if (user.firstName != null || user.lastName != null) {
+    const n = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim()
+    if (n) return n
   }
-  return user.email;
+  return user.email ?? ''
 }
 
 const MFA_PENDING_TYP = 'mfa_pending' as const
@@ -83,7 +84,7 @@ export function verifyToken(token: string): TokenPayload | null {
     const decoded = jwt.verify(token, secret) as jwt.JwtPayload & {
       typ?: string
       id?: string
-      email?: string
+      email?: string | null
       role?: string
       companyId?: string
       isSuperuser?: boolean
@@ -91,8 +92,16 @@ export function verifyToken(token: string): TokenPayload | null {
       jti?: string
     }
     if (decoded.typ === MFA_PENDING_TYP) return null
-    const { id, email, role } = decoded
-    if (typeof id !== 'string' || typeof email !== 'string' || typeof role !== 'string') return null
+    const { id, role } = decoded
+    if (typeof id !== 'string' || typeof role !== 'string') return null
+    let email: string | null = null
+    if (decoded.email === null || decoded.email === undefined) {
+      email = null
+    } else if (typeof decoded.email === 'string') {
+      email = decoded.email
+    } else {
+      return null
+    }
     const payload: TokenPayload = { id, email, role }
     if (typeof decoded.companyId === 'string') payload.companyId = decoded.companyId
     if (typeof decoded.isSuperuser === 'boolean') payload.isSuperuser = decoded.isSuperuser

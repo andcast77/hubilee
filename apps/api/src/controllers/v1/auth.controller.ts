@@ -4,6 +4,7 @@ import { requireAuth, getAuthToken } from '../../core/auth.js'
 import { validateBody, validateQuery } from '../../core/validate.js'
 import {
   loginBodySchema,
+  floorLoginBodySchema,
   registerBodySchema,
   verifyTokenSchema,
   setContextSchema,
@@ -94,6 +95,37 @@ export async function login(request: FastifyRequest, reply: FastifyReply) {
       entityId: result.user.id,
       ipAddress: ip,
       userAgent: ua,
+    })
+  }
+
+  const { token, ...data } = result
+  const { refreshPlain } = await attachWebAuthCookies(reply, token, result.user.id, {
+    companyId: result.companyId,
+    membershipRole: result.membershipRole,
+  }, { ip, ua })
+  if (isDesktopClient(request)) {
+    ;(data as Record<string, unknown>).tokens = { accessToken: token, refreshToken: refreshPlain }
+  }
+  return ok(data)
+}
+
+export async function floorLogin(request: FastifyRequest, reply: FastifyReply) {
+  const body = validateBody(floorLoginBodySchema, request.body)
+  const ip = request.ip
+  const ua = (request.headers['user-agent'] as string | undefined) ?? null
+
+  const result = await authService.floorLogin(body)
+
+  if (result.companyId) {
+    writeAuditLog({
+      companyId: result.companyId,
+      userId: result.user.id,
+      action: 'LOGIN_SUCCESS',
+      entityType: 'auth',
+      entityId: result.user.id,
+      ipAddress: ip,
+      userAgent: ua,
+      after: { method: 'floor-login' },
     })
   }
 
@@ -525,6 +557,11 @@ export async function registerPublicAuthRoutes(fastify: FastifyInstance) {
     '/v1/auth/login',
     { schema: authSuccessResponseSchema },
     (request, reply) => login(request, reply)
+  )
+  fastify.post(
+    '/v1/auth/floor-login',
+    { schema: authSuccessResponseSchema },
+    (request, reply) => floorLogin(request, reply),
   )
   fastify.post('/v1/auth/register', { schema: authSuccessResponseSchema }, (request, reply) =>
     register(request, reply)
