@@ -1,21 +1,19 @@
 # Transactional email HTML fixtures (PLAN-41)
 
-Los mensajes se arman con `buildTransactionalEmailHtml` desde **`@hubilee/ui/email`** y `mailer.service.ts`.
+## OTP Pos (activo)
 
-## Vista previa local
+Registro y reset usan `buildPosOtpEmailHtml` en
+`apps/api/src/services/email-templates/pos-otp-email.ts` (estética login Pos:
+lienzo `#f5f7fb`, acento `#0085db`, card redondeada, código en 6 casillas).
 
-1. Tests de especificación: `pnpm --filter @hubilee/ui test` (incluye `src/email/transactional-email-layout.test.ts`).
-2. Para ver en el navegador: importar `buildTransactionalEmailHtml` desde `@hubilee/ui/email`, guardar el string en un `.html` y abrirlo.
-3. En producción: enviar vía Resend o herramienta de preview; validar al menos un cliente restrictivo (p. ej. Outlook) según PLAN-41.
+Tests: `pnpm --filter @hubilee/api exec vitest run src/__tests__/unit/pos-otp-email.test.ts`
 
-## Props principales
+Vista previa: generar HTML con `buildPosOtpEmailHtml({ kind: 'registration', code: '123456' })`,
+guardar a `.html` y abrir en el navegador.
 
-- `htmlTitle`, `previewText`, `welcomeTitle` + `welcomeSubtitle`, `cardTitle`, `bodyHtml`, `primaryButton` (`label` + `href`), `cardFooterHtml`, `brandLogoUrl`.
-- Usar `escapeHtml` / `escapeHtmlAttr` para datos dinámicos en `bodyHtml` y atributos.
+## Layout canónico Hub (`@hubilee/ui/email`)
 
-## Muestras
+`buildTransactionalEmailHtml` sigue disponible para plantillas Hub (índigo).
+Los OTP de Pos no lo usan: el producto Pos pide la estética del login Pos.
 
-- **OTP**: sin `primaryButton`; código destacado.
-- **Magic link / verificación**: con `primaryButton` + enlace alternativo en el cuerpo.
-
-Logo opcional: `MAIL_BRAND_LOGO_URL` en la API.
+Logo opcional: pasar `brandLogoUrl` a `buildPosOtpEmailHtml` cuando exista URL pública.

@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs'
 import { createHmac, randomInt, timingSafeEqual } from 'node:crypto'
 import { prisma } from '../db/index.js'
 import { getRedis } from '../common/cache/redis.js'
@@ -8,8 +9,11 @@ import {
   TooManyRequestsError,
 } from '../common/errors/app-error.js'
 import { verifyTurnstileToken } from './turnstile.service.js'
-import { sendRegistrationOtpEmail } from './mailer.service.js'
-import { issueRegistrationTicket } from './registration-ticket.service.js'
+import { sendPasswordResetOtpEmail } from './mailer.service.js'
+import {
+  issuePasswordResetTicket,
+  verifyAndConsumePasswordResetTicket,
+} from './password-reset-ticket.service.js'
 
 type Challenge = { h: string; sc: number; fc: number }
 
@@ -30,7 +34,7 @@ function parseChallenge(raw: unknown): Challenge | null {
 }
 
 function challengeKey(email: string): string {
-  return `regotp:ch:${Buffer.from(email.trim().toLowerCase()).toString('base64url')}`
+  return `pwreset:ch:${Buffer.from(email.trim().toLowerCase()).toString('base64url')}`
 }
 
 function hashOtpCode(code: string, email: string, pepper: string): string {
@@ -53,27 +57,32 @@ function effectivePepper(config: ReturnType<typeof getConfig>): string {
   return config.JWT_SECRET
 }
 
-export async function sendRegistrationOtp(params: {
+export async function sendPasswordResetOtp(params: {
   email: string
   captchaToken?: string
   remoteip?: string
-}): Promise<void> {
+}): Promise<{ sent: true }> {
   const config = getConfig()
   const email = params.email.trim().toLowerCase()
   const redis = getRedis()
   if (!redis) {
     throw new ServiceUnavailableError(
-      'Registro con verificación no disponible. Configura Upstash Redis (UPSTASH_*).',
+      'Restablecimiento no disponible. Configura Upstash Redis (UPSTASH_*).',
       'OTP_STORE_UNAVAILABLE',
     )
   }
 
-  const existingUser = await prisma.user.findFirst({ where: { email }, select: { id: true } })
-  if (existingUser) {
-    throw new BadRequestError('Ya existe un usuario con este email')
-  }
-
   await verifyTurnstileToken(params.captchaToken ?? '', params.remoteip)
+
+  const user = await prisma.user.findFirst({
+    where: { email, isActive: true },
+    select: { id: true, email: true, password: true },
+  })
+
+  // Enumeration-safe: always succeed-looking when user missing or has no password.
+  if (!user?.password) {
+    return { sent: true }
+  }
 
   const key = challengeKey(email)
   const prev = parseChallenge(await redis.get(key))
@@ -94,21 +103,21 @@ export async function sendRegistrationOtp(params: {
     fc: prev?.fc ?? 0,
   }
   await redis.set(key, JSON.stringify(next), { ex: config.OTP_CHALLENGE_TTL_SECONDS })
-
-  await sendRegistrationOtpEmail(email, code)
+  await sendPasswordResetOtpEmail(email, code)
+  return { sent: true }
 }
 
-export async function verifyRegistrationOtp(params: {
+export async function verifyPasswordResetOtp(params: {
   email: string
   code: string
-}): Promise<{ registrationTicket: string }> {
+}): Promise<{ resetTicket: string }> {
   const config = getConfig()
   const email = params.email.trim().toLowerCase()
   const code = params.code.trim()
   const redis = getRedis()
   if (!redis) {
     throw new ServiceUnavailableError(
-      'Registro con verificación no disponible.',
+      'Restablecimiento no disponible.',
       'OTP_STORE_UNAVAILABLE',
     )
   }
@@ -138,6 +147,37 @@ export async function verifyRegistrationOtp(params: {
   }
 
   await redis.del(key)
-  const registrationTicket = await issueRegistrationTicket(email)
-  return { registrationTicket }
+  const resetTicket = await issuePasswordResetTicket(email)
+  return { resetTicket }
+}
+
+export async function completePasswordReset(params: {
+  email: string
+  resetTicket: string
+  newPassword: string
+}): Promise<{ ok: true }> {
+  const config = getConfig()
+  const email = params.email.trim().toLowerCase()
+  await verifyAndConsumePasswordResetTicket(config, email, params.resetTicket)
+
+  const user = await prisma.user.findFirst({
+    where: { email, isActive: true },
+    select: { id: true, password: true },
+  })
+  if (!user?.password) {
+    throw new BadRequestError('No se pudo restablecer la contraseña', 'RESET_USER_INVALID')
+  }
+
+  const hashedPassword = await bcrypt.hash(params.newPassword, 10)
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      password: hashedPassword,
+      failedLoginAttempts: 0,
+      lockedUntil: null,
+      // Design default: do not clear Prisma passwordResetToken* fields (unused).
+    },
+  })
+
+  return { ok: true }
 }

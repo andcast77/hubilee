@@ -28,6 +28,9 @@ export function isAuthPublicPath(url: string): boolean {
     p === '/v1/auth/register/otp/verify' ||
     p === '/v1/auth/register/link/send' ||
     p === '/v1/auth/register/link/verify' ||
+    p === '/v1/auth/password-reset/otp/send' ||
+    p === '/v1/auth/password-reset/otp/verify' ||
+    p === '/v1/auth/password-reset' ||
     p === '/v1/auth/verify-email' ||
     p === '/v1/auth/resend-verification' ||
     p === '/v1/auth/google' ||
@@ -70,6 +73,16 @@ export const rateLimitPlugin: FastifyPluginAsync = async (fastify) => {
     } as Parameters<typeof f.register>[1])
 
     await authController.registerRegisterOtpRoutes(f)
+  })
+
+  await fastify.register(async function passwordResetOtpScope(f) {
+    await f.register(rateLimit, {
+      max: 15,
+      timeWindow: '15 minutes',
+      name: 'ms-auth-password-reset-otp',
+    } as Parameters<typeof f.register>[1])
+
+    await authController.registerPasswordResetOtpRoutes(f)
   })
 
   await fastify.register(async function registerLinkScope(f) {

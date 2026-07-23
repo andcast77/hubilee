@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@/lib/next-nav";
 import { ApiError } from "@hubilee/shared";
+import type { ApiResponse, RegisterResponse } from "@hubilee/contracts";
 import {
   Button,
   Input,
@@ -13,8 +14,9 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@hubilee/ui";
-import { authApi } from "@/lib/api/client";
+import { accountApi, authApi } from "@/lib/api/client";
 import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
+import { OtpCodeInput } from "@/components/auth/OtpCodeInput";
 import { RegistrationTurnstile } from "@/components/auth/RegistrationTurnstile";
 import { startGoogleOAuth } from "@/lib/auth/googleOAuth";
 import {
@@ -28,8 +30,6 @@ const TOAST_MS = 4000;
 function notifyError(message: string) {
   toast.error(message, { duration: TOAST_MS });
 }
-
-// --- Style tokens mirroring LoginPage light shell ---
 
 function GoogleMark({ className }: { className?: string }) {
   return (
@@ -62,9 +62,7 @@ const primaryBtnClass =
 const outlineBtnClass =
   "h-12 w-full rounded-xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50";
 
-type Step = "form" | "link-pending";
-
-// --- Inline BrandMark (duplicated from LoginPage; no large shared module) ---
+type Step = "form" | "otp";
 
 function BrandMark({
   imgClassName,
@@ -91,8 +89,6 @@ function BrandMark({
     </Link>
   );
 }
-
-// --- Register-themed visual panel (mirrors LoginVisualPanel) ---
 
 function RegisterVisualPanel() {
   return (
@@ -139,16 +135,13 @@ function RegisterVisualPanel() {
   );
 }
 
-// ============================================================
-// Main component
-// ============================================================
-
 export function RegisterPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState<RegisterInput>({
     email: "",
     password: "",
   });
+  const [otpCode, setOtpCode] = useState("");
   const [showTermsDialog, setShowTermsDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<Step>("form");
@@ -168,7 +161,6 @@ export function RegisterPage() {
           return;
         }
         if (result.status === "mfa") {
-          // Match page-mode redirect: MFA UI lives on LoginPage.
           void navigate({
             to: "/login",
             search: { mfa: "1", tempToken: result.tempToken },
@@ -181,50 +173,97 @@ export function RegisterPage() {
     });
   }
 
-  async function sendLink(e: React.FormEvent) {
+  async function sendOtp(e: React.FormEvent) {
     e.preventDefault();
     const parsed = registerSchema.safeParse(form);
     if (!parsed.success) {
       notifyError(parsed.error.issues[0]?.message || "Formulario inválido");
       return;
     }
-    if (!captchaToken?.trim()) {
-      notifyError("Completa la verificación anti-robots (captcha).");
-      return;
-    }
+    // Turnstile is non-blocking: submit even when token is null (local / interaction-only).
     setIsLoading(true);
     try {
       const d = parsed.data;
-      await authApi.post("/register/link/send", {
+      const body: { email: string; captchaToken?: string } = {
         email: d.email.trim().toLowerCase(),
-        captchaToken,
-        verificationBaseUrl: typeof window !== "undefined" ? window.location.origin : undefined,
-        password: d.password,
-        hrEnabled: false,
-        posEnabled: true,
-      });
-      setStep("link-pending");
+      };
+      if (captchaToken?.trim()) {
+        body.captchaToken = captchaToken.trim();
+      }
+      await authApi.post("/register/otp/send", body);
+      setForm({ email: d.email.trim().toLowerCase(), password: d.password });
+      setStep("otp");
       setCaptchaToken(null);
       setTurnstileKey((k) => k + 1);
     } catch (err) {
-      notifyError(err instanceof ApiError ? err.message : "No se pudo enviar el enlace.");
+      notifyError(err instanceof ApiError ? err.message : "No se pudo enviar el código.");
     } finally {
       setIsLoading(false);
     }
   }
 
-  async function resendLink() {
+  async function verifyOtpAndRegister(e: React.FormEvent) {
+    e.preventDefault();
+    const code = otpCode.trim();
+    if (!/^\d{6}$/.test(code)) {
+      notifyError("Ingresá el código de 6 dígitos.");
+      return;
+    }
     setIsLoading(true);
     try {
-      await authApi.post("/register/link/send", {
-        email: form.email.trim().toLowerCase(),
-        verificationBaseUrl: typeof window !== "undefined" ? window.location.origin : undefined,
+      const email = form.email.trim().toLowerCase();
+      const verifyRes = await authApi.post<ApiResponse<{ registrationTicket: string }>>(
+        "/register/otp/verify",
+        { email, code },
+      );
+      const registrationTicket = verifyRes.data?.registrationTicket;
+      if (!verifyRes.success || !registrationTicket) {
+        throw new Error(verifyRes.error || "No se pudo verificar el código.");
+      }
+
+      const registerRes = await authApi.post<ApiResponse<RegisterResponse>>("/register", {
+        email,
         password: form.password,
+        registrationTicket,
         hrEnabled: false,
         posEnabled: true,
       });
+      if (!registerRes.success || !registerRes.data?.user) {
+        throw new Error(registerRes.error || "No se pudo crear la cuenta.");
+      }
+      try {
+        await accountApi.acceptPrivacy();
+      } catch {
+        // non-blocking
+      }
+      void navigate({ to: "/dashboard", replace: true });
     } catch (err) {
-      notifyError(err instanceof ApiError ? err.message : "No se pudo reenviar el enlace.");
+      notifyError(
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : "No se pudo completar el registro.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function resendOtp() {
+    setIsLoading(true);
+    try {
+      const body: { email: string; captchaToken?: string } = {
+        email: form.email.trim().toLowerCase(),
+      };
+      if (captchaToken?.trim()) {
+        body.captchaToken = captchaToken.trim();
+      }
+      await authApi.post("/register/otp/send", body);
+      setOtpCode("");
+      toast.success("Código reenviado", { duration: TOAST_MS });
+    } catch (err) {
+      notifyError(err instanceof ApiError ? err.message : "No se pudo reenviar el código.");
     } finally {
       setIsLoading(false);
     }
@@ -236,7 +275,6 @@ export function RegisterPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#f5f7fb] text-slate-900">
-      {/* Background blobs */}
       <div
         aria-hidden
         className="pointer-events-none absolute -left-24 top-0 h-[420px] w-[420px] rounded-full bg-[#9fd4f7]/55 blur-3xl"
@@ -258,36 +296,56 @@ export function RegisterPage() {
               />
             </div>
 
-            {step === "link-pending" ? (
-              <div className="space-y-4">
+            {step === "otp" ? (
+              <div className="space-y-3">
                 <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-                  Revisa tu correo
+                  Verificá tu email
                 </h1>
                 <p className="text-sm text-slate-500">
-                  Enlace enviado a{" "}
+                  Enviamos un código a{" "}
                   <strong className="text-slate-900">{form.email}</strong>
                 </p>
-                <p className="text-sm text-slate-500">
-                  Abre el enlace del correo para crear tu cuenta. Puedes usar
-                  otro navegador o dispositivo.
-                </p>
+
+                <form className="mt-10 space-y-6" onSubmit={(e) => void verifyOtpAndRegister(e)}>
+                  <div>
+                    <Label className={labelClass}>Ingresá el código de 6 dígitos</Label>
+                    <div className="mt-8">
+                      <OtpCodeInput
+                        value={otpCode}
+                        onChange={setOtpCode}
+                        disabled={isLoading}
+                        autoFocus
+                        aria-label="Código de 6 dígitos"
+                      />
+                    </div>
+                  </div>
+                  <Button type="submit" className={primaryBtnClass} disabled={isLoading}>
+                    {isLoading ? "Verificando…" : "Verificar código"}
+                  </Button>
+                </form>
 
                 <div className="space-y-3 pt-2">
-                  <p className="text-center text-xs text-slate-400">
-                    ¿No recibiste el correo?
-                  </p>
-                  <p className="text-center text-xs text-slate-400">
-                    Máximo 3 correos con enlace por intento (incluido el
-                    primero). Luego espera o empieza de nuevo.
-                  </p>
+                  <p className="text-center text-xs text-slate-400">¿No recibiste el código?</p>
                   <Button
                     type="button"
                     variant="outline"
-                  disabled={isLoading}
-                    onClick={() => void resendLink()}
+                    disabled={isLoading}
+                    onClick={() => void resendOtp()}
                     className="h-12 w-full rounded-xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                   >
-                    {isLoading ? "Enviando…" : "Reenviar enlace"}
+                    {isLoading ? "Enviando…" : "Reenviar código"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={isLoading}
+                    onClick={() => {
+                      setStep("form");
+                      setOtpCode("");
+                    }}
+                    className="h-10 w-full text-slate-500"
+                  >
+                    Volver
                   </Button>
                 </div>
               </div>
@@ -300,10 +358,7 @@ export function RegisterPage() {
                   Completa los datos para usar Pos
                 </p>
 
-                <form
-                  className="mt-8 space-y-4"
-                  onSubmit={(e) => void sendLink(e)}
-                >
+                <form className="mt-8 space-y-4" onSubmit={(e) => void sendOtp(e)}>
                   <div className="space-y-2">
                     <Label className={labelClass}>Email</Label>
                     <Input
@@ -335,34 +390,25 @@ export function RegisterPage() {
 
                   <div className="flex flex-col gap-1.5">
                     <span className="sr-only">
-                      Verificación antispam antes de enviar el enlace.
+                      Verificación antispam opcional (no bloquea el envío).
                     </span>
                     <RegistrationTurnstile
                       key={turnstileKey}
                       onToken={setCaptchaToken}
                       variant="compact"
                     />
-                    <Button
-                      type="submit"
-                      className={primaryBtnClass}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? "Registrando…" : "Registrar empresa"}
+                    <Button type="submit" className={primaryBtnClass} disabled={isLoading}>
+                      {isLoading ? "Enviando…" : "Registrar empresa"}
                     </Button>
                   </div>
                 </form>
 
                 <div className="relative my-6">
-                  <div
-                    aria-hidden
-                    className="absolute inset-0 flex items-center"
-                  >
+                  <div aria-hidden className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-slate-200" />
                   </div>
                   <div className="relative flex justify-center text-xs">
-                    <span className="bg-white px-3 text-slate-400">
-                      o registrarse con email
-                    </span>
+                    <span className="bg-white px-3 text-slate-400">o registrarse con email</span>
                   </div>
                 </div>
 
@@ -416,35 +462,20 @@ export function RegisterPage() {
             <section>
               <h3 className="font-semibold text-slate-900 mb-2">1. Uso del Servicio</h3>
               <p>
-                Al usar Hubilee Pos, aceptas cumplir con estos términos y todas las
-                leyes y regulaciones aplicables. No debes usar esta plataforma de manera
-                que viole leyes, derechos de terceros, o que afecte negativamente nuestra
-                operación.
+                Al usar Hubilee Pos, aceptas cumplir con estos términos y todas las leyes y
+                regulaciones aplicables.
               </p>
             </section>
-
             <section>
               <h3 className="font-semibold text-slate-900 mb-2">2. Seguridad de Cuenta</h3>
               <p>
-                Eres responsable de mantener la confidencialidad de tus credenciales de
-                acceso. Notifica inmediatamente sobre cualquier acceso no autorizado.
+                Eres responsable de mantener la confidencialidad de tus credenciales de acceso.
               </p>
             </section>
-
             <section>
               <h3 className="font-semibold text-slate-900 mb-2">3. Privacidad</h3>
               <p>
-                Tus datos se tratan según nuestra Política de Privacidad. Recopilamos y
-                procesamos datos necesarios para proporcionar el servicio.
-              </p>
-            </section>
-
-            <section>
-              <h3 className="font-semibold text-slate-900 mb-2">4. Disponibilidad</h3>
-              <p>
-                Nos esforzamos por proporcionar acceso continuo, pero no garantizamos
-                disponibilidad 100%. Realizamos mantenimiento que puede afectar la
-                disponibilidad temporalmente.
+                Tus datos se tratan según nuestra Política de Privacidad.
               </p>
             </section>
           </div>

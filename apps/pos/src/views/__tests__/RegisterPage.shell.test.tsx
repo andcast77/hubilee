@@ -1,10 +1,7 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { RegisterPage } from "@/views/RegisterPage";
 
-// --- MOCKS ---
-
-// Mock next/navigation (used by @/lib/next-nav internally for Link, useNavigate, etc.)
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
   usePathname: () => "/register",
@@ -12,7 +9,6 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-// Mock next/link (used by @/lib/next-nav's Link component)
 vi.mock("next/link", () => ({
   default: ({ children, href, ...rest }: Record<string, unknown>) => (
     <a href={href as string} {...rest}>
@@ -26,146 +22,144 @@ vi.mock("@/lib/auth/useRedirectIfAuthenticated", () => ({
   AuthSessionBootScreen: () => null,
 }));
 
-// Mock authApi post — returns an empty success response
-const authApiPostMock = vi.fn(async (_endpoint: string, _data?: unknown) => ({}));
+const turnstileToken = vi.hoisted(() => ({ value: "mock-captcha-token" as string | null }));
+
+const authApiPostMock = vi.fn(async (endpoint: string, _data?: unknown) => {
+  if (endpoint === "/register/otp/verify") {
+    return { success: true, data: { registrationTicket: "mock-registration-ticket" } };
+  }
+  if (endpoint === "/register") {
+    return { success: true, data: { user: { id: "u1" } } };
+  }
+  return { success: true, data: { sent: true } };
+});
+
 vi.mock("@/lib/api/client", () => ({
   authApi: {
     post: (endpoint: string, data?: unknown) => authApiPostMock(endpoint, data),
   },
+  accountApi: {
+    acceptPrivacy: vi.fn(async () => ({ success: true })),
+  },
 }));
 
-// Mock RegistrationTurnstile — immediately supplies a captcha token on mount
-// so the submit flow can proceed without an actual Turnstile widget.
 vi.mock("@/components/auth/RegistrationTurnstile", () => ({
   RegistrationTurnstile: ({ onToken }: { onToken: (t: string | null) => void }) => {
     if (typeof onToken === "function") {
-      onToken("mock-captcha-token");
+      onToken(turnstileToken.value);
     }
     return null;
   },
 }));
 
-afterEach(() => {
-  cleanup();
+beforeEach(() => {
+  turnstileToken.value = "mock-captcha-token";
   authApiPostMock.mockReset();
+  authApiPostMock.mockImplementation(async (endpoint: string) => {
+    if (endpoint === "/register/otp/verify") {
+      return { success: true, data: { registrationTicket: "mock-registration-ticket" } };
+    }
+    if (endpoint === "/register") {
+      return { success: true, data: { user: { id: "u1" } } };
+    }
+    return { success: true, data: { sent: true } };
+  });
 });
 
-// ==========================================================
-// Phase 1 — RED: these tests fail on the current dark
-// AuthBrand RegisterPage, and prove the light-shell rewrite
-// + preserved submit behavior when they pass.
-// ==========================================================
+afterEach(() => {
+  cleanup();
+});
 
-describe("RegisterPage light shell", () => {
-  // 1.2 — RED: light shell markers present, AuthBrand absent
+describe("RegisterPage OTP shell", () => {
   it("renders Hubilee Pos BrandMark and no AuthBrand chrome", () => {
     render(<RegisterPage />);
-
-    // Current (dark AuthBrand) page renders AuthBrandCard with
-    // cardTitle="Registrarse". After the light-shell rewrite
-    // this AuthBrand-specific text MUST be gone. → RED on
-    // current code because AuthBrandCard IS rendered.
     expect(screen.queryByText("Registrarse")).toBeNull();
-
-    // After the rewrite the page MUST show the "Hubilee Pos"
-    // BrandMark (matching LoginPage's light shell). → RED on
-    // current code (which shows dark AuthBrand content instead).
-    // There are two BrandMark instances (visual panel + mobile)
-    // so we assert at least one is present.
     const brandLinks = screen.getAllByRole("link", { name: /hubilee pos/i });
     expect(brandLinks.length).toBeGreaterThanOrEqual(1);
   });
 
-  // 1.3 — RED: valid submit calls API with posEnabled:true and
-  // advances to link-pending (magic-link behaviour preserved).
-  it("calls authApi.post /register/link/send with posEnabled:true on valid submit and shows link-pending", async () => {
+  it("OTP flow: send → verify → register; never calls register/link/*", async () => {
     render(<RegisterPage />);
 
-    // Fill email text input
     const textInputs = screen.getAllByRole("textbox");
-    expect(textInputs.length).toBeGreaterThanOrEqual(1);
     fireEvent.change(textInputs[0], { target: { value: "juan@test.com" } });
-
-    // Fill password field
     const passwordInputs = screen.getAllByPlaceholderText("••••••••");
-    expect(passwordInputs.length).toBeGreaterThanOrEqual(1);
     fireEvent.change(passwordInputs[0], { target: { value: "SecurePass1" } });
 
-    // Submit the form
-    const submitBtn = screen.getByRole("button", { name: /registrar empresa/i });
-    fireEvent.click(submitBtn);
+    fireEvent.click(screen.getByRole("button", { name: /registrar empresa/i }));
 
-    // Assert the API was called with the correct endpoint and body
     await waitFor(() => {
       expect(authApiPostMock).toHaveBeenCalledWith(
-        "/register/link/send",
+        "/register/otp/send",
         expect.objectContaining({
           email: "juan@test.com",
-          posEnabled: true,
-          hrEnabled: false,
         }),
       );
     });
 
-    // POS register must not collect / send companyName (wizard owns that).
-    const [, body] = authApiPostMock.mock.calls[0] as [string, Record<string, unknown>];
-    expect(body).not.toHaveProperty("companyName");
-    expect(screen.queryByLabelText(/nombre de la empresa/i)).toBeNull();
+    expect(
+      authApiPostMock.mock.calls.every(([ep]) => !String(ep).includes("/register/link/")),
+    ).toBe(true);
 
-    // Assert the UI advances to the link-pending step (shows "Revisa tu correo")
-    expect(screen.queryByText(/Revisa tu correo/i)).not.toBeNull();
-  });
-
-  // 3.1 — Optional: terms opens a dialog when clicked
-  it("opens terms dialog when clicking terms link", () => {
-    render(<RegisterPage />);
-
-    // The terms label includes a button to open the dialog
-    const termsBtn = screen.getByText("términos y condiciones");
-    expect(termsBtn).not.toBeNull();
-    expect(termsBtn.tagName).toBe("BUTTON");
-
-    // Click should open the dialog
-    fireEvent.click(termsBtn);
-    expect(screen.getByText("Términos y Condiciones")).not.toBeNull();
-  });
-
-  // 3.1 — Optional: resend from link-pending calls the same endpoint
-  // without requiring a new captcha token.
-  it("resend from link-pending calls /register/link/send without captcha", async () => {
-    // First submit to reach link-pending
-    render(<RegisterPage />);
-
-    const textInputs = screen.getAllByRole("textbox");
-    fireEvent.change(textInputs[0], { target: { value: "juan@test.com" } });
-
-    const passwordInputs = screen.getAllByPlaceholderText("••••••••");
-    fireEvent.change(passwordInputs[0], { target: { value: "SecurePass1" } });
-
-    const submitBtn = screen.getByRole("button", { name: /registrar empresa/i });
-    fireEvent.click(submitBtn);
-
-    // Wait for link-pending to appear
     await waitFor(() => {
-      expect(screen.queryByText(/Revisa tu correo/i)).not.toBeNull();
+      expect(screen.getByRole("group", { name: /código de 6 dígitos/i })).toBeTruthy();
     });
 
-    // Clear the mock call count from initial submit
-    authApiPostMock.mockClear();
+    fireEvent.change(screen.getByLabelText(/dígito 1 de 6/i), {
+      target: { value: "123456" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /verificar código/i }));
 
-    // Click "Reenviar enlace"
-    const resendBtn = screen.getByRole("button", { name: /reenviar/i });
-    fireEvent.click(resendBtn);
-
-    // Assert resend calls the same endpoint with posEnabled:true
     await waitFor(() => {
       expect(authApiPostMock).toHaveBeenCalledWith(
-        "/register/link/send",
+        "/register/otp/verify",
         expect.objectContaining({
+          email: "juan@test.com",
+          code: "123456",
+        }),
+      );
+    });
+
+    await waitFor(() => {
+      expect(authApiPostMock).toHaveBeenCalledWith(
+        "/register",
+        expect.objectContaining({
+          email: "juan@test.com",
+          password: "SecurePass1",
+          registrationTicket: "mock-registration-ticket",
           posEnabled: true,
           hrEnabled: false,
         }),
       );
     });
+
+    expect(
+      authApiPostMock.mock.calls.some(([ep]) => String(ep).includes("/register/link/")),
+    ).toBe(false);
+  });
+
+  it("does not block submit when captcha token is null", async () => {
+    turnstileToken.value = null;
+    render(<RegisterPage />);
+    fireEvent.change(screen.getAllByRole("textbox")[0], {
+      target: { value: "nocaptcha@test.com" },
+    });
+    fireEvent.change(screen.getAllByPlaceholderText("••••••••")[0], {
+      target: { value: "SecurePass1" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /registrar empresa/i }));
+
+    await waitFor(() => {
+      expect(authApiPostMock).toHaveBeenCalledWith(
+        "/register/otp/send",
+        expect.objectContaining({ email: "nocaptcha@test.com" }),
+      );
+    });
+  });
+
+  it("opens terms dialog when clicking terms link", () => {
+    render(<RegisterPage />);
+    fireEvent.click(screen.getByText("términos y condiciones"));
+    expect(screen.getByText("Términos y Condiciones")).not.toBeNull();
   });
 });

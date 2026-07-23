@@ -1,6 +1,11 @@
 import { Resend } from 'resend'
 import { getConfig } from '../core/config.js'
 import { BadRequestError, ServiceUnavailableError } from '../common/errors/app-error.js'
+import {
+  buildPosOtpEmailHtml,
+  posOtpEmailSubject,
+  posOtpEmailText,
+} from './email-templates/pos-otp-email.js'
 
 /** Parse `Hubilee <a@b.com>` or `a@b.com` for Resend `from` string. */
 function parseMailFrom(from: string): { name?: string; email: string } {
@@ -96,13 +101,25 @@ export async function sendMail(opts: {
   await sendMailResend(opts)
 }
 
-/** OTP para registro de empresa (PLAN-39). */
+/** OTP para registro de empresa (PLAN-39) — HTML estilo login Pos. */
 export async function sendRegistrationOtpEmail(to: string, code: string): Promise<void> {
+  const kind = 'registration' as const
   await sendMail({
     to,
-    subject: 'Tu código de verificación — Hubilee',
-    text: `Tu código es: ${code}\n\nVálido unos minutos. Si no solicitaste este registro, ignora este mensaje.`,
-    html: `<p>Tu código es: <strong>${code}</strong></p><p>Válido unos minutos. Si no solicitaste este registro, ignora este mensaje.</p>`,
+    subject: posOtpEmailSubject(kind),
+    text: posOtpEmailText(kind, code),
+    html: buildPosOtpEmailHtml({ kind, code }),
+  })
+}
+
+/** OTP para restablecer contraseña (Pos). Never log `code`. */
+export async function sendPasswordResetOtpEmail(to: string, code: string): Promise<void> {
+  const kind = 'password-reset' as const
+  await sendMail({
+    to,
+    subject: posOtpEmailSubject(kind),
+    text: posOtpEmailText(kind, code),
+    html: buildPosOtpEmailHtml({ kind, code }),
   })
 }
 

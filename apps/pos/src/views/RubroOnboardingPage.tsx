@@ -94,7 +94,16 @@ export function RubroOnboardingPage() {
         toast.error("No se pudo guardar. Intentá de nuevo.", { duration: TOAST_MS });
         return;
       }
-      void queryClient.invalidateQueries({ queryKey: ["user"] });
+      // Advance wizard cursor before navigate so WizardResumeGate does not bounce
+      // back to RUBRO while /me still has a stale registrationWizardStep.
+      queryClient.setQueryData(["user"], (prev: unknown) => {
+        if (!prev || typeof prev !== "object") return prev;
+        return {
+          ...prev,
+          registrationWizardStep: "LOCAL",
+        };
+      });
+      await queryClient.invalidateQueries({ queryKey: ["user"] });
       toast.success("Rubro guardado", { duration: TOAST_MS });
       navigate({ to: WIZARD_ONBOARDING_PATHS.LOCAL, replace: true });
     } catch (err) {

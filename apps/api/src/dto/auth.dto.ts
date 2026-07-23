@@ -77,7 +77,8 @@ export type RegisterBody = z.infer<typeof registerBodySchema>
 
 export const registerOtpSendBodySchema = z.object({
   email: z.string().email(),
-  captchaToken: z.string().min(1),
+  /** Optional: required only when TURNSTILE_SECRET_KEY is configured (see turnstile.service). */
+  captchaToken: z.string().min(1).optional(),
 })
 
 export type RegisterOtpSendBody = z.infer<typeof registerOtpSendBodySchema>
@@ -88,6 +89,28 @@ export const registerOtpVerifyBodySchema = z.object({
 })
 
 export type RegisterOtpVerifyBody = z.infer<typeof registerOtpVerifyBodySchema>
+
+export const passwordResetOtpSendBodySchema = z.object({
+  email: z.string().email(),
+  captchaToken: z.string().min(1).optional(),
+})
+
+export type PasswordResetOtpSendBody = z.infer<typeof passwordResetOtpSendBodySchema>
+
+export const passwordResetOtpVerifyBodySchema = z.object({
+  email: z.string().email(),
+  code: z.string().regex(/^\d{6}$/, 'El código debe tener 6 dígitos'),
+})
+
+export type PasswordResetOtpVerifyBody = z.infer<typeof passwordResetOtpVerifyBodySchema>
+
+export const passwordResetBodySchema = z.object({
+  email: z.string().email(),
+  resetTicket: z.string().min(1),
+  newPassword: z.string().min(8, 'La contraseña nueva debe tener al menos 8 caracteres'),
+})
+
+export type PasswordResetBody = z.infer<typeof passwordResetBodySchema>
 
 /** PLAN-40: magic link — payload de alta en Redis hasta consumir el enlace (cualquier navegador). */
 export const registerLinkSendBodySchema = z.object({
