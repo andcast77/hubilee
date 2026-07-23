@@ -8,7 +8,7 @@ Email OTP password reset for Pos (API + Pos UI). Greenfield: Hub forgot/reset AP
 
 ### Requirement: Password-reset OTP send
 
-The system MUST accept a public request to email a one-time code for password reset. Captcha MUST follow the same Turnstile rules as registration OTP (verify when secret set; skip when unset in non-production; reject in production if secret missing). Challenges MUST use a distinct Redis namespace (e.g. `pwreset:`) from registration OTP. Send limits MUST mirror registration (at most 3 sends per challenge window). Plaintext OTP MUST NOT appear in responses or structured logs.
+The system MUST accept a public request to email a one-time code for password reset. Captcha MUST follow the same Turnstile rules as registration OTP (verify when secret set; skip when unset in non-production; reject in production if secret missing). Challenges MUST use a distinct Redis namespace (e.g. `pwreset:`) from registration OTP. Send limits MUST mirror registration (`OTP_SEND_MAX`, default 3, per challenge window). Plaintext OTP MUST NOT appear in responses or structured logs.
 
 #### Scenario: Successful send for known user
 
@@ -28,7 +28,7 @@ The system MUST accept a public request to email a one-time code for password re
 
 #### Scenario: Send blocked — limit or store unavailable
 
-- GIVEN send count for the email has reached 3, OR Redis is unavailable
+- GIVEN send count for the email has reached `OTP_SEND_MAX` (default 3), OR Redis is unavailable
 - WHEN the client calls password-reset OTP send
 - THEN the server MUST reject with a stable error code (e.g. `OTP_SEND_LIMIT` / `OTP_STORE_UNAVAILABLE`) without leaking internals
 

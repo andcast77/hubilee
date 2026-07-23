@@ -11,7 +11,7 @@ The system SHALL accept a request to send a one-time code to an email address pr
 - GIVEN a valid email format (normalized to lowercase on the server)
 - AND captcha is satisfied per captcha rules (verified token when secret set; skip when secret unset in non-production)
 - AND Redis (or configured store) is available
-- AND the send count for this email in the current challenge window is below 3
+- AND the send count for this email in the current challenge window is below `OTP_SEND_MAX` (default 3)
 - WHEN the client calls the OTP send endpoint
 - THEN the response SHALL be success with the standard API envelope
 - AND the plaintext OTP SHALL NOT appear in the response or in structured logs
@@ -30,7 +30,7 @@ The system SHALL accept a request to send a one-time code to an email address pr
 
 #### Scenario: Send blocked — limit exceeded
 
-- GIVEN the send count for this email in the current challenge window has reached 3
+- GIVEN the send count for this email in the current challenge window has reached `OTP_SEND_MAX` (default 3)
 - WHEN the client calls the OTP send endpoint
 - THEN the server SHALL reject the request with `429` or domain error with stable `code` (e.g. `OTP_SEND_LIMIT`)
 

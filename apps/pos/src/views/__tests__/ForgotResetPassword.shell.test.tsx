@@ -74,7 +74,11 @@ describe("Pos password-reset OTP UI", () => {
         expect.objectContaining({ email: "juan@test.com" }),
       );
     });
-    expect(authApiPostMock.mock.calls.every(([ep]) => !String(ep).includes("hub"))).toBe(true);
+    const endpoints = authApiPostMock.mock.calls.map(([ep]) => String(ep));
+    expect(endpoints).toEqual(["/password-reset/otp/send"]);
+    expect(endpoints.every((ep) => !ep.includes("hub") && !ep.includes("forgot-password"))).toBe(
+      true,
+    );
     expect(screen.getByRole("heading", { name: /código enviado/i })).toBeTruthy();
   });
 

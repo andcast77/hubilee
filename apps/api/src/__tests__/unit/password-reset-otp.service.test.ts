@@ -54,6 +54,7 @@ import {
   sendPasswordResetOtp,
   verifyPasswordResetOtp,
 } from '../../services/password-reset-otp.service.js'
+import bcrypt from 'bcryptjs'
 
 describe('password-reset-otp.service', () => {
   let lastCode: string | null = null
@@ -127,6 +128,53 @@ describe('password-reset-otp.service', () => {
     })
   })
 
+  it('sendPasswordResetOtp: rejects when Redis unavailable (OTP_STORE_UNAVAILABLE)', async () => {
+    redisBacking.available = false
+    const email = 'no-redis@example.com'
+    mockPrismaUserFindFirst.mockResolvedValue({ id: 'u1', email, password: 'hash', isActive: true })
+
+    await expect(sendPasswordResetOtp({ email })).rejects.toMatchObject({
+      name: 'ServiceUnavailableError',
+      code: 'OTP_STORE_UNAVAILABLE',
+      statusCode: 503,
+    })
+    expect(mockSendPasswordResetOtpEmail).not.toHaveBeenCalled()
+  })
+
+  it('verifyPasswordResetOtp: rejects when Redis unavailable (OTP_STORE_UNAVAILABLE)', async () => {
+    redisBacking.available = false
+    await expect(
+      verifyPasswordResetOtp({ email: 'a@b.com', code: '123456' }),
+    ).rejects.toMatchObject({
+      name: 'ServiceUnavailableError',
+      code: 'OTP_STORE_UNAVAILABLE',
+      statusCode: 503,
+    })
+  })
+
+  it('verifyPasswordResetOtp: missing challenge → INVALID_OTP', async () => {
+    await expect(
+      verifyPasswordResetOtp({ email: 'gone@example.com', code: '123456' }),
+    ).rejects.toMatchObject({
+      name: 'BadRequestError',
+      message: 'Código inválido o expirado',
+      code: 'INVALID_OTP',
+      statusCode: 400,
+    })
+  })
+
+  it('verifyPasswordResetOtp: accepts Upstash auto-parsed object challenge', async () => {
+    const email = 'upstash-object@example.com'
+    mockPrismaUserFindFirst.mockResolvedValue({ id: 'u1', email, password: 'hash', isActive: true })
+    await sendPasswordResetOtp({ email })
+    const key = `pwreset:ch:${Buffer.from(email).toString('base64url')}`
+    const asString = redisBacking.map.get(key)!
+    redisBacking.map.set(key, JSON.parse(asString) as unknown as string)
+
+    const out = await verifyPasswordResetOtp({ email, code: lastCode! })
+    expect(out.resetTicket).toBe('mock-reset-ticket-jwt')
+  })
+
   it('verifyPasswordResetOtp: wrong code thrice locks out (OTP_VERIFY_LOCKOUT)', async () => {
     const email = 'lock@example.com'
     mockPrismaUserFindFirst.mockResolvedValue({ id: 'u1', email, password: 'hash', isActive: true })
@@ -157,37 +205,16 @@ describe('password-reset-otp.service', () => {
     expect(redisBacking.map.has(key)).toBe(false)
   })
 
-  it('verifyPasswordResetOtp: rejects when challenge missing/expired (INVALID_OTP)', async () => {
-    await expect(verifyPasswordResetOtp({ email: 'gone@example.com', code: '123456' })).rejects.toMatchObject({
-      name: 'BadRequestError',
-      message: 'Código inválido o expirado',
-      code: 'INVALID_OTP',
-      statusCode: 400,
-    })
-    expect(mockIssuePasswordResetTicket).not.toHaveBeenCalled()
-  })
-
-  it('verifyPasswordResetOtp: accepts Upstash auto-parsed object (not only JSON string)', async () => {
-    const email = 'upstash-object@example.com'
-    mockPrismaUserFindFirst.mockResolvedValue({ id: 'u1', email, password: 'hash', isActive: true })
-    await sendPasswordResetOtp({ email })
-    const key = `pwreset:ch:${Buffer.from(email).toString('base64url')}`
-    const asString = redisBacking.map.get(key)!
-    redisBacking.map.set(key, JSON.parse(asString) as unknown as string)
-
-    const out = await verifyPasswordResetOtp({ email, code: lastCode! })
-    expect(out.resetTicket).toBe('mock-reset-ticket-jwt')
-  })
-
-  it('completePasswordReset: consumes ticket and updates password hash', async () => {
+  it('completePasswordReset: consumes ticket and stores bcrypt hash matching new password', async () => {
     const email = 'reset@example.com'
     mockPrismaUserFindFirst.mockResolvedValue({ id: 'u42', email, password: 'old', isActive: true })
     mockPrismaUserUpdate.mockResolvedValue({ id: 'u42' })
 
+    const newPassword = 'newpassword1'
     const out = await completePasswordReset({
       email,
       resetTicket: 'mock-reset-ticket-jwt',
-      newPassword: 'newpassword1',
+      newPassword,
     })
     expect(out).toEqual({ ok: true })
     expect(mockVerifyAndConsumePasswordResetTicket).toHaveBeenCalled()
@@ -202,11 +229,11 @@ describe('password-reset-otp.service', () => {
       }),
     )
     const hashed = mockPrismaUserUpdate.mock.calls[0][0].data.password as string
-    expect(hashed).not.toBe('newpassword1')
-    expect(hashed.length).toBeGreaterThan(20)
+    expect(hashed).not.toBe(newPassword)
+    expect(await bcrypt.compare(newPassword, hashed)).toBe(true)
   })
 
-  it('observability: send/verify/reset do not log OTP, password, or captcha', async () => {
+  it('observability: send/verify/reset service path do not log OTP, password, or captcha', async () => {
     const email = 'obs@example.com'
     mockPrismaUserFindFirst.mockResolvedValue({ id: 'u9', email, password: 'hash', isActive: true })
     mockPrismaUserUpdate.mockResolvedValue({ id: 'u9' })

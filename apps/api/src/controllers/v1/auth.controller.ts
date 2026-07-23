@@ -351,7 +351,8 @@ export async function registerOtpVerify(request: FastifyRequest, reply: FastifyR
 
 export async function passwordResetOtpSend(request: FastifyRequest, reply: FastifyReply) {
   const body = validateBody(passwordResetOtpSendBodySchema, request.body)
-  // Do not log captchaToken / email beyond requestId middleware.
+  // Structured log: requestId only — never captchaToken / email / OTP.
+  request.log.info({ requestId: request.id, event: 'password_reset_otp_send' })
   const result = await passwordResetOtpService.sendPasswordResetOtp({
     email: body.email,
     captchaToken: body.captchaToken,
@@ -362,13 +363,15 @@ export async function passwordResetOtpSend(request: FastifyRequest, reply: Fasti
 
 export async function passwordResetOtpVerify(request: FastifyRequest, reply: FastifyReply) {
   const body = validateBody(passwordResetOtpVerifyBodySchema, request.body)
+  request.log.info({ requestId: request.id, event: 'password_reset_otp_verify' })
   const { resetTicket } = await passwordResetOtpService.verifyPasswordResetOtp(body)
   return ok({ resetTicket })
 }
 
 export async function passwordReset(request: FastifyRequest, reply: FastifyReply) {
   const body = validateBody(passwordResetBodySchema, request.body)
-  // Do not log newPassword or resetTicket.
+  // Structured log: requestId only — never newPassword / resetTicket.
+  request.log.info({ requestId: request.id, event: 'password_reset_complete' })
   const result = await passwordResetOtpService.completePasswordReset(body)
   return ok(result)
 }

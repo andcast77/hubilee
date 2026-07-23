@@ -119,6 +119,16 @@ describe("RubroOnboardingPage", () => {
       );
     });
     await waitFor(() => {
+      expect(mockSetQueryData).toHaveBeenCalledWith(["user"], expect.any(Function));
+    });
+    const updater = mockSetQueryData.mock.calls.find(
+      (c) => Array.isArray(c[0]) && c[0][0] === "user",
+    )?.[1] as (prev: unknown) => unknown;
+    expect(updater).toBeTypeOf("function");
+    expect(updater(OWNER_USER)).toEqual(
+      expect.objectContaining({ registrationWizardStep: "LOCAL" }),
+    );
+    await waitFor(() => {
       expect(mockInvalidateQueries).toHaveBeenCalledWith({ queryKey: ["user"] });
     });
     await waitFor(() => {
