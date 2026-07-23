@@ -186,6 +186,174 @@ describe("CompanyProfileGate", () => {
     expect(replaceMock).not.toHaveBeenCalled();
   });
 
+  // ==============================================================
+  // RED: tests for registrationWizardStep gate behavior
+  // ==============================================================
+
+  // 3.1.f: OWNER with registrationWizardStep='EMPRESA' → company step
+  it("redirects OWNER with registrationWizardStep='EMPRESA' to company step", async () => {
+    usePathnameMock.mockReturnValue("/app/dashboard");
+    mockUseUser.mockReturnValue({
+      data: {
+        id: "u1",
+        email: "owner@acme.com",
+        role: "ADMIN",
+        isActive: true,
+        name: "Owner",
+        companyId: "c1",
+        membershipRole: "OWNER",
+        companyProfileComplete: false,
+        registrationWizardStep: "EMPRESA" as const,
+      },
+      isLoading: false,
+    });
+
+    const Gate = await loadGate();
+    render(
+      <Gate>
+        <div>Protected content</div>
+      </Gate>,
+    );
+
+    await waitFor(() => {
+      expect(replaceMock).toHaveBeenCalled();
+    });
+
+    const arg = replaceMock.mock.calls[0]?.[0] as string;
+    expect(arg).toContain("/app/onboarding/company");
+    expect(screen.queryByText("Protected content")).toBeNull();
+  });
+
+  // 3.1.g: OWNER with registrationWizardStep alone (no companyProfileComplete) → redirect
+  it("redirects OWNER with registrationWizardStep when companyProfileComplete is absent", async () => {
+    usePathnameMock.mockReturnValue("/app/dashboard");
+    mockUseUser.mockReturnValue({
+      data: {
+        id: "u1",
+        email: "owner@acme.com",
+        role: "ADMIN",
+        isActive: true,
+        name: "Owner",
+        companyId: "c1",
+        membershipRole: "OWNER",
+        // companyProfileComplete intentionally absent (undef) — new signal only
+        registrationWizardStep: "EMPRESA" as const,
+      },
+      isLoading: false,
+    });
+
+    const Gate = await loadGate();
+    render(
+      <Gate>
+        <div>Protected content</div>
+      </Gate>,
+    );
+
+    await waitFor(() => {
+      expect(replaceMock).toHaveBeenCalled();
+    });
+
+    const arg = replaceMock.mock.calls[0]?.[0] as string;
+    expect(arg).toContain("/app/onboarding/company");
+  });
+
+  // 3.2: resume path per step — RUBRO
+  it("redirects OWNER with registrationWizardStep='RUBRO' to /app/onboarding/rubro", async () => {
+    usePathnameMock.mockReturnValue("/app/dashboard");
+    mockUseUser.mockReturnValue({
+      data: {
+        id: "u1",
+        email: "owner@acme.com",
+        role: "ADMIN",
+        isActive: true,
+        name: "Owner",
+        companyId: "c1",
+        membershipRole: "OWNER",
+        companyProfileComplete: false,
+        registrationWizardStep: "RUBRO" as const,
+      },
+      isLoading: false,
+    });
+
+    const Gate = await loadGate();
+    render(
+      <Gate>
+        <div>Protected content</div>
+      </Gate>,
+    );
+
+    await waitFor(() => {
+      expect(replaceMock).toHaveBeenCalled();
+    });
+
+    const arg = replaceMock.mock.calls[0]?.[0] as string;
+    expect(arg).toContain("/app/onboarding/rubro");
+    expect(arg).not.toContain("/app/onboarding/company");
+  });
+
+  // 3.2: resume path per step — LOCAL
+  it("redirects OWNER with registrationWizardStep='LOCAL' to /app/onboarding/local", async () => {
+    usePathnameMock.mockReturnValue("/app/dashboard");
+    mockUseUser.mockReturnValue({
+      data: {
+        id: "u1",
+        email: "owner@acme.com",
+        role: "ADMIN",
+        isActive: true,
+        name: "Owner",
+        companyId: "c1",
+        membershipRole: "OWNER",
+        companyProfileComplete: false,
+        registrationWizardStep: "LOCAL" as const,
+      },
+      isLoading: false,
+    });
+
+    const Gate = await loadGate();
+    render(
+      <Gate>
+        <div>Protected content</div>
+      </Gate>,
+    );
+
+    await waitFor(() => {
+      expect(replaceMock).toHaveBeenCalled();
+    });
+
+    const arg = replaceMock.mock.calls[0]?.[0] as string;
+    expect(arg).toContain("/app/onboarding/local");
+  });
+
+  // 3.1.i: OWNER with registrationWizardStep but no companyId → no redirect
+  it("does not redirect OWNER with registrationWizardStep but no companyId", async () => {
+    mockUseUser.mockReturnValue({
+      data: {
+        id: "u1",
+        email: "owner@acme.com",
+        role: "ADMIN",
+        isActive: true,
+        name: "Owner",
+        // no companyId
+        membershipRole: "OWNER",
+        companyProfileComplete: false,
+        registrationWizardStep: "EMPRESA" as const,
+      },
+      isLoading: false,
+    });
+
+    const Gate = await loadGate();
+    render(
+      <Gate>
+        <div>Protected content</div>
+      </Gate>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Protected content")).not.toBeNull();
+    });
+    expect(replaceMock).not.toHaveBeenCalled();
+  });
+
   // 3.1.f: Loading state shows spinner
   it("shows loading spinner when user data is loading", async () => {
     mockUseUser.mockReturnValue({

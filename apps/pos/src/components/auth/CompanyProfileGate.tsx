@@ -3,12 +3,15 @@
 import { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "@/lib/next-nav";
 import { useUser } from "@/hooks/useUser";
-
-const ONBOARDING_PATH = "/app/onboarding/company";
+import {
+  isWizardOnboardingPath,
+  resolveOwnerWizardRedirect,
+  type WizardUserSignals,
+} from "@/lib/auth/wizard-onboarding-path";
 
 /**
- * Hard-gates OWNER users who have an incomplete company fiscal profile.
- * Redirects to the company-onboarding wizard.
+ * Hard-gates OWNER users who have not finished the registration wizard.
+ * Redirects to the first incomplete step (Empresa / Rubro / Local).
  * ADMIN and USER (floor) roles pass through regardless of completeness.
  */
 export function CompanyProfileGate({ children }: { children: React.ReactNode }) {
@@ -17,20 +20,22 @@ export function CompanyProfileGate({ children }: { children: React.ReactNode }) 
   const pathname = useLocation({ select: (location) => location.pathname });
   const initialPathnameRef = useRef(pathname);
 
-  const isOwner = user?.membershipRole === "OWNER";
-  const isIncomplete =
-    user?.companyProfileComplete === false && !!user?.companyId;
-  const alreadyOnOnboarding = initialPathnameRef.current === ONBOARDING_PATH;
-  const mustRedirect =
-    !isLoading && !!user && isOwner && isIncomplete && !alreadyOnOnboarding;
+  const redirectTo =
+    !isLoading && user
+      ? resolveOwnerWizardRedirect(user as WizardUserSignals, initialPathnameRef.current)
+      : null;
+
+  // Onboarding group is outside this gate; still skip if somehow on a stepper path.
+  const alreadyOnOnboarding = isWizardOnboardingPath(initialPathnameRef.current);
+  const mustRedirect = !!redirectTo && !alreadyOnOnboarding;
 
   useEffect(() => {
-    if (!mustRedirect) return;
+    if (!mustRedirect || !redirectTo) return;
     void navigate({
-      to: ONBOARDING_PATH,
+      to: redirectTo,
       replace: true,
     });
-  }, [mustRedirect, navigate]);
+  }, [mustRedirect, redirectTo, navigate]);
 
   // Withhold product UI while loading or while OWNER is incomplete (avoids flash).
   if (isLoading || mustRedirect) {

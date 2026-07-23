@@ -228,7 +228,7 @@ export function CompanyOnboardingPage() {
       toast.success("Datos guardados correctamente", { duration: TOAST_MS });
 
       setTimeout(() => {
-        navigate({ to: "/app/dashboard", replace: true });
+        navigate({ to: "/app/onboarding/rubro", replace: true });
       }, 300);
     } catch (err) {
       toast.error(

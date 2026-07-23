@@ -1,17 +1,23 @@
 import type { MeResponse } from "@hubilee/contracts";
 import { safeNextPath } from "@/lib/auth/googleOAuth";
+import { wizardStepToPath } from "@/lib/auth/wizard-onboarding-path";
 
 /**
  * Where to send an already-authenticated user leaving login/register.
- * Mirrors post-login routing: OWNER with incomplete company → onboarding.
+ * Mirrors post-login routing: incomplete OWNER → first incomplete wizard step.
  */
 export function authenticatedAppPathFromMe(
   me: MeResponse,
   next?: string | null,
 ): string {
-  const isOwnerIncomplete =
-    me.membershipRole === "OWNER" && me.companyProfileComplete === false;
-  if (isOwnerIncomplete) return "/app/onboarding/company";
+  if (me.membershipRole === "OWNER") {
+    if (me.registrationWizardStep) {
+      return wizardStepToPath(me.registrationWizardStep);
+    }
+    if (me.companyProfileComplete === false) {
+      return wizardStepToPath(undefined);
+    }
+  }
   return safeNextPath(next) ?? "/app/dashboard";
 }
 

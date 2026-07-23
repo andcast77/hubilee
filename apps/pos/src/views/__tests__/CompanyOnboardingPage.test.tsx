@@ -218,8 +218,8 @@ describe("CompanyOnboardingPage wizard submit", () => {
     expect(mockApiPut).not.toHaveBeenCalled();
   });
 
-  // 4.1.e: After valid submit, invalidate user and redirect to /app/dashboard
-  it("after valid submit, invalidates user query and redirects to /app/dashboard", async () => {
+  // After Empresa submit → advance to Rubro (not dashboard; wizard continues)
+  it("after valid submit, invalidates user query and redirects to Rubro step", async () => {
     mockUseUser.mockReturnValue({ data: OWNER_USER, isLoading: false });
     mockApiPut.mockResolvedValue({ success: true });
 
@@ -240,17 +240,15 @@ describe("CompanyOnboardingPage wizard submit", () => {
       expect(mockApiPut).toHaveBeenCalled();
     });
 
-    // Should invalidate the user query cache
     await waitFor(() => {
       expect(mockInvalidateQueries).toHaveBeenCalledWith({ queryKey: ["user"] });
     });
 
-    // Should navigate to /app/dashboard after success
     await waitFor(() => {
       expect(replaceMock).toHaveBeenCalled();
     });
     const arg = replaceMock.mock.calls[0]?.[0] as string;
-    expect(arg).toContain("/app/dashboard");
+    expect(arg).toContain("/app/onboarding/rubro");
   });
 
   it("includes optional logo in PUT body when provided", async () => {

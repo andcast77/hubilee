@@ -17,12 +17,51 @@ function me(partial: Partial<MeResponse> = {}): MeResponse {
 }
 
 describe("authenticatedAppPathFromMe", () => {
-  it("sends OWNER with incomplete company to onboarding", () => {
+  it("sends OWNER with incomplete company to Empresa step", () => {
     expect(
       authenticatedAppPathFromMe(
         me({ membershipRole: "OWNER", companyProfileComplete: false }),
       ),
     ).toBe("/app/onboarding/company");
+  });
+
+  it("resumes OWNER at Rubro when registrationWizardStep is RUBRO", () => {
+    expect(
+      authenticatedAppPathFromMe(
+        me({
+          membershipRole: "OWNER",
+          companyProfileComplete: false,
+          companyId: "c1",
+          registrationWizardStep: "RUBRO",
+        }),
+      ),
+    ).toBe("/app/onboarding/rubro");
+  });
+
+  it("resumes OWNER at Local when registrationWizardStep is LOCAL", () => {
+    expect(
+      authenticatedAppPathFromMe(
+        me({
+          membershipRole: "OWNER",
+          companyProfileComplete: false,
+          companyId: "c1",
+          registrationWizardStep: "LOCAL",
+        }),
+      ),
+    ).toBe("/app/onboarding/local");
+  });
+
+  it("does not send ADMIN to wizard even when incomplete flags set", () => {
+    expect(
+      authenticatedAppPathFromMe(
+        me({
+          membershipRole: "ADMIN",
+          companyProfileComplete: false,
+          registrationWizardStep: "EMPRESA",
+        }),
+        "/app/dashboard",
+      ),
+    ).toBe("/app/dashboard");
   });
 
   it("uses safe next path when present", () => {

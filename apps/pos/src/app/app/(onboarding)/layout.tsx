@@ -2,12 +2,11 @@
 
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DashboardSessionGate } from "@/components/auth/DashboardSessionGate";
+import { WizardResumeGate } from "@/components/auth/WizardResumeGate";
 
 /**
- * Onboarding route group — ProtectedRoute + DashboardSessionGate only.
- * No Sidebar, no PosModuleGuard, no CompanyContextBootstrap.
- * The CompanyProfileGate redirects here for OWNER with incomplete profile,
- * so the gate itself must not wrap this layout (that would cause an infinite loop).
+ * Onboarding route group — ProtectedRoute + session + wizard resume.
+ * No Sidebar / PosModuleGuard. CompanyProfileGate lives on the product layout only.
  */
 export default function OnboardingLayout({
   children,
@@ -17,9 +16,11 @@ export default function OnboardingLayout({
   return (
     <ProtectedRoute>
       <DashboardSessionGate>
-        <div className="flex min-h-screen flex-col">
-          <main className="flex-1">{children}</main>
-        </div>
+        <WizardResumeGate>
+          <div className="flex min-h-screen flex-col">
+            <main className="flex-1">{children}</main>
+          </div>
+        </WizardResumeGate>
       </DashboardSessionGate>
     </ProtectedRoute>
   );
