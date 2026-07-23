@@ -1,7 +1,7 @@
 /**
- * PLAN-39 — unit tests for registration OTP (limits, verify lockout) with mocked Redis/Prisma/mail.
+ * PLAN-39 / auth-registration-email-otp — registration OTP (limits, captcha optional, verify lockout).
  */
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const redisBacking = vi.hoisted(() => ({ map: new Map<string, string>() }))
 
@@ -32,10 +32,6 @@ vi.mock('../../db/index.js', () => ({
   },
 }))
 
-vi.mock('../../services/turnstile.service.js', () => ({
-  verifyTurnstileToken: vi.fn(async () => {}),
-}))
-
 vi.mock('../../services/mailer.service.js', () => ({
   sendRegistrationOtpEmail: mockSendRegistrationOtpEmail,
 }))
@@ -44,10 +40,17 @@ vi.mock('../../services/registration-ticket.service.js', () => ({
   issueRegistrationTicket: mockIssueRegistrationTicket,
 }))
 
+import { registerOtpSendBodySchema } from '../../dto/auth.dto.js'
 import { sendRegistrationOtp, verifyRegistrationOtp } from '../../services/registration-otp.service.js'
 
 describe('registration-otp.service (PLAN-39)', () => {
   let lastCode: string | null = null
+  const envSnapshot = {
+    JWT_SECRET: process.env.JWT_SECRET,
+    NODE_ENV: process.env.NODE_ENV,
+    TURNSTILE_SECRET_KEY: process.env.TURNSTILE_SECRET_KEY,
+    OTP_CHALLENGE_TTL_SECONDS: process.env.OTP_CHALLENGE_TTL_SECONDS,
+  }
 
   beforeEach(() => {
     redisBacking.map.clear()
@@ -60,8 +63,17 @@ describe('registration-otp.service (PLAN-39)', () => {
     })
     mockIssueRegistrationTicket.mockReset()
     mockIssueRegistrationTicket.mockResolvedValue('mock-registration-ticket-jwt')
-    process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-jwt-secret-for-registration-otp-tests'
+    process.env.JWT_SECRET = 'test-jwt-secret-for-registration-otp-tests'
     process.env.NODE_ENV = 'test'
+    process.env.TURNSTILE_SECRET_KEY = ''
+    process.env.OTP_CHALLENGE_TTL_SECONDS = process.env.OTP_CHALLENGE_TTL_SECONDS || '600'
+  })
+
+  afterEach(() => {
+    process.env.JWT_SECRET = envSnapshot.JWT_SECRET
+    process.env.NODE_ENV = envSnapshot.NODE_ENV
+    process.env.TURNSTILE_SECRET_KEY = envSnapshot.TURNSTILE_SECRET_KEY
+    process.env.OTP_CHALLENGE_TTL_SECONDS = envSnapshot.OTP_CHALLENGE_TTL_SECONDS
   })
 
   it('sendRegistrationOtp: rejects after 3 sends (OTP_SEND_LIMIT)', async () => {
@@ -109,5 +121,50 @@ describe('registration-otp.service (PLAN-39)', () => {
     const out = await verifyRegistrationOtp({ email, code: lastCode! })
     expect(out.registrationTicket).toBe('mock-registration-ticket-jwt')
     expect(mockIssueRegistrationTicket).toHaveBeenCalledWith(email)
+  })
+
+  describe('optional captcha (auth-registration-email-otp)', () => {
+    it('skips Turnstile when secret unset in non-prod even without captchaToken', async () => {
+      process.env.TURNSTILE_SECRET_KEY = ''
+      process.env.NODE_ENV = 'test'
+      const email = 'skip-captcha@example.com'
+
+      await expect(sendRegistrationOtp({ email })).resolves.toBeUndefined()
+      expect(lastCode).toMatch(/^\d{6}$/)
+      expect(mockSendRegistrationOtpEmail).toHaveBeenCalledWith(email, lastCode)
+    })
+
+    it('rejects CAPTCHA_FAILED when secret is configured and token empty', async () => {
+      process.env.TURNSTILE_SECRET_KEY = 'test-turnstile-secret'
+      process.env.NODE_ENV = 'test'
+      const email = 'captcha-fail@example.com'
+
+      await expect(sendRegistrationOtp({ email, captchaToken: '' })).rejects.toMatchObject({
+        code: 'CAPTCHA_FAILED',
+        statusCode: 400,
+      })
+      expect(mockSendRegistrationOtpEmail).not.toHaveBeenCalled()
+    })
+
+    it('rejects CAPTCHA_NOT_CONFIGURED in production when secret unset', async () => {
+      process.env.TURNSTILE_SECRET_KEY = ''
+      process.env.NODE_ENV = 'production'
+      const email = 'prod-no-captcha@example.com'
+
+      await expect(sendRegistrationOtp({ email, captchaToken: 'any' })).rejects.toMatchObject({
+        code: 'CAPTCHA_NOT_CONFIGURED',
+        statusCode: 400,
+      })
+      expect(mockSendRegistrationOtpEmail).not.toHaveBeenCalled()
+    })
+
+    it('registerOtpSendBodySchema accepts email without captchaToken', () => {
+      const parsed = registerOtpSendBodySchema.safeParse({ email: 'dto-optional@example.com' })
+      expect(parsed.success).toBe(true)
+      if (parsed.success) {
+        expect(parsed.data.email).toBe('dto-optional@example.com')
+        expect(parsed.data.captchaToken).toBeUndefined()
+      }
+    })
   })
 })

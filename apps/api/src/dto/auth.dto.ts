@@ -77,7 +77,8 @@ export type RegisterBody = z.infer<typeof registerBodySchema>
 
 export const registerOtpSendBodySchema = z.object({
   email: z.string().email(),
-  captchaToken: z.string().min(1),
+  /** Optional: required only when TURNSTILE_SECRET_KEY is configured (see turnstile.service). */
+  captchaToken: z.string().min(1).optional(),
 })
 
 export type RegisterOtpSendBody = z.infer<typeof registerOtpSendBodySchema>

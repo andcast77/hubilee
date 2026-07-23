@@ -39,7 +39,7 @@ function effectivePepper(config: ReturnType<typeof getConfig>): string {
 
 export async function sendRegistrationOtp(params: {
   email: string
-  captchaToken: string
+  captchaToken?: string
   remoteip?: string
 }): Promise<void> {
   const config = getConfig()
@@ -57,7 +57,7 @@ export async function sendRegistrationOtp(params: {
     throw new BadRequestError('Ya existe un usuario con este email')
   }
 
-  await verifyTurnstileToken(params.captchaToken, params.remoteip)
+  await verifyTurnstileToken(params.captchaToken ?? '', params.remoteip)
 
   const key = challengeKey(email)
   const raw = await redis.get(key)
