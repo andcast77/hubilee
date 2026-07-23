@@ -91,6 +91,7 @@ export async function login(request: FastifyRequest, reply: FastifyReply) {
       companyId: result.companyId,
       company: result.company,
       companies: result.companies,
+      companyProfileComplete: result.companyProfileComplete,
     })
   }
 
@@ -136,6 +137,7 @@ export async function floorLogin(request: FastifyRequest, reply: FastifyReply) {
       companyId: result.companyId,
       company: result.company,
       companies: result.companies,
+      companyProfileComplete: result.companyProfileComplete,
     })
   }
 
@@ -354,7 +356,8 @@ export async function registerLinkSend(request: FastifyRequest, reply: FastifyRe
       password: body.password,
       firstName: body.firstName ?? '',
       lastName: body.lastName ?? '',
-      companyName: body.companyName,
+      // POS register omits companyName; link service fills a placeholder until wizard.
+      companyName: body.companyName ?? '',
       hrEnabled: body.hrEnabled,
       posEnabled: body.posEnabled,
       technicalServicesEnabled: body.technicalServicesEnabled,

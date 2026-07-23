@@ -1,4 +1,4 @@
-import { API_URL } from '@/lib/api/client'
+import { ABSOLUTE_API_URL } from '@/lib/api/client'
 import { isDesktop } from '@/lib/platform'
 
 export const GOOGLE_OAUTH_MESSAGE_TYPE = 'hubilee:google-oauth' as const
@@ -78,7 +78,7 @@ export function shouldForceOAuthRedirect(): boolean {
 }
 
 export function getGoogleOAuthApiOrigin(): string {
-  return new URL(API_URL).origin
+  return new URL(ABSOLUTE_API_URL).origin
 }
 
 function buildStartUrl(params: {
@@ -87,7 +87,7 @@ function buildStartUrl(params: {
   display: 'popup' | 'page'
 }): string {
   const returnOrigin = window.location.origin
-  const url = new URL('/v1/auth/google', API_URL.replace(/\/$/, '') + '/')
+  const url = new URL('/v1/auth/google', ABSOLUTE_API_URL.replace(/\/$/, '') + '/')
   url.searchParams.set('returnOrigin', returnOrigin)
   url.searchParams.set('intent', params.intent)
   url.searchParams.set('display', params.display)

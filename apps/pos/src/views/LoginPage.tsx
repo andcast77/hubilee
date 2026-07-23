@@ -231,7 +231,13 @@ export function LoginPage() {
         return;
       }
       setCodeFailCount(0);
-      void navigate({ to: nextPath ?? "/dashboard", replace: true });
+      const isOwnerIncomplete =
+        res.data.membershipRole === "OWNER" &&
+        res.data.companyProfileComplete === false;
+      const redirectTo = isOwnerIncomplete
+        ? "/app/onboarding/company"
+        : nextPath ?? "/app/dashboard";
+      void navigate({ to: redirectTo, replace: true });
     } catch (err) {
       setCodeFailCount((n) => n + 1);
       setCaptchaToken(null);
@@ -248,7 +254,7 @@ export function LoginPage() {
       onResult: (result) => {
         if (result.status === "session") {
           void navigate({
-            to: result.next ?? nextPath ?? "/dashboard",
+            to: result.next ?? nextPath ?? "/app/dashboard",
             replace: true,
           });
           return;
@@ -284,7 +290,13 @@ export function LoginPage() {
         notifyError(res.error || "Código inválido");
         return;
       }
-      void navigate({ to: nextPath ?? "/dashboard", replace: true });
+      const isOwnerIncomplete =
+        res.data.membershipRole === "OWNER" &&
+        res.data.companyProfileComplete === false;
+      const redirectTo = isOwnerIncomplete
+        ? "/app/onboarding/company"
+        : nextPath ?? "/app/dashboard";
+      void navigate({ to: redirectTo, replace: true });
     } catch (err) {
       notifyError(err instanceof Error ? err.message : "No se pudo verificar");
     } finally {

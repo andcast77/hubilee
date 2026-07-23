@@ -18,6 +18,14 @@ import type { LoginBody, RegisterBody, ChangePasswordBody, FloorLoginBody } from
 import { verifyAndConsumeRegistrationTicket } from './registration-ticket.service.js'
 import { allocateUniqueCompanyCode } from './company-code.js'
 import { allocateUniqueUserCode } from './user-code.js'
+
+/** Genera un nombre de empresa default cuando el registro no envía companyName. */
+function defaultCompanyName(firstName: string, lastName: string, email: string): string {
+  const fromNames = [firstName, lastName].filter(Boolean).join(' ').trim()
+  if (fromNames) return fromNames
+  const local = email.split('@')[0]?.trim()
+  return local || 'Mi empresa'
+}
 import type { CompanyRow } from '../core/auth-context.js'
 import {
   UnauthorizedError,
@@ -37,6 +45,7 @@ import { writeAuditLog } from './audit-log.service.js'
 import { summarizeUserAgent } from '../core/user-agent-summary.js'
 import { jwtExpiresInToMaxAgeSeconds } from '../core/session-cookie.js'
 import { verifyTurnstileToken } from './turnstile.service.js'
+import { isCompanyProfileComplete } from '../lib/company-profile-complete.js'
 
 async function resolveAuditCompanyId(userId: string, bodyCompanyId?: string): Promise<string | null> {
   if (bodyCompanyId) return bodyCompanyId
@@ -163,6 +172,7 @@ export type LoginResult =
       company?: CompanyRow
       companies?: CompanyRow[]
       membershipRole?: string
+      companyProfileComplete?: boolean
     }
   | {
       mfaRequired?: false
@@ -172,6 +182,7 @@ export type LoginResult =
       company?: CompanyRow
       companies?: CompanyRow[]
       membershipRole?: string
+      companyProfileComplete?: boolean
     }
 
 export type RegisterResult = {
@@ -206,6 +217,12 @@ export type MeResult = {
   isSuperuser?: boolean
   twoFactorEnabled?: boolean
   company?: { id: string; name: string; modules: { hr: boolean; pos: boolean; tech: boolean } }
+  /**
+   * Whether the selected company's fiscal profile is complete.
+   * Computed server-side: non-empty name (not "mi empresa" sentinel) + non-empty taxId.
+   * Omitted when no company context is set.
+   */
+  companyProfileComplete?: boolean
 }
 
 const loginUserSelect = {
@@ -223,6 +240,27 @@ const loginUserSelect = {
   failedLoginAttempts: true,
   lockedUntil: true,
 } as const
+
+/**
+ * Loads the company's taxId from DB and computes the profile-complete flag.
+ * Returns `undefined` when the company cannot be found or on DB failure.
+ * Gracefully degrades: a DB error does NOT block authentication.
+ */
+export async function computeCompanyProfileComplete(companyId: string): Promise<boolean | undefined> {
+  try {
+    const c = await prisma.company.findFirst({
+      where: { id: companyId, isActive: true },
+      select: { name: true, taxId: true },
+    })
+    if (!c) return undefined
+    return isCompanyProfileComplete({ name: c.name, taxId: c.taxId })
+  } catch (err) {
+    if (process.env.NODE_ENV !== 'test') {
+      console.warn('[computeCompanyProfileComplete] DB error computing company profile completeness:', err)
+    }
+    return undefined
+  }
+}
 
 /**
  * Unified login: userCode+password (all users) or email+password (when email is set).
@@ -320,6 +358,7 @@ export async function login(body: LoginBody): Promise<LoginResult> {
       mfaResult.companyId = selectedCompany.id
       mfaResult.company = selectedCompany
       if (selectedMembershipRole) mfaResult.membershipRole = selectedMembershipRole
+      mfaResult.companyProfileComplete = await computeCompanyProfileComplete(selectedCompany.id)
     }
     if (companies.length > 1 || user.isSuperuser) {
       mfaResult.companies = companies
@@ -353,6 +392,7 @@ export async function login(body: LoginBody): Promise<LoginResult> {
     result.companyId = selectedCompany.id
     result.company = selectedCompany
     if (selectedMembershipRole) result.membershipRole = selectedMembershipRole
+    result.companyProfileComplete = await computeCompanyProfileComplete(selectedCompany.id)
   }
   if (companies.length > 1 || user.isSuperuser) {
     result.companies = companies
@@ -473,6 +513,7 @@ export async function completeMfaLogin(body: MfaVerifyBody): Promise<CompleteMfa
     result.companyId = selectedCompany.id
     result.company = selectedCompany
     if (selectedMembershipRole) result.membershipRole = selectedMembershipRole
+    result.companyProfileComplete = await computeCompanyProfileComplete(selectedCompany.id)
   }
   if (companies.length > 1 || user.isSuperuser) {
     result.companies = companies
@@ -499,128 +540,102 @@ export async function register(body: RegisterBody): Promise<RegisterResult> {
 
   const hashedPassword = await bcrypt.hash(password, 10)
 
-  if (companyName && companyName.trim()) {
-    const cfg = getConfig()
-    const ticket = body.registrationTicket
-    if (!ticket?.trim()) {
-      throw new BadRequestError(
-        'Se requiere verificación por email antes de registrar la empresa.',
-        'REGISTRATION_TICKET_REQUIRED',
-      )
-    }
-    await verifyAndConsumeRegistrationTicket(cfg, email, ticket)
+  // Siempre se crea una compañía. Si no llegó companyName, se genera un default.
+  const resolvedCompanyName = companyName?.trim() || defaultCompanyName(firstName, lastName, email)
 
-    const modulesMap = await findModulesByKeys(['hr', 'pos', 'tech'])
-    const hrMod = modulesMap.get('hr')
-    const posMod = modulesMap.get('pos')
-    const techMod = modulesMap.get('tech')
-    const companyCode = await allocateUniqueCompanyCode()
-    const userCode = await allocateUniqueUserCode()
-
-    const { user, company } = await prisma.$transaction(async (tx) => {
-      const u = await tx.user.create({
-        data: {
-          email,
-          userCode,
-          password: hashedPassword,
-          firstName,
-          lastName,
-          role: 'USER',
-          isActive: true,
-          isSuperuser: false,
-          emailVerified: true,
-        },
-      })
-
-      const c = await tx.company.create({
-        data: {
-          name: companyName.trim(),
-          ownerUserId: u.id,
-          isActive: true,
-          companyCode,
-        },
-      })
-
-      await tx.companyMember.create({
-        data: { userId: u.id, companyId: c.id, membershipRole: 'OWNER' },
-      })
-
-      const moduleIds: string[] = []
-      if (hrEnabled && hrMod) moduleIds.push(hrMod.id)
-      if (posEnabled && posMod) moduleIds.push(posMod.id)
-      if (technicalServicesEnabled && techMod) moduleIds.push(techMod.id)
-      for (const modId of moduleIds) {
-        await tx.companyModule.create({
-          data: { companyId: c.id, moduleId: modId, enabled: true },
-        })
-      }
-
-      const role =
-        (await tx.role.findFirst({ where: { name: 'admin', companyId: c.id } })) ??
-        (await tx.role.create({ data: { name: 'admin', companyId: c.id } }))
-
-      await tx.userRoleAssignment.create({
-        data: { userId: u.id, roleId: role.id, companyId: c.id },
-      })
-
-      return { user: u, company: c }
-    })
-
-    const token = generateToken({
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      companyId: company.id,
-      isSuperuser: false,
-      membershipRole: 'OWNER',
-    })
-
-    const name = [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || user.email || email
-
-    return {
-      user: {
-        id: user.id,
-        email: user.email ?? email,
-        name,
-        role: user.role,
-        companyId: company.id,
-        userCode: user.userCode,
-      },
-      token,
-      company: {
-        id: company.id,
-        name: company.name,
-        modules: { hr: hrEnabled, pos: posEnabled, tech: technicalServicesEnabled },
-        companyCode: company.companyCode,
-      },
-    }
+  const cfg = getConfig()
+  const ticket = body.registrationTicket
+  if (!ticket?.trim()) {
+    throw new BadRequestError(
+      'Se requiere verificación por email antes de registrar.',
+      'REGISTRATION_TICKET_REQUIRED',
+    )
   }
+  await verifyAndConsumeRegistrationTicket(cfg, email, ticket)
 
+  const modulesMap = await findModulesByKeys(['hr', 'pos', 'tech'])
+  const hrMod = modulesMap.get('hr')
+  const posMod = modulesMap.get('pos')
+  const techMod = modulesMap.get('tech')
+  const companyCode = await allocateUniqueCompanyCode()
   const userCode = await allocateUniqueUserCode()
-  const user = await prisma.user.create({
-    data: {
-      email,
-      userCode,
-      password: hashedPassword,
-      firstName,
-      lastName,
-      role: 'USER',
-      isActive: true,
-      isSuperuser: false,
-    },
+
+  const { user, company } = await prisma.$transaction(async (tx) => {
+    const u = await tx.user.create({
+      data: {
+        email,
+        userCode,
+        password: hashedPassword,
+        firstName,
+        lastName,
+        role: 'USER',
+        isActive: true,
+        isSuperuser: false,
+        emailVerified: true,
+      },
+    })
+
+    const c = await tx.company.create({
+      data: {
+        name: resolvedCompanyName,
+        ownerUserId: u.id,
+        isActive: true,
+        companyCode,
+      },
+    })
+
+    await tx.companyMember.create({
+      data: { userId: u.id, companyId: c.id, membershipRole: 'OWNER' },
+    })
+
+    const moduleIds: string[] = []
+    if (hrEnabled && hrMod) moduleIds.push(hrMod.id)
+    if (posEnabled && posMod) moduleIds.push(posMod.id)
+    if (technicalServicesEnabled && techMod) moduleIds.push(techMod.id)
+    for (const modId of moduleIds) {
+      await tx.companyModule.create({
+        data: { companyId: c.id, moduleId: modId, enabled: true },
+      })
+    }
+
+    const role =
+      (await tx.role.findFirst({ where: { name: 'admin', companyId: c.id } })) ??
+      (await tx.role.create({ data: { name: 'admin', companyId: c.id } }))
+
+    await tx.userRoleAssignment.create({
+      data: { userId: u.id, roleId: role.id, companyId: c.id },
+    })
+
+    return { user: u, company: c }
   })
 
   const token = generateToken({
     id: user.id,
-    email: user.email ?? email,
+    email: user.email,
     role: user.role,
+    companyId: company.id,
+    isSuperuser: false,
+    membershipRole: 'OWNER',
   })
 
   const name = [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || user.email || email
 
   return {
-    user: { id: user.id, email: user.email ?? email, name, role: user.role },
+    user: {
+      id: user.id,
+      email: user.email ?? email,
+      name,
+      role: user.role,
+      companyId: company.id,
+      userCode: user.userCode,
+    },
     token,
+    company: {
+      id: company.id,
+      name: company.name,
+      modules: { hr: hrEnabled, pos: posEnabled, tech: technicalServicesEnabled },
+      companyCode: company.companyCode,
+    },
   }
 }
 
@@ -657,6 +672,7 @@ export async function me(decoded: TokenPayload): Promise<MeResult> {
   }
 
   let company: { id: string; name: string; modules: { hr: boolean; pos: boolean; tech: boolean } } | null = null
+  let companyProfileComplete: boolean | undefined
   let responseCompanyId: string | undefined = decoded.companyId
 
   if (decoded.companyId) {
@@ -666,6 +682,7 @@ export async function me(decoded: TokenPayload): Promise<MeResult> {
     if (c) {
       const modules = await getCompanyModules(c.id)
       company = { id: c.id, name: c.name, modules }
+      companyProfileComplete = isCompanyProfileComplete({ name: c.name, taxId: c.taxId })
     }
   }
 
@@ -679,6 +696,7 @@ export async function me(decoded: TokenPayload): Promise<MeResult> {
       if (c) {
         const modules = await getCompanyModules(c.id)
         company = { id: c.id, name: c.name, modules }
+        companyProfileComplete = isCompanyProfileComplete({ name: c.name, taxId: c.taxId })
       }
     }
   }
@@ -694,6 +712,7 @@ export async function me(decoded: TokenPayload): Promise<MeResult> {
     isSuperuser: decoded.isSuperuser,
     twoFactorEnabled: user.twoFactorEnabled,
     company: company ?? undefined,
+    ...(company && { companyProfileComplete }),
   }
 }
 

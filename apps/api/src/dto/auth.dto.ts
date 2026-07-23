@@ -72,18 +72,6 @@ export const registerBodySchema = z
     posEnabled: z.boolean().optional(),
     technicalServicesEnabled: z.boolean().optional(),
   })
-  .superRefine((data, ctx) => {
-    const cn = data.companyName?.trim()
-    if (cn) {
-      if (!data.registrationTicket?.trim()) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Se requiere verificación por email antes de registrar la empresa (registrationTicket).',
-          path: ['registrationTicket'],
-        })
-      }
-    }
-  })
 
 export type RegisterBody = z.infer<typeof registerBodySchema>
 

@@ -100,6 +100,11 @@ describe("RegisterPage light shell", () => {
       );
     });
 
+    // POS register must not collect / send companyName (wizard owns that).
+    const [, body] = authApiPostMock.mock.calls[0] as [string, Record<string, unknown>];
+    expect(body).not.toHaveProperty("companyName");
+    expect(screen.queryByLabelText(/nombre de la empresa/i)).toBeNull();
+
     // Assert the UI advances to the link-pending step (shows "Revisa tu correo")
     expect(screen.queryByText(/Revisa tu correo/i)).not.toBeNull();
   });

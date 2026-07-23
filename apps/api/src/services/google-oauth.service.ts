@@ -11,7 +11,7 @@ import { getConfig } from '../core/config.js'
 import { assertAllowlistedOrigin } from '../core/cors-reflect.js'
 import { findModulesByKeys } from '../core/modules.js'
 import { prisma } from '../db/index.js'
-import type { LoginResult } from './auth.service.js'
+import { computeCompanyProfileComplete, type LoginResult } from './auth.service.js'
 import { allocateUniqueCompanyCode } from './company-code.js'
 import { allocateUniqueUserCode } from './user-code.js'
 
@@ -388,7 +388,9 @@ async function buildLoginResultForUser(userId: string): Promise<LoginResult> {
   const selectedCompany = selected?.selectedCompany ?? null
   const selectedMembershipRole = selected?.selectedMembershipRole ?? null
   const name =
-    [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || user.email
+    [user.firstName, user.lastName].filter(Boolean).join(' ').trim() ||
+    user.email ||
+    ''
 
   if (user.twoFactorEnabled) {
     const tempToken = generateMfaPendingToken(user.id)
@@ -407,6 +409,8 @@ async function buildLoginResultForUser(userId: string): Promise<LoginResult> {
       mfaResult.companyId = selectedCompany.id
       mfaResult.company = selectedCompany
       if (selectedMembershipRole) mfaResult.membershipRole = selectedMembershipRole
+      // Compute companyProfileComplete for the selected company
+      mfaResult.companyProfileComplete = await computeCompanyProfileComplete(selectedCompany.id)
     }
     if (companies.length > 1 || user.isSuperuser) {
       mfaResult.companies = companies
@@ -439,6 +443,8 @@ async function buildLoginResultForUser(userId: string): Promise<LoginResult> {
     result.companyId = selectedCompany.id
     result.company = selectedCompany
     if (selectedMembershipRole) result.membershipRole = selectedMembershipRole
+    // Compute companyProfileComplete for the selected company
+    result.companyProfileComplete = await computeCompanyProfileComplete(selectedCompany.id)
   }
   if (companies.length > 1 || user.isSuperuser) {
     result.companies = companies

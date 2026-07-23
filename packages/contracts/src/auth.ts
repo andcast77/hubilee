@@ -29,6 +29,12 @@ export type LoginResponse = {
   mfaRequired?: boolean
   tempToken?: string
   tokens?: DesktopAuthTokens
+  /**
+   * Whether the selected company's fiscal profile is complete.
+   * Computed server-side: non-empty name (not "mi empresa" sentinel) + non-empty taxId.
+   * Omitted when no company context is set.
+   */
+  companyProfileComplete?: boolean
 }
 
 /** Public POST /v1/auth/login — exactly one of email | userCode. */
@@ -88,6 +94,12 @@ export type MeResponse = {
     name: string
     modules: CompanyModules
   }
+  /**
+   * Whether the selected company's fiscal profile is complete.
+   * Computed server-side: non-empty name (not "mi empresa" sentinel) + non-empty taxId.
+   * Omitted when no company context is set.
+   */
+  companyProfileComplete?: boolean
 }
 
 export type ContextResponse = {

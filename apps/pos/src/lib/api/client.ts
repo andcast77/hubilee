@@ -3,9 +3,20 @@ import type { MeResponse } from '@hubilee/contracts'
 import { createApiClientOptions } from '@/lib/platform'
 
 // API Client for POS Frontend
-// Points to unified API with module prefixes (all requests go to external API, not Next.js routes)
+// Client-side: relative URL → Next.js rewrite proxy (/v1/* → localhost:3000) → same-origin → no CORS.
+// Server-side (SSR): absolute URL → direct API access (no proxy available on server).
+// Override with NEXT_PUBLIC_API_URL for custom deployments.
+//
+// IMPORTANT: Google OAuth, popup bridge origin checks, and other flows that need
+// a real absolute URL must import ABSOLUTE_API_URL instead.
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL
+  ?? (typeof window === 'undefined' ? "http://localhost:3000" : '');
+
+/** Absolute API base URL — always absolute; never overridden to '' on client side.
+ *  Use this for Google OAuth redirects, popup bridge origin checks, and other
+ *  flows that need a real URL (not the Next.js rewrite proxy). */
+export const ABSOLUTE_API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
 
 /** Current store ID for X-Store-Id header (set by StoreContext). */
 declare global {
@@ -103,6 +114,11 @@ export const accountApi = {
 
 // Company members API (usuarios de la empresa - misma lista en Hr y Pos)
 export const companiesApi = {
+  /** GET /v1/companies/:id — full company record (name, taxId, address, phone, logo). */
+  get: <T>(companyId: string) => apiClient.get<T>(`/v1/companies/${companyId}`),
+  /** PUT /v1/companies/:id — update company fiscal profile (name, taxId, address?, phone?, logo?). */
+  update: <T>(companyId: string, data: Record<string, unknown>) =>
+    apiClient.put<T>(`/v1/companies/${companyId}`, data),
   getMembers: <T>(companyId: string) => apiClient.get<T>(`/v1/companies/${companyId}/members`),
   getCredentials: <T>(companyId: string) =>
     apiClient.get<T>(`/v1/companies/${companyId}/credentials`),
