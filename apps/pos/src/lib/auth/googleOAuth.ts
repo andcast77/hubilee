@@ -4,7 +4,24 @@ import { isDesktop } from '@/lib/platform'
 export const GOOGLE_OAUTH_MESSAGE_TYPE = 'hubilee:google-oauth' as const
 export const GOOGLE_OAUTH_MESSAGE_VERSION = 1 as const
 export const GOOGLE_OAUTH_POPUP_NAME = 'hubilee_google_oauth'
-export const GOOGLE_OAUTH_POPUP_FEATURES = 'popup=yes,width=500,height=700'
+export const GOOGLE_OAUTH_POPUP_WIDTH = 500
+export const GOOGLE_OAUTH_POPUP_HEIGHT = 700
+/** Base features; left/top are computed at open time so the popup centers. */
+export const GOOGLE_OAUTH_POPUP_FEATURES = `popup=yes,width=${GOOGLE_OAUTH_POPUP_WIDTH},height=${GOOGLE_OAUTH_POPUP_HEIGHT}`
+
+/** Center the popup on the opener's screen (multi-monitor aware via screenX/Y). */
+export function googleOAuthPopupFeatures(
+  width = GOOGLE_OAUTH_POPUP_WIDTH,
+  height = GOOGLE_OAUTH_POPUP_HEIGHT,
+): string {
+  const dualScreenLeft = window.screenLeft ?? window.screenX ?? 0
+  const dualScreenTop = window.screenTop ?? window.screenY ?? 0
+  const viewportWidth = window.innerWidth ?? document.documentElement.clientWidth ?? screen.width
+  const viewportHeight = window.innerHeight ?? document.documentElement.clientHeight ?? screen.height
+  const left = Math.max(0, Math.round(dualScreenLeft + (viewportWidth - width) / 2))
+  const top = Math.max(0, Math.round(dualScreenTop + (viewportHeight - height) / 2))
+  return `popup=yes,width=${width},height=${height},left=${left},top=${top}`
+}
 /** ~10 minutes — aligned with API OAuth state TTL. */
 export const GOOGLE_OAUTH_POPUP_TIMEOUT_MS = 10 * 60 * 1000
 
@@ -21,6 +38,21 @@ export type GoogleOAuthPopupResult =
   | { status: 'session'; next: string | null }
   | { status: 'mfa'; tempToken: string }
   | { status: 'error'; error?: string }
+
+/** Human-readable toast for API `oauth_error` / bridge error codes. */
+export function googleOAuthErrorMessage(code: string | null | undefined): string {
+  switch (code) {
+    case 'USER_NOT_FOUND':
+      return 'No hay una cuenta asociada a ese mail.'
+    case 'GOOGLE_EMAIL_NOT_VERIFIED':
+      return 'El email de Google no está verificado.'
+    case 'GOOGLE_OAUTH_DISABLED':
+    case 'OAUTH_STORE_UNAVAILABLE':
+      return 'Google OAuth no está disponible ahora. Intentá más tarde.'
+    default:
+      return 'No se pudo iniciar sesión con Google. Intentá de nuevo.'
+  }
+}
 
 /** Same-origin path only (reject protocol-relative / absolute URLs). */
 export function safeNextPath(raw: string | null | undefined): string | null {
@@ -102,7 +134,7 @@ export function startGoogleOAuth(params: {
   const popup = window.open(
     popupUrl,
     GOOGLE_OAUTH_POPUP_NAME,
-    GOOGLE_OAUTH_POPUP_FEATURES,
+    googleOAuthPopupFeatures(),
   )
 
   if (!popup) {

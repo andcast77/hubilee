@@ -15,7 +15,7 @@ import {
 import { authApi } from "@/lib/api/client";
 import { getLandingUrls } from "@/lib/landingUrls";
 import { RegistrationTurnstile } from "@/components/auth/RegistrationTurnstile";
-import { safeNextPath, startGoogleOAuth } from "@/lib/auth/googleOAuth";
+import { safeNextPath, startGoogleOAuth, googleOAuthErrorMessage } from "@/lib/auth/googleOAuth";
 import { toast } from "sonner";
 
 const TOAST_MS = 4000;
@@ -174,7 +174,7 @@ export function LoginPage() {
 
   useEffect(() => {
     if (search.oauth_error) {
-      notifyError("No se pudo iniciar sesión con Google. Intentá de nuevo.");
+      notifyError(googleOAuthErrorMessage(search.oauth_error));
     }
     if (search.mfa === "1" && search.tempToken?.trim()) {
       setMfaStep(true);
@@ -261,7 +261,7 @@ export function LoginPage() {
           setMfaBackup(false);
           return;
         }
-        notifyError("No se pudo iniciar sesión con Google. Intentá de nuevo.");
+        notifyError(googleOAuthErrorMessage(result.error));
       },
     });
   }

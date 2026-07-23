@@ -50,6 +50,10 @@ vi.mock('../../services/user-code.js', () => ({
   allocateUniqueUserCode: vi.fn(async () => '12345678'),
 }))
 
+vi.mock('../../services/company-code.js', () => ({
+  allocateUniqueCompanyCode: vi.fn(async () => 'abcdef0123456789'),
+}))
+
 vi.mock('../../core/modules.js', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../core/modules.js')>()
   return {
@@ -87,6 +91,7 @@ describe('resolveGoogleIdentityLink', () => {
         emailVerified: false,
         existingOAuthUserId: 'user-linked',
         existingUserByEmailId: 'other',
+        intent: 'login',
       }),
     ).toEqual({ action: 'use_existing', userId: 'user-linked' })
   })
@@ -97,6 +102,7 @@ describe('resolveGoogleIdentityLink', () => {
         emailVerified: false,
         existingOAuthUserId: null,
         existingUserByEmailId: 'user-email',
+        intent: 'login',
       }),
     ).toEqual({ action: 'reject', reason: 'EMAIL_NOT_VERIFIED' })
   })
@@ -107,16 +113,29 @@ describe('resolveGoogleIdentityLink', () => {
         emailVerified: true,
         existingOAuthUserId: null,
         existingUserByEmailId: 'user-email',
+        intent: 'login',
       }),
     ).toEqual({ action: 'auto_link', userId: 'user-email' })
   })
 
-  it('creates user when verified and no match', () => {
+  it('rejects login when verified and no match (no auto-register)', () => {
     expect(
       resolveGoogleIdentityLink({
         emailVerified: true,
         existingOAuthUserId: null,
         existingUserByEmailId: null,
+        intent: 'login',
+      }),
+    ).toEqual({ action: 'reject', reason: 'USER_NOT_FOUND' })
+  })
+
+  it('creates user on register when verified and no match', () => {
+    expect(
+      resolveGoogleIdentityLink({
+        emailVerified: true,
+        existingOAuthUserId: null,
+        existingUserByEmailId: null,
+        intent: 'register',
       }),
     ).toEqual({ action: 'create_user' })
   })
@@ -214,13 +233,16 @@ describe('resolveOrCreateGoogleUser', () => {
 
   it('returns existing OAuthAccount user without creating', async () => {
     mockOAuthFindUnique.mockResolvedValue({ userId: 'u-oauth' })
-    const result = await resolveOrCreateGoogleUser({
-      sub: 'google-sub-1',
-      email: 'a@example.com',
-      email_verified: true,
-      given_name: 'Ada',
-      family_name: 'Lovelace',
-    })
+    const result = await resolveOrCreateGoogleUser(
+      {
+        sub: 'google-sub-1',
+        email: 'a@example.com',
+        email_verified: true,
+        given_name: 'Ada',
+        family_name: 'Lovelace',
+      },
+      'login',
+    )
     expect(result).toEqual({ userId: 'u-oauth', created: false, linked: false })
     expect(mockUserCreate).not.toHaveBeenCalled()
   })
@@ -228,11 +250,14 @@ describe('resolveOrCreateGoogleUser', () => {
   it('auto-links verified email', async () => {
     mockOAuthFindUnique.mockResolvedValue(null)
     mockUserFindUnique.mockResolvedValue({ id: 'u-existing' })
-    const result = await resolveOrCreateGoogleUser({
-      sub: 'google-sub-2',
-      email: 'Owner@Example.com',
-      email_verified: true,
-    })
+    const result = await resolveOrCreateGoogleUser(
+      {
+        sub: 'google-sub-2',
+        email: 'Owner@Example.com',
+        email_verified: true,
+      },
+      'login',
+    )
     expect(result).toEqual({ userId: 'u-existing', created: false, linked: true })
     expect(mockOAuthCreate).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -249,27 +274,49 @@ describe('resolveOrCreateGoogleUser', () => {
     mockOAuthFindUnique.mockResolvedValue(null)
     mockUserFindUnique.mockResolvedValue({ id: 'u-existing' })
     await expect(
-      resolveOrCreateGoogleUser({
-        sub: 'google-sub-3',
-        email: 'a@example.com',
-        email_verified: false,
-      }),
+      resolveOrCreateGoogleUser(
+        {
+          sub: 'google-sub-3',
+          email: 'a@example.com',
+          email_verified: false,
+        },
+        'login',
+      ),
     ).rejects.toMatchObject({ code: 'GOOGLE_EMAIL_NOT_VERIFIED' })
     expect(mockOAuthCreate).not.toHaveBeenCalled()
     expect(mockUserCreate).not.toHaveBeenCalled()
   })
 
-  it('creates OAuth-only user with null password when no match', async () => {
+  it('rejects login when no matching user (no auto-register)', async () => {
+    mockOAuthFindUnique.mockResolvedValue(null)
+    mockUserFindUnique.mockResolvedValue(null)
+    await expect(
+      resolveOrCreateGoogleUser(
+        {
+          sub: 'google-sub-4',
+          email: 'new@example.com',
+          email_verified: true,
+        },
+        'login',
+      ),
+    ).rejects.toMatchObject({ code: 'USER_NOT_FOUND' })
+    expect(mockUserCreate).not.toHaveBeenCalled()
+  })
+
+  it('creates OAuth-only user with null password on register when no match', async () => {
     mockOAuthFindUnique.mockResolvedValue(null)
     mockUserFindUnique.mockResolvedValue(null)
     mockUserCreate.mockResolvedValue({ id: 'u-new' })
-    const result = await resolveOrCreateGoogleUser({
-      sub: 'google-sub-4',
-      email: 'new@example.com',
-      email_verified: true,
-      given_name: 'New',
-      family_name: 'User',
-    })
+    const result = await resolveOrCreateGoogleUser(
+      {
+        sub: 'google-sub-5',
+        email: 'new@example.com',
+        email_verified: true,
+        given_name: 'New',
+        family_name: 'User',
+      },
+      'register',
+    )
     expect(result).toEqual({ userId: 'u-new', created: true, linked: true })
     expect(mockUserCreate).toHaveBeenCalledWith(
       expect.objectContaining({

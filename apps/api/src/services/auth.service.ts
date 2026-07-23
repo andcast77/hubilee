@@ -750,6 +750,10 @@ export async function setContext(
   return { token, companyId, membershipRole: membershipRole ?? null, company: companyWithModules }
 }
 
+function allowsConcurrentSessions(role: string): boolean {
+  return role === 'ADMIN' || role === 'SUPERADMIN'
+}
+
 export async function createWebSessionPair(
   userId: string,
   accessToken: string,
@@ -761,13 +765,9 @@ export async function createWebSessionPair(
     select: { id: true, role: true },
   })
   if (!user) throw new NotFoundError('Usuario no encontrado')
-  const existingSessions = await prisma.session.findMany({
-    where: { userId },
-    take: 1,
-    select: { id: true },
-  })
-  if (existingSessions.length > 0 && user.role !== 'ADMIN' && user.role !== 'SUPERADMIN') {
-    throw new ConflictError('Concurrent sessions not allowed for this role')
+  // Floor roles: one active session — new login/OAuth replaces prior (kick), not 409.
+  if (!allowsConcurrentSessions(user.role)) {
+    await revokeAllUserSessions(userId)
   }
   const refreshPlain = generateRefreshTokenPlain()
   const sessionToken = hashRefreshToken(refreshPlain)
@@ -901,13 +901,8 @@ export async function createSession(body: {
     select: { id: true, role: true },
   })
   if (!user) throw new NotFoundError('Usuario no encontrado')
-  const existingSessions = await prisma.session.findMany({
-    where: { userId },
-    take: 1,
-    select: { id: true },
-  })
-  if (existingSessions.length > 0 && user.role !== 'ADMIN' && user.role !== 'SUPERADMIN') {
-    throw new ConflictError('Concurrent sessions not allowed for this role')
+  if (!allowsConcurrentSessions(user.role)) {
+    await revokeAllUserSessions(userId)
   }
   const expiresAtVal = expiresAt ? new Date(expiresAt) : refreshSessionExpiresAt()
   const accessJti = accessJtiFromJwtString(sessionToken)

@@ -12,6 +12,7 @@ import { assertAllowlistedOrigin } from '../core/cors-reflect.js'
 import { findModulesByKeys } from '../core/modules.js'
 import { prisma } from '../db/index.js'
 import type { LoginResult } from './auth.service.js'
+import { allocateUniqueCompanyCode } from './company-code.js'
 import { allocateUniqueUserCode } from './user-code.js'
 
 const OAUTH_STATE_PREFIX = 'oauth:google:'
@@ -45,7 +46,7 @@ export type GoogleIdentityLinkDecision =
   | { action: 'use_existing'; userId: string }
   | { action: 'auto_link'; userId: string }
   | { action: 'create_user' }
-  | { action: 'reject'; reason: 'EMAIL_NOT_VERIFIED' }
+  | { action: 'reject'; reason: 'EMAIL_NOT_VERIFIED' | 'USER_NOT_FOUND' }
 
 export function assertGoogleOAuthConfigured(): void {
   const config = getConfig()
@@ -69,6 +70,8 @@ export function resolveGoogleIdentityLink(input: {
   emailVerified: boolean
   existingOAuthUserId: string | null
   existingUserByEmailId: string | null
+  /** login must not auto-create accounts; register may. */
+  intent: GoogleOAuthIntent
 }): GoogleIdentityLinkDecision {
   if (input.existingOAuthUserId) {
     return { action: 'use_existing', userId: input.existingOAuthUserId }
@@ -78,6 +81,9 @@ export function resolveGoogleIdentityLink(input: {
   }
   if (input.existingUserByEmailId) {
     return { action: 'auto_link', userId: input.existingUserByEmailId }
+  }
+  if (input.intent === 'login') {
+    return { action: 'reject', reason: 'USER_NOT_FOUND' }
   }
   return { action: 'create_user' }
 }
@@ -232,7 +238,10 @@ export async function fetchGoogleUserInfo(accessToken: string): Promise<GoogleUs
   }
 }
 
-export async function resolveOrCreateGoogleUser(info: GoogleUserInfo): Promise<{
+export async function resolveOrCreateGoogleUser(
+  info: GoogleUserInfo,
+  intent: GoogleOAuthIntent,
+): Promise<{
   userId: string
   created: boolean
   linked: boolean
@@ -253,9 +262,16 @@ export async function resolveOrCreateGoogleUser(info: GoogleUserInfo): Promise<{
     emailVerified: info.email_verified === true,
     existingOAuthUserId: existingOAuth?.userId ?? null,
     existingUserByEmailId: existingByEmail?.id ?? null,
+    intent,
   })
 
   if (decision.action === 'reject') {
+    if (decision.reason === 'USER_NOT_FOUND') {
+      throw new BadRequestError(
+        'No hay una cuenta asociada a ese mail.',
+        'USER_NOT_FOUND',
+      )
+    }
     throw new BadRequestError(
       'El email de Google no está verificado.',
       'GOOGLE_EMAIL_NOT_VERIFIED',
@@ -317,11 +333,13 @@ export async function ensureCompanyForRegisterIntent(params: {
 
   const modulesMap = await findModulesByKeys(['hr', 'pos', 'tech'])
   const posMod = modulesMap.get('pos')
+  const companyCode = await allocateUniqueCompanyCode()
 
   const company = await prisma.$transaction(async (tx) => {
     const c = await tx.company.create({
       data: {
         name: params.companyName.trim() || 'Mi empresa',
+        companyCode,
         ownerUserId: params.userId,
         isActive: true,
       },
@@ -466,7 +484,7 @@ export async function completeGoogleOAuthCallback(params: {
 
     const accessToken = await exchangeGoogleCode(params.code.trim())
     const info = await fetchGoogleUserInfo(accessToken)
-    const { userId } = await resolveOrCreateGoogleUser(info)
+    const { userId } = await resolveOrCreateGoogleUser(info, statePayload.intent)
 
     if (statePayload.intent === 'register') {
       await ensureCompanyForRegisterIntent({

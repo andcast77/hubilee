@@ -2,8 +2,8 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import {
   GOOGLE_OAUTH_MESSAGE_TYPE,
   GOOGLE_OAUTH_MESSAGE_VERSION,
-  GOOGLE_OAUTH_POPUP_FEATURES,
   GOOGLE_OAUTH_POPUP_NAME,
+  googleOAuthPopupFeatures,
   isStandalonePwa,
   safeNextPath,
   shouldForceOAuthRedirect,
@@ -106,7 +106,7 @@ describe('startGoogleOAuth', () => {
     expect(openMock).toHaveBeenCalledWith(
       expect.stringContaining('display=popup'),
       GOOGLE_OAUTH_POPUP_NAME,
-      GOOGLE_OAUTH_POPUP_FEATURES,
+      googleOAuthPopupFeatures(),
     )
     expect(window.location.assign).toHaveBeenCalled()
     const url = String(vi.mocked(window.location.assign).mock.calls[0]?.[0])
@@ -159,7 +159,7 @@ describe('startGoogleOAuth', () => {
     expect(openMock).toHaveBeenCalledWith(
       expect.stringContaining('display=popup'),
       GOOGLE_OAUTH_POPUP_NAME,
-      GOOGLE_OAUTH_POPUP_FEATURES,
+      googleOAuthPopupFeatures(),
     )
     expect(window.location.assign).not.toHaveBeenCalled()
     expect(addEventListenerSpy).toHaveBeenCalledWith('message', expect.any(Function))
