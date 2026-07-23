@@ -133,12 +133,14 @@ describe('Google OAuth Redis state', () => {
       returnOrigin: 'http://localhost:3002',
       intent: 'login',
       next: '/dashboard',
+      display: 'page',
     })
     const first = await consumeGoogleOAuthState(state)
     expect(first).toEqual({
       returnOrigin: 'http://localhost:3002',
       intent: 'login',
       next: '/dashboard',
+      display: 'page',
     })
     await expect(consumeGoogleOAuthState(state)).rejects.toBeInstanceOf(BadRequestError)
   })
@@ -155,7 +157,26 @@ describe('Google OAuth Redis state', () => {
       returnOrigin: 'http://localhost:3002',
       intent: 'register',
       next: null,
+      display: 'page',
     })
+  })
+
+  it('stores display=popup when provided; absent display defaults to page', async () => {
+    const popupState = await createGoogleOAuthState({
+      returnOrigin: 'http://localhost:3002',
+      intent: 'login',
+      next: null,
+      display: 'popup',
+    })
+    expect(await consumeGoogleOAuthState(popupState)).toMatchObject({ display: 'popup' })
+
+    const legacyState = 'legacy-no-display'
+    redisBacking.map.set(`oauth:google:${legacyState}`, {
+      returnOrigin: 'http://localhost:3002',
+      intent: 'login',
+      next: '/app',
+    })
+    expect(await consumeGoogleOAuthState(legacyState)).toMatchObject({ display: 'page' })
   })
 })
 

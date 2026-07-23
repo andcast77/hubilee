@@ -31,10 +31,14 @@ export type GoogleUserInfo = {
   name?: string
 }
 
+export type GoogleOAuthDisplay = 'popup' | 'page'
+
 export type GoogleOAuthStatePayload = {
   returnOrigin: string
   intent: GoogleOAuthIntent
   next: string | null
+  /** Absent on legacy Redis payloads → treat as page. */
+  display: GoogleOAuthDisplay
 }
 
 export type GoogleIdentityLinkDecision =
@@ -144,10 +148,12 @@ function parseOAuthStatePayload(raw: unknown): GoogleOAuthStatePayload | null {
       : typeof obj.next === 'string'
         ? obj.next
         : null
+  const display: GoogleOAuthDisplay = obj.display === 'popup' ? 'popup' : 'page'
   return {
     returnOrigin: obj.returnOrigin,
     intent: obj.intent,
     next,
+    display,
   }
 }
 
@@ -169,12 +175,14 @@ export async function startGoogleOAuth(params: {
   returnOrigin: string
   intent?: string
   next?: string | null
+  display?: string | null
 }): Promise<{ authorizeUrl: string }> {
   assertGoogleOAuthConfigured()
   const returnOrigin = assertAllowlistedOrigin(params.returnOrigin)
   const intent: GoogleOAuthIntent = params.intent === 'register' ? 'register' : 'login'
   const next = safeOAuthNextPath(params.next ?? null)
-  const state = await createGoogleOAuthState({ returnOrigin, intent, next })
+  const display: GoogleOAuthDisplay = params.display === 'popup' ? 'popup' : 'page'
+  const state = await createGoogleOAuthState({ returnOrigin, intent, next, display })
   return { authorizeUrl: buildGoogleAuthorizeUrl(state) }
 }
 
@@ -426,16 +434,19 @@ export type GoogleCallbackOutcome =
       login: Extract<LoginResult, { token: string }>
       returnOrigin: string
       next: string | null
+      display: GoogleOAuthDisplay
     }
   | {
       kind: 'mfa'
       tempToken: string
       returnOrigin: string
+      display: GoogleOAuthDisplay
     }
   | {
       kind: 'error'
       returnOrigin: string | null
       code: string
+      display: GoogleOAuthDisplay
     }
 
 export async function completeGoogleOAuthCallback(params: {
@@ -443,6 +454,7 @@ export async function completeGoogleOAuthCallback(params: {
   state: string | undefined
 }): Promise<GoogleCallbackOutcome> {
   let returnOrigin: string | null = null
+  let display: GoogleOAuthDisplay = 'page'
   try {
     if (!params.code?.trim() || !params.state?.trim()) {
       throw new BadRequestError('Callback OAuth incompleto', 'OAUTH_CALLBACK_INVALID')
@@ -450,6 +462,7 @@ export async function completeGoogleOAuthCallback(params: {
     assertGoogleOAuthConfigured()
     const statePayload = await consumeGoogleOAuthState(params.state.trim())
     returnOrigin = statePayload.returnOrigin
+    display = statePayload.display
 
     const accessToken = await exchangeGoogleCode(params.code.trim())
     const info = await fetchGoogleUserInfo(accessToken)
@@ -468,6 +481,7 @@ export async function completeGoogleOAuthCallback(params: {
         kind: 'mfa',
         tempToken: login.tempToken,
         returnOrigin: statePayload.returnOrigin,
+        display: statePayload.display,
       }
     }
     return {
@@ -475,6 +489,7 @@ export async function completeGoogleOAuthCallback(params: {
       login: login as Extract<LoginResult, { token: string }>,
       returnOrigin: statePayload.returnOrigin,
       next: statePayload.next,
+      display: statePayload.display,
     }
   } catch (err) {
     const code =
@@ -483,6 +498,6 @@ export async function completeGoogleOAuthCallback(params: {
       err instanceof ServiceUnavailableError
         ? (err.code ?? 'OAUTH_ERROR')
         : 'OAUTH_ERROR'
-    return { kind: 'error', returnOrigin, code }
+    return { kind: 'error', returnOrigin, code, display }
   }
 }

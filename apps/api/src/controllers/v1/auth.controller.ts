@@ -44,6 +44,11 @@ import { assertSelfOrSuperuser } from '../../policies/company-authorization.poli
 import { writeAuditLog } from '../../services/audit-log.service.js'
 import { verifyMfaPendingToken, verifyToken } from '../../core/auth.js'
 import { UnauthorizedError, BadRequestError } from '../../common/errors/app-error.js'
+import { randomBytes } from 'node:crypto'
+import {
+  buildGoogleOAuthPopupBridgeHtml,
+  type GoogleOAuthBridgeMessage,
+} from '../../lib/google-oauth-popup-bridge.js'
 
 async function attachWebAuthCookies(
   reply: FastifyReply,
@@ -593,12 +598,68 @@ export function buildGoogleOAuthAppRedirect(params: {
   return `${origin}${next}`
 }
 
+function buildGoogleOAuthBridgePayload(params: {
+  kind: 'session' | 'mfa' | 'error'
+  next?: string | null
+  tempToken?: string
+  errorCode?: string
+}): GoogleOAuthBridgeMessage {
+  if (params.kind === 'mfa' && params.tempToken) {
+    return {
+      type: 'hubilee:google-oauth',
+      v: 1,
+      status: 'mfa',
+      tempToken: params.tempToken,
+    }
+  }
+  if (params.kind === 'error') {
+    return {
+      type: 'hubilee:google-oauth',
+      v: 1,
+      status: 'error',
+      error: params.errorCode ?? 'OAUTH_ERROR',
+    }
+  }
+  const next = googleOAuthService.safeOAuthNextPath(params.next ?? null) ?? undefined
+  const payload: GoogleOAuthBridgeMessage = {
+    type: 'hubilee:google-oauth',
+    v: 1,
+    status: 'session',
+  }
+  if (next) payload.next = next
+  return payload
+}
+
+/** Popup display: HTML bridge + per-reply nonce CSP (no Pos 302). */
+function replyGoogleOAuthPopupBridge(
+  reply: FastifyReply,
+  params: {
+    returnOrigin: string
+    kind: 'session' | 'mfa' | 'error'
+    next?: string | null
+    tempToken?: string
+    errorCode?: string
+  },
+) {
+  const nonce = randomBytes(16).toString('base64')
+  const html = buildGoogleOAuthPopupBridgeHtml({
+    nonce,
+    targetOrigin: params.returnOrigin,
+    payload: buildGoogleOAuthBridgePayload(params),
+  })
+  return reply
+    .header('Content-Security-Policy', `default-src 'self'; script-src 'nonce-${nonce}'`)
+    .type('text/html; charset=utf-8')
+    .send(html)
+}
+
 export async function googleStart(request: FastifyRequest, reply: FastifyReply) {
   const q = validateQuery(googleOAuthStartQuerySchema, request.query)
   const { authorizeUrl } = await googleOAuthService.startGoogleOAuth({
     returnOrigin: q.returnOrigin,
     intent: q.intent,
     next: q.next,
+    display: q.display,
   })
   return reply.redirect(authorizeUrl)
 }
@@ -606,7 +667,28 @@ export async function googleStart(request: FastifyRequest, reply: FastifyReply) 
 export async function googleCallback(request: FastifyRequest, reply: FastifyReply) {
   const q = validateQuery(googleOAuthCallbackQuerySchema, request.query)
   if (q.error) {
-    // Google denied — no session; cannot redirect without state origin.
+    // Google denied — consume state when present so opener gets structured error.
+    if (q.state?.trim()) {
+      try {
+        const statePayload = await googleOAuthService.consumeGoogleOAuthState(q.state.trim())
+        if (statePayload.display === 'popup') {
+          return replyGoogleOAuthPopupBridge(reply, {
+            returnOrigin: statePayload.returnOrigin,
+            kind: 'error',
+            errorCode: 'GOOGLE_OAUTH_DENIED',
+          })
+        }
+        return reply.redirect(
+          buildGoogleOAuthAppRedirect({
+            returnOrigin: statePayload.returnOrigin,
+            kind: 'error',
+            errorCode: 'GOOGLE_OAUTH_DENIED',
+          }),
+        )
+      } catch {
+        // Unusable state — fail closed below.
+      }
+    }
     throw new BadRequestError('Google OAuth cancelado', 'GOOGLE_OAUTH_DENIED')
   }
 
@@ -621,6 +703,13 @@ export async function googleCallback(request: FastifyRequest, reply: FastifyRepl
     if (!outcome.returnOrigin) {
       throw new BadRequestError('OAuth falló', outcome.code)
     }
+    if (outcome.display === 'popup') {
+      return replyGoogleOAuthPopupBridge(reply, {
+        returnOrigin: outcome.returnOrigin,
+        kind: 'error',
+        errorCode: outcome.code,
+      })
+    }
     return reply.redirect(
       buildGoogleOAuthAppRedirect({
         returnOrigin: outcome.returnOrigin,
@@ -631,6 +720,13 @@ export async function googleCallback(request: FastifyRequest, reply: FastifyRepl
   }
 
   if (outcome.kind === 'mfa') {
+    if (outcome.display === 'popup') {
+      return replyGoogleOAuthPopupBridge(reply, {
+        returnOrigin: outcome.returnOrigin,
+        kind: 'mfa',
+        tempToken: outcome.tempToken,
+      })
+    }
     return reply.redirect(
       buildGoogleOAuthAppRedirect({
         returnOrigin: outcome.returnOrigin,
@@ -640,7 +736,7 @@ export async function googleCallback(request: FastifyRequest, reply: FastifyRepl
     )
   }
 
-  const { login, returnOrigin, next } = outcome
+  const { login, returnOrigin, next, display } = outcome
   if (login.companyId) {
     writeAuditLog({
       companyId: login.companyId,
@@ -662,6 +758,13 @@ export async function googleCallback(request: FastifyRequest, reply: FastifyRepl
     },
     { ip, ua },
   )
+  if (display === 'popup') {
+    return replyGoogleOAuthPopupBridge(reply, {
+      returnOrigin,
+      kind: 'session',
+      next,
+    })
+  }
   return reply.redirect(
     buildGoogleOAuthAppRedirect({
       returnOrigin,

@@ -152,6 +152,8 @@ export const googleOAuthStartQuerySchema = z.object({
   returnOrigin: z.string().min(1),
   intent: z.enum(['login', 'register']).optional(),
   next: z.string().optional(),
+  /** Popup returns HTML bridge; page (default) keeps Pos 302. */
+  display: z.enum(['popup', 'page']).optional(),
 })
 
 export type GoogleOAuthStartQuery = z.infer<typeof googleOAuthStartQuerySchema>
