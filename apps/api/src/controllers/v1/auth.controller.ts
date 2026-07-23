@@ -18,6 +18,9 @@ import {
   registerOtpVerifyBodySchema,
   registerLinkSendBodySchema,
   registerLinkVerifyBodySchema,
+  passwordResetOtpSendBodySchema,
+  passwordResetOtpVerifyBodySchema,
+  passwordResetBodySchema,
   verifyEmailQuerySchema,
   resendVerificationBodySchema,
   changePasswordBodySchema,
@@ -30,6 +33,7 @@ import * as authService from '../../services/auth.service.js'
 import * as googleOAuthService from '../../services/google-oauth.service.js'
 import * as registrationOtpService from '../../services/registration-otp.service.js'
 import * as registrationLinkService from '../../services/registration-link.service.js'
+import * as passwordResetOtpService from '../../services/password-reset-otp.service.js'
 import * as emailVerificationService from '../../services/email-verification.service.js'
 import {
   attachAuthSessionCookie,
@@ -345,6 +349,30 @@ export async function registerOtpVerify(request: FastifyRequest, reply: FastifyR
   return ok({ registrationTicket })
 }
 
+export async function passwordResetOtpSend(request: FastifyRequest, reply: FastifyReply) {
+  const body = validateBody(passwordResetOtpSendBodySchema, request.body)
+  // Do not log captchaToken / email beyond requestId middleware.
+  const result = await passwordResetOtpService.sendPasswordResetOtp({
+    email: body.email,
+    captchaToken: body.captchaToken,
+    remoteip: request.ip,
+  })
+  return ok(result)
+}
+
+export async function passwordResetOtpVerify(request: FastifyRequest, reply: FastifyReply) {
+  const body = validateBody(passwordResetOtpVerifyBodySchema, request.body)
+  const { resetTicket } = await passwordResetOtpService.verifyPasswordResetOtp(body)
+  return ok({ resetTicket })
+}
+
+export async function passwordReset(request: FastifyRequest, reply: FastifyReply) {
+  const body = validateBody(passwordResetBodySchema, request.body)
+  // Do not log newPassword or resetTicket.
+  const result = await passwordResetOtpService.completePasswordReset(body)
+  return ok(result)
+}
+
 export async function registerLinkSend(request: FastifyRequest, reply: FastifyReply) {
   const body = validateBody(registerLinkSendBodySchema, request.body)
   await registrationLinkService.sendRegistrationLink({
@@ -563,6 +591,19 @@ export async function registerRegisterOtpRoutes(fastify: FastifyInstance) {
   )
   fastify.post('/v1/auth/register/otp/verify', { schema: authSuccessResponseSchema }, (request, reply) =>
     registerOtpVerify(request, reply)
+  )
+}
+
+/** Password-reset OTP — dedicated bucket `ms-auth-password-reset-otp`. */
+export async function registerPasswordResetOtpRoutes(fastify: FastifyInstance) {
+  fastify.post('/v1/auth/password-reset/otp/send', { schema: authSuccessResponseSchema }, (request, reply) =>
+    passwordResetOtpSend(request, reply)
+  )
+  fastify.post('/v1/auth/password-reset/otp/verify', { schema: authSuccessResponseSchema }, (request, reply) =>
+    passwordResetOtpVerify(request, reply)
+  )
+  fastify.post('/v1/auth/password-reset', { schema: authSuccessResponseSchema }, (request, reply) =>
+    passwordReset(request, reply)
   )
 }
 

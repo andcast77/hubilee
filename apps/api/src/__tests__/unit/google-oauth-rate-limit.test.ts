@@ -19,6 +19,12 @@ describe('Google OAuth rate-limit path helpers', () => {
     expect(isGoogleOAuthPath('/v1/auth/login')).toBe(false)
   })
 
+  it('treats password-reset OTP routes as auth public paths (dedicated bucket)', () => {
+    expect(isAuthPublicPath('/v1/auth/password-reset/otp/send')).toBe(true)
+    expect(isAuthPublicPath('/v1/auth/password-reset/otp/verify')).toBe(true)
+    expect(isAuthPublicPath('/v1/auth/password-reset')).toBe(true)
+  })
+
   it('rejects further attempts after ms-auth-google max (20/min)', async () => {
     const app = Fastify()
     let hits = 0

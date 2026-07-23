@@ -106,6 +106,16 @@ export async function sendRegistrationOtpEmail(to: string, code: string): Promis
   })
 }
 
+/** OTP para restablecer contraseña (Pos). Never log `code`. */
+export async function sendPasswordResetOtpEmail(to: string, code: string): Promise<void> {
+  await sendMail({
+    to,
+    subject: 'Tu código para restablecer la contraseña — Hubilee',
+    text: `Tu código es: ${code}\n\nVálido unos minutos. Si no solicitaste restablecer tu contraseña, ignora este mensaje.`,
+    html: `<p>Tu código es: <strong>${code}</strong></p><p>Válido unos minutos. Si no solicitaste restablecer tu contraseña, ignora este mensaje.</p>`,
+  })
+}
+
 /** Enlace de un solo uso para continuar el registro (PLAN-40). */
 export async function sendRegistrationMagicLinkEmail(to: string, verifyUrl: string): Promise<void> {
   await sendMail({
