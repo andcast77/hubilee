@@ -16,6 +16,7 @@ import {
 import { authApi } from "@/lib/api/client";
 import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
 import { RegistrationTurnstile } from "@/components/auth/RegistrationTurnstile";
+import { startGoogleOAuth } from "@/lib/auth/googleOAuth";
 import { toast } from "sonner";
 
 const TOAST_MS = 4000;
@@ -150,7 +151,7 @@ export function RegisterPage() {
   const [turnstileKey, setTurnstileKey] = useState(0);
 
   function handleGoogleClick() {
-    toast.message("El registro con Google estará disponible pronto.");
+    startGoogleOAuth({ intent: "register" });
   }
 
   async function sendLink(e: React.FormEvent) {

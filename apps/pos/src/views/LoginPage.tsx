@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import {
   Button,
   Input,
@@ -15,18 +15,13 @@ import {
 import { authApi } from "@/lib/api/client";
 import { getLandingUrls } from "@/lib/landingUrls";
 import { RegistrationTurnstile } from "@/components/auth/RegistrationTurnstile";
+import { safeNextPath, startGoogleOAuth } from "@/lib/auth/googleOAuth";
 import { toast } from "sonner";
 
 const TOAST_MS = 4000;
 
 function notifyError(message: string) {
   toast.error(message, { duration: TOAST_MS });
-}
-
-function safeNextPath(raw: string | null): string | null {
-  if (!raw || !raw.startsWith("/")) return null;
-  if (raw.startsWith("//")) return null;
-  return raw;
 }
 
 function hubForgotPasswordUrl(): string {
@@ -150,7 +145,12 @@ function LoginVisualPanel() {
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const search = useSearch({ strict: false }) as { next?: string };
+  const search = useSearch({ strict: false }) as {
+    next?: string;
+    mfa?: string;
+    tempToken?: string;
+    oauth_error?: string;
+  };
   const nextPath = useMemo(
     () => safeNextPath(search.next ?? null),
     [search.next],
@@ -171,6 +171,18 @@ export function LoginPage() {
   const [mfaBackup, setMfaBackup] = useState(false);
 
   const showCodeTurnstile = shouldShowFloorTurnstile(codeFailCount);
+
+  useEffect(() => {
+    if (search.oauth_error) {
+      notifyError("No se pudo iniciar sesión con Google. Intentá de nuevo.");
+    }
+    if (search.mfa === "1" && search.tempToken?.trim()) {
+      setMfaStep(true);
+      setMfaTempToken(search.tempToken.trim());
+      setMfaCode("");
+      setMfaBackup(false);
+    }
+  }, [search.mfa, search.tempToken, search.oauth_error]);
 
   function beginMfa(data: LoginResponse) {
     setMfaStep(true);
@@ -230,9 +242,7 @@ export function LoginPage() {
   }
 
   function handleGoogleClick() {
-    toast.message("El inicio de sesión con Google estará disponible pronto.", {
-      duration: TOAST_MS,
-    });
+    startGoogleOAuth({ intent: "login", next: nextPath });
   }
 
   async function handleMfaSubmit(e: FormEvent) {
