@@ -3,7 +3,10 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const redisBacking = vi.hoisted(() => ({ map: new Map<string, string>() }))
+const redisBacking = vi.hoisted(() => ({
+  map: new Map<string, string>(),
+  available: true,
+}))
 
 const mockPrismaUserFindFirst = vi.hoisted(() => vi.fn())
 const mockPrismaUserUpdate = vi.hoisted(() => vi.fn())
@@ -12,17 +15,20 @@ const mockIssuePasswordResetTicket = vi.hoisted(() => vi.fn())
 const mockVerifyAndConsumePasswordResetTicket = vi.hoisted(() => vi.fn())
 
 vi.mock('../../common/cache/redis.js', () => ({
-  getRedis: () => ({
-    get: (k: string) => Promise.resolve(redisBacking.map.get(k) ?? null),
-    set: (k: string, v: string, _opts?: { ex?: number }) => {
-      redisBacking.map.set(k, v)
-      return Promise.resolve()
-    },
-    del: (k: string) => {
-      redisBacking.map.delete(k)
-      return Promise.resolve()
-    },
-  }),
+  getRedis: () => {
+    if (!redisBacking.available) return null
+    return {
+      get: (k: string) => Promise.resolve(redisBacking.map.get(k) ?? null),
+      set: (k: string, v: string, _opts?: { ex?: number }) => {
+        redisBacking.map.set(k, v)
+        return Promise.resolve()
+      },
+      del: (k: string) => {
+        redisBacking.map.delete(k)
+        return Promise.resolve()
+      },
+    }
+  },
 }))
 
 vi.mock('../../db/index.js', () => ({
@@ -60,6 +66,7 @@ describe('password-reset-otp.service', () => {
 
   beforeEach(() => {
     redisBacking.map.clear()
+    redisBacking.available = true
     lastCode = null
     mockPrismaUserFindFirst.mockReset()
     mockPrismaUserUpdate.mockReset()
@@ -148,6 +155,28 @@ describe('password-reset-otp.service', () => {
     expect(mockIssuePasswordResetTicket).toHaveBeenCalledWith(email)
     const key = `pwreset:ch:${Buffer.from(email).toString('base64url')}`
     expect(redisBacking.map.has(key)).toBe(false)
+  })
+
+  it('verifyPasswordResetOtp: rejects when challenge missing/expired (INVALID_OTP)', async () => {
+    await expect(verifyPasswordResetOtp({ email: 'gone@example.com', code: '123456' })).rejects.toMatchObject({
+      name: 'BadRequestError',
+      message: 'Código inválido o expirado',
+      code: 'INVALID_OTP',
+      statusCode: 400,
+    })
+    expect(mockIssuePasswordResetTicket).not.toHaveBeenCalled()
+  })
+
+  it('verifyPasswordResetOtp: accepts Upstash auto-parsed object (not only JSON string)', async () => {
+    const email = 'upstash-object@example.com'
+    mockPrismaUserFindFirst.mockResolvedValue({ id: 'u1', email, password: 'hash', isActive: true })
+    await sendPasswordResetOtp({ email })
+    const key = `pwreset:ch:${Buffer.from(email).toString('base64url')}`
+    const asString = redisBacking.map.get(key)!
+    redisBacking.map.set(key, JSON.parse(asString) as unknown as string)
+
+    const out = await verifyPasswordResetOtp({ email, code: lastCode! })
+    expect(out.resetTicket).toBe('mock-reset-ticket-jwt')
   })
 
   it('completePasswordReset: consumes ticket and updates password hash', async () => {

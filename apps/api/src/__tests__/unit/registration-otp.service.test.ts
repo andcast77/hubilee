@@ -3,24 +3,30 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const redisBacking = vi.hoisted(() => ({ map: new Map<string, string>() }))
+const redisBacking = vi.hoisted(() => ({
+  map: new Map<string, string>(),
+  available: true,
+}))
 
 const mockPrismaUserFindUnique = vi.hoisted(() => vi.fn())
 const mockSendRegistrationOtpEmail = vi.hoisted(() => vi.fn())
 const mockIssueRegistrationTicket = vi.hoisted(() => vi.fn())
 
 vi.mock('../../common/cache/redis.js', () => ({
-  getRedis: () => ({
-    get: (k: string) => Promise.resolve(redisBacking.map.get(k) ?? null),
-    set: (k: string, v: string, _opts?: { ex?: number }) => {
-      redisBacking.map.set(k, v)
-      return Promise.resolve()
-    },
-    del: (k: string) => {
-      redisBacking.map.delete(k)
-      return Promise.resolve()
-    },
-  }),
+  getRedis: () => {
+    if (!redisBacking.available) return null
+    return {
+      get: (k: string) => Promise.resolve(redisBacking.map.get(k) ?? null),
+      set: (k: string, v: string, _opts?: { ex?: number }) => {
+        redisBacking.map.set(k, v)
+        return Promise.resolve()
+      },
+      del: (k: string) => {
+        redisBacking.map.delete(k)
+        return Promise.resolve()
+      },
+    }
+  },
 }))
 
 vi.mock('../../db/index.js', () => ({
@@ -54,6 +60,7 @@ describe('registration-otp.service (PLAN-39)', () => {
 
   beforeEach(() => {
     redisBacking.map.clear()
+    redisBacking.available = true
     lastCode = null
     mockPrismaUserFindUnique.mockReset()
     mockPrismaUserFindUnique.mockResolvedValue(null)
@@ -75,6 +82,32 @@ describe('registration-otp.service (PLAN-39)', () => {
     process.env.NODE_ENV = envSnapshot.NODE_ENV
     process.env.TURNSTILE_SECRET_KEY = envSnapshot.TURNSTILE_SECRET_KEY
     process.env.OTP_CHALLENGE_TTL_SECONDS = envSnapshot.OTP_CHALLENGE_TTL_SECONDS
+  })
+
+  it('sendRegistrationOtp: rejects when email already exists', async () => {
+    const email = 'taken@example.com'
+    mockPrismaUserFindUnique.mockResolvedValue({ id: 'existing-user' })
+
+    await expect(sendRegistrationOtp({ email, captchaToken: 'tok' })).rejects.toMatchObject({
+      name: 'BadRequestError',
+      message: 'Ya existe un usuario con este email',
+      statusCode: 400,
+    })
+    expect(mockSendRegistrationOtpEmail).not.toHaveBeenCalled()
+    expect(redisBacking.map.size).toBe(0)
+  })
+
+  it('sendRegistrationOtp: rejects when Redis unavailable (OTP_STORE_UNAVAILABLE)', async () => {
+    redisBacking.available = false
+    const email = 'no-redis@example.com'
+
+    await expect(sendRegistrationOtp({ email, captchaToken: 'tok' })).rejects.toMatchObject({
+      name: 'ServiceUnavailableError',
+      code: 'OTP_STORE_UNAVAILABLE',
+      statusCode: 503,
+    })
+    expect(mockPrismaUserFindUnique).not.toHaveBeenCalled()
+    expect(mockSendRegistrationOtpEmail).not.toHaveBeenCalled()
   })
 
   it('sendRegistrationOtp: rejects after 3 sends (OTP_SEND_LIMIT)', async () => {
