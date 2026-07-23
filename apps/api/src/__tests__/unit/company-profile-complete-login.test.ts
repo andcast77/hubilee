@@ -8,6 +8,8 @@ const mockUserFindUnique = vi.hoisted(() => vi.fn())
 const mockUserFindFirst = vi.hoisted(() => vi.fn())
 const mockUserUpdate = vi.hoisted(() => vi.fn())
 const mockCompanyFindFirst = vi.hoisted(() => vi.fn())
+const mockStoreCount = vi.hoisted(() => vi.fn())
+const mockCashRegisterCount = vi.hoisted(() => vi.fn())
 const mockGetUserCompanies = vi.hoisted(() => vi.fn())
 const mockWriteAuditLog = vi.hoisted(() => vi.fn())
 const mockCompanyMemberFindFirst = vi.hoisted(() => vi.fn())
@@ -22,6 +24,12 @@ vi.mock('../../db/index.js', () => ({
     },
     company: {
       findFirst: mockCompanyFindFirst,
+    },
+    store: {
+      count: mockStoreCount,
+    },
+    cashRegister: {
+      count: mockCashRegisterCount,
     },
     companyMember: {
       findFirst: mockCompanyMemberFindFirst,
@@ -98,6 +106,9 @@ describe('login() — companyProfileComplete flag', () => {
       membershipRole: 'OWNER',
     })
     mockCashSessionFindFirst.mockResolvedValue(null)
+    // Wizard complete queries store + cashRegister counts
+    mockStoreCount.mockResolvedValue(1)
+    mockCashRegisterCount.mockResolvedValue(1)
     const password = await hashedPassword()
     mockUserFindFirst.mockResolvedValue(baseUser({ password }))
     mockUserFindUnique.mockResolvedValue(baseUser({ password }))
@@ -116,10 +127,11 @@ describe('login() — companyProfileComplete flag', () => {
     expect(result.companyId).toBe(COMPANY_ID)
   })
 
-  it('returns companyProfileComplete=true for real name + taxId', async () => {
+  it('returns companyProfileComplete=true for complete wizard (name + taxId + businessType + store + caja)', async () => {
     mockCompanyFindFirst.mockResolvedValue({
       name: 'Comercial Real S.A.',
       taxId: 'RFC-123',
+      businessType: 'OTRO',
     })
 
     const result = await login({ email: EMAIL, password: PASSWORD })

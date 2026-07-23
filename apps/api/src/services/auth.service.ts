@@ -45,7 +45,7 @@ import { writeAuditLog } from './audit-log.service.js'
 import { summarizeUserAgent } from '../core/user-agent-summary.js'
 import { jwtExpiresInToMaxAgeSeconds } from '../core/session-cookie.js'
 import { verifyTurnstileToken } from './turnstile.service.js'
-import { isCompanyProfileComplete } from '../lib/company-profile-complete.js'
+import { registrationWizardComplete, registrationWizardStep } from '../lib/company-profile-complete.js'
 
 async function resolveAuditCompanyId(userId: string, bodyCompanyId?: string): Promise<string | null> {
   if (bodyCompanyId) return bodyCompanyId
@@ -173,6 +173,7 @@ export type LoginResult =
       companies?: CompanyRow[]
       membershipRole?: string
       companyProfileComplete?: boolean
+      registrationWizardStep?: 'CUENTA' | 'EMPRESA' | 'RUBRO' | 'LOCAL'
     }
   | {
       mfaRequired?: false
@@ -183,6 +184,7 @@ export type LoginResult =
       companies?: CompanyRow[]
       membershipRole?: string
       companyProfileComplete?: boolean
+      registrationWizardStep?: 'CUENTA' | 'EMPRESA' | 'RUBRO' | 'LOCAL'
     }
 
 export type RegisterResult = {
@@ -218,11 +220,15 @@ export type MeResult = {
   twoFactorEnabled?: boolean
   company?: { id: string; name: string; modules: { hr: boolean; pos: boolean; tech: boolean } }
   /**
-   * Whether the selected company's fiscal profile is complete.
-   * Computed server-side: non-empty name (not "mi empresa" sentinel) + non-empty taxId.
+   * Whether the selected company's registration wizard is fully complete.
+   * Complete iff: Empresa (real name+taxId) + Rubro (businessType) + Local (≥1 store + ≥1 caja).
    * Omitted when no company context is set.
    */
   companyProfileComplete?: boolean
+  /**
+   * First incomplete wizard step, or omitted when wizard is fully complete.
+   */
+  registrationWizardStep?: 'CUENTA' | 'EMPRESA' | 'RUBRO' | 'LOCAL'
 }
 
 const loginUserSelect = {
@@ -241,25 +247,58 @@ const loginUserSelect = {
   lockedUntil: true,
 } as const
 
+export type WizardState = {
+  companyProfileComplete: boolean
+  registrationWizardStep?: 'CUENTA' | 'EMPRESA' | 'RUBRO' | 'LOCAL'
+}
+
 /**
- * Loads the company's taxId from DB and computes the profile-complete flag.
+ * Loads company data from DB and computes the registration wizard state
+ * (complete flag + first incomplete step).
  * Returns `undefined` when the company cannot be found or on DB failure.
  * Gracefully degrades: a DB error does NOT block authentication.
  */
-export async function computeCompanyProfileComplete(companyId: string): Promise<boolean | undefined> {
+export async function computeWizardState(companyId: string): Promise<WizardState | undefined> {
   try {
-    const c = await prisma.company.findFirst({
-      where: { id: companyId, isActive: true },
-      select: { name: true, taxId: true },
-    })
+    const [c, storeCount, cashRegisterCount] = await Promise.all([
+      prisma.company.findFirst({
+        where: { id: companyId, isActive: true },
+        select: { name: true, taxId: true, businessType: true },
+      }),
+      prisma.store.count({ where: { companyId } }),
+      prisma.cashRegister.count({ where: { companyId } }),
+    ])
     if (!c) return undefined
-    return isCompanyProfileComplete({ name: c.name, taxId: c.taxId })
+    const complete = registrationWizardComplete({
+      name: c.name,
+      taxId: c.taxId,
+      businessType: c.businessType,
+      storeCount,
+      cashRegisterCount,
+    })
+    const step = registrationWizardStep({
+      name: c.name,
+      taxId: c.taxId,
+      businessType: c.businessType,
+      storeCount,
+      cashRegisterCount,
+    })
+    return {
+      companyProfileComplete: complete,
+      ...(step && { registrationWizardStep: step }),
+    }
   } catch (err) {
     if (process.env.NODE_ENV !== 'test') {
-      console.warn('[computeCompanyProfileComplete] DB error computing company profile completeness:', err)
+      console.warn('[computeWizardState] DB error computing wizard state:', err)
     }
     return undefined
   }
+}
+
+/** @deprecated Use `computeWizardState` instead. Kept for backward compat during migration. */
+export async function computeCompanyProfileComplete(companyId: string): Promise<boolean | undefined> {
+  const state = await computeWizardState(companyId)
+  return state?.companyProfileComplete
 }
 
 /**
@@ -356,7 +395,13 @@ export async function login(body: LoginBody): Promise<LoginResult> {
       mfaResult.companyId = selectedCompany.id
       mfaResult.company = selectedCompany
       if (selectedMembershipRole) mfaResult.membershipRole = selectedMembershipRole
-      mfaResult.companyProfileComplete = await computeCompanyProfileComplete(selectedCompany.id)
+      const wizardState = await computeWizardState(selectedCompany.id)
+      if (wizardState) {
+        mfaResult.companyProfileComplete = wizardState.companyProfileComplete
+        if (wizardState.registrationWizardStep) {
+          mfaResult.registrationWizardStep = wizardState.registrationWizardStep
+        }
+      }
     }
     if (companies.length > 1 || user.isSuperuser) {
       mfaResult.companies = companies
@@ -390,7 +435,13 @@ export async function login(body: LoginBody): Promise<LoginResult> {
     result.companyId = selectedCompany.id
     result.company = selectedCompany
     if (selectedMembershipRole) result.membershipRole = selectedMembershipRole
-    result.companyProfileComplete = await computeCompanyProfileComplete(selectedCompany.id)
+    const wizardState = await computeWizardState(selectedCompany.id)
+    if (wizardState) {
+      result.companyProfileComplete = wizardState.companyProfileComplete
+      if (wizardState.registrationWizardStep) {
+        result.registrationWizardStep = wizardState.registrationWizardStep
+      }
+    }
   }
   if (companies.length > 1 || user.isSuperuser) {
     result.companies = companies
@@ -511,7 +562,13 @@ export async function completeMfaLogin(body: MfaVerifyBody): Promise<CompleteMfa
     result.companyId = selectedCompany.id
     result.company = selectedCompany
     if (selectedMembershipRole) result.membershipRole = selectedMembershipRole
-    result.companyProfileComplete = await computeCompanyProfileComplete(selectedCompany.id)
+    const wizardState = await computeWizardState(selectedCompany.id)
+    if (wizardState) {
+      result.companyProfileComplete = wizardState.companyProfileComplete
+      if (wizardState.registrationWizardStep) {
+        result.registrationWizardStep = wizardState.registrationWizardStep
+      }
+    }
   }
   if (companies.length > 1 || user.isSuperuser) {
     result.companies = companies
@@ -670,7 +727,7 @@ export async function me(decoded: TokenPayload): Promise<MeResult> {
   }
 
   let company: { id: string; name: string; modules: { hr: boolean; pos: boolean; tech: boolean } } | null = null
-  let companyProfileComplete: boolean | undefined
+  let wizardState: WizardState | undefined
   let responseCompanyId: string | undefined = decoded.companyId
 
   if (decoded.companyId) {
@@ -680,7 +737,7 @@ export async function me(decoded: TokenPayload): Promise<MeResult> {
     if (c) {
       const modules = await getCompanyModules(c.id)
       company = { id: c.id, name: c.name, modules }
-      companyProfileComplete = isCompanyProfileComplete({ name: c.name, taxId: c.taxId })
+      wizardState = await computeWizardState(c.id)
     }
   }
 
@@ -694,7 +751,7 @@ export async function me(decoded: TokenPayload): Promise<MeResult> {
       if (c) {
         const modules = await getCompanyModules(c.id)
         company = { id: c.id, name: c.name, modules }
-        companyProfileComplete = isCompanyProfileComplete({ name: c.name, taxId: c.taxId })
+        wizardState = await computeWizardState(c.id)
       }
     }
   }
@@ -710,7 +767,8 @@ export async function me(decoded: TokenPayload): Promise<MeResult> {
     isSuperuser: decoded.isSuperuser,
     twoFactorEnabled: user.twoFactorEnabled,
     company: company ?? undefined,
-    ...(company && { companyProfileComplete }),
+    ...(company && wizardState && { companyProfileComplete: wizardState.companyProfileComplete }),
+    ...(company && wizardState?.registrationWizardStep && { registrationWizardStep: wizardState.registrationWizardStep }),
   }
 }
 

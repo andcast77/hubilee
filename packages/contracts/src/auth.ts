@@ -1,4 +1,4 @@
-import type { CompanyRow, CompanyModules } from './company.js'
+import type { CompanyRow, CompanyModules, BusinessType } from './company.js'
 
 /** Access + refresh pair, only present for desktop (`X-Client: desktop`) requests. */
 export type DesktopAuthTokens = {
@@ -30,11 +30,16 @@ export type LoginResponse = {
   tempToken?: string
   tokens?: DesktopAuthTokens
   /**
-   * Whether the selected company's fiscal profile is complete.
-   * Computed server-side: non-empty name (not "mi empresa" sentinel) + non-empty taxId.
+   * Whether the selected company's registration wizard is fully complete.
+   * Complete iff: Empresa (real name+taxId) + Rubro (businessType) + Local (≥1 store + ≥1 caja).
    * Omitted when no company context is set.
    */
   companyProfileComplete?: boolean
+  /**
+   * First incomplete wizard step, or omitted when wizard is fully complete.
+   * Supersedes the old fiscal-only semantics of `companyProfileComplete`.
+   */
+  registrationWizardStep?: 'CUENTA' | 'EMPRESA' | 'RUBRO' | 'LOCAL'
 }
 
 /** Public POST /v1/auth/login — exactly one of email | userCode. */
@@ -95,11 +100,16 @@ export type MeResponse = {
     modules: CompanyModules
   }
   /**
-   * Whether the selected company's fiscal profile is complete.
-   * Computed server-side: non-empty name (not "mi empresa" sentinel) + non-empty taxId.
+   * Whether the selected company's registration wizard is fully complete.
+   * Complete iff: Empresa (real name+taxId) + Rubro (businessType) + Local (≥1 store + ≥1 caja).
    * Omitted when no company context is set.
    */
   companyProfileComplete?: boolean
+  /**
+   * First incomplete wizard step, or omitted when wizard is fully complete.
+   * Supersedes the old fiscal-only semantics of `companyProfileComplete`.
+   */
+  registrationWizardStep?: 'CUENTA' | 'EMPRESA' | 'RUBRO' | 'LOCAL'
 }
 
 export type ContextResponse = {

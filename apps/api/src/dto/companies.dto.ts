@@ -41,6 +41,8 @@ export type CompanyStatsResponse = {
   } | null
 }
 
+const BUSINESS_TYPES = ['VERDULERIA', 'KIOSCO', 'ELECTRONICA', 'ROPA', 'ACCESORIOS', 'OTRO'] as const
+
 /** Input: update company */
 export const updateCompanyBodySchema = z.object({
   name: z.string().optional(),
@@ -51,6 +53,7 @@ export const updateCompanyBodySchema = z.object({
   taxId: z.string().nullable().optional(),
   address: z.string().nullable().optional(),
   phone: z.string().nullable().optional(),
+  businessType: z.enum(BUSINESS_TYPES).nullable().optional(),
 })
 
 export type UpdateCompanyBody = z.infer<typeof updateCompanyBodySchema>

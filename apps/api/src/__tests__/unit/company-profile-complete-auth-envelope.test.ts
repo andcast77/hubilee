@@ -11,6 +11,8 @@ const {
   mockUserFindUnique,
   mockCompanyFindFirst,
   mockUserUpdate,
+  mockStoreCount,
+  mockCashRegisterCount,
   mockCompanyModuleFindMany,
   mockCompanyMemberFindMany,
   mockUserRoleAssignmentFindMany,
@@ -18,6 +20,8 @@ const {
   mockUserFindUnique: vi.fn(),
   mockCompanyFindFirst: vi.fn(),
   mockUserUpdate: vi.fn(),
+  mockStoreCount: vi.fn(),
+  mockCashRegisterCount: vi.fn(),
   mockCompanyModuleFindMany: vi.fn(),
   mockCompanyMemberFindMany: vi.fn(),
   mockUserRoleAssignmentFindMany: vi.fn(),
@@ -28,6 +32,8 @@ vi.mock('../../db/index.js', () => ({
   prisma: {
     user: { findUnique: mockUserFindUnique, update: mockUserUpdate },
     company: { findFirst: mockCompanyFindFirst },
+    store: { count: mockStoreCount },
+    cashRegister: { count: mockCashRegisterCount },
     companyMember: { findMany: mockCompanyMemberFindMany },
     userRoleAssignment: { findMany: mockUserRoleAssignmentFindMany },
     companyModule: { findMany: mockCompanyModuleFindMany },
@@ -103,11 +109,12 @@ describe('me() — companyProfileComplete flag', () => {
     phone: null,
   }
 
-  // Full real company
+  // Full real company (wizard complete: Empresa + Rubro + Local + caja)
   const completeCompany = {
     ...incompleteCompany,
     name: 'Comercial Real S.A.',
     taxId: 'RFC-123456',
+    businessType: 'OTRO',
   }
 
   const tokenWithCompany: TokenPayload = {
@@ -135,6 +142,9 @@ describe('me() — companyProfileComplete flag', () => {
       { id: 'cm-1', company: { id: 'company-1', name: 'Mi Empresa', isActive: true }, membershipRole: 'OWNER' },
     ])
     mockUserRoleAssignmentFindMany.mockResolvedValue([])
+    // Wizard state queries store + cashRegister counts
+    mockStoreCount.mockResolvedValue(1)
+    mockCashRegisterCount.mockResolvedValue(1)
   })
 
   // ── incomplete scenarios ──
@@ -210,6 +220,32 @@ describe('me() — companyProfileComplete flag', () => {
     const result = await me(tokenWithoutCompany)
 
     expect(result.companyProfileComplete).toBe(true)
+    expect(result.companyId).toBe('company-1')
+  })
+
+  // ── 2.3: Completeness false when no Local or no CashRegisters ──
+
+  it('RED 2.3: returns companyProfileComplete=false when storeCount is 0', async () => {
+    mockCompanyFindFirst.mockResolvedValue(completeCompany)
+    mockStoreCount.mockResolvedValue(0)
+    mockCashRegisterCount.mockResolvedValue(0)
+
+    const result = await me(tokenWithCompany)
+
+    // Empresa+Rubro are complete but there is no Local yet
+    expect(result.companyProfileComplete).toBe(false)
+    expect(result.companyId).toBe('company-1')
+  })
+
+  it('RED 2.3: returns companyProfileComplete=false when stores exist but cashRegisterCount is 0', async () => {
+    mockCompanyFindFirst.mockResolvedValue(completeCompany)
+    mockStoreCount.mockResolvedValue(1)
+    mockCashRegisterCount.mockResolvedValue(0)
+
+    const result = await me(tokenWithCompany)
+
+    // Empresa+Rubro+1 store exist but no CashRegister yet
+    expect(result.companyProfileComplete).toBe(false)
     expect(result.companyId).toBe('company-1')
   })
 })

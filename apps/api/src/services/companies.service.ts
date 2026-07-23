@@ -59,6 +59,7 @@ export async function update(companyId: string, caller: TokenPayload, body: Upda
   if (body.taxId !== undefined) companyUpdate.taxId = body.taxId
   if (body.address !== undefined) companyUpdate.address = body.address
   if (body.phone !== undefined) companyUpdate.phone = body.phone
+  if (body.businessType !== undefined) companyUpdate.businessType = body.businessType
 
   if (Object.keys(companyUpdate).length > 0) {
     await prisma.company.update({ where: { id: companyId }, data: companyUpdate })

@@ -134,6 +134,16 @@ enum LicenseStatus {
   REJECTED
 }
 
+/// Rubro / tipo de tienda (company-wide, no per-store en v1).
+enum BusinessType {
+  VERDULERIA
+  KIOSCO
+  ELECTRONICA
+  ROPA
+  ACCESORIOS
+  OTRO
+}
+
 // ========================================
 // ENUMS POS
 // ========================================
@@ -356,6 +366,8 @@ model Company {
   address     String?
   /// Teléfono de contacto
   phone       String?
+  /// Rubro / tipo de tienda (company-wide; metadata-only, no vertical fork).
+  businessType BusinessType?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
