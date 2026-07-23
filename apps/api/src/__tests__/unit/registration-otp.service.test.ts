@@ -25,7 +25,10 @@ vi.mock('../../common/cache/redis.js', () => ({
 
 vi.mock('../../db/index.js', () => ({
   prisma: {
-    user: { findUnique: mockPrismaUserFindUnique },
+    user: {
+      findUnique: mockPrismaUserFindUnique,
+      findFirst: mockPrismaUserFindUnique,
+    },
   },
 }))
 

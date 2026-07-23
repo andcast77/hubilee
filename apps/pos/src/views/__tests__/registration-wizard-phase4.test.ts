@@ -6,6 +6,9 @@ import {
   wizardStepToPath,
 } from "@/lib/auth/wizard-onboarding-path";
 
+const posRoot = join(__dirname, "../..");
+const monorepoApps = join(__dirname, "../../../..");
+
 /**
  * Phase 4 verification — focused checks for gate + pos-first scope.
  */
@@ -41,20 +44,55 @@ describe("Phase 4: registration wizard verification", () => {
     ).toBe(false);
   });
 
-  it("4.2 Rubro page documents shared POS (no vertical forks)", () => {
-    const src = readFileSync(
-      join(__dirname, "../RubroOnboardingPage.tsx"),
+  it("4.2 Rubro is metadata only — shared POS, no vertical checkout forks", () => {
+    const rubroSrc = readFileSync(
+      join(posRoot, "views/RubroOnboardingPage.tsx"),
       "utf8",
     );
-    expect(src).toMatch(/funciona igual para todos/i);
-    expect(src).not.toMatch(/if\s*\(.*businessType.*\)\s*\{[\s\S]*checkout/i);
+    const localSrc = readFileSync(
+      join(posRoot, "views/LocalOnboardingPage.tsx"),
+      "utf8",
+    );
+    const shellSrc = readFileSync(
+      join(posRoot, "components/auth/WizardShell.tsx"),
+      "utf8",
+    );
+
+    expect(rubroSrc).toMatch(/funciona igual para todos/i);
+    expect(rubroSrc).toMatch(/BusinessType/);
+    // No per-rubro branching into alternate POS / checkout UIs
+    expect(rubroSrc).not.toMatch(
+      /if\s*\([^)]*businessType[^)]*\)\s*\{[\s\S]{0,200}(checkout|ShoppingCart|POSFloor)/i,
+    );
+    expect(localSrc).not.toMatch(/businessType/);
+    expect(shellSrc).not.toMatch(/VERDULERIA|KIOSCO|ELECTRONICA/);
   });
 
-  it("4.3 Hub register UI files exist and are unchanged by this change scope", () => {
-    const hubRegister = join(
-      __dirname,
-      "../../../../hub/src/views/RegisterPage.tsx",
+  it("4.3 Hub and HR register UI exist and are outside this Pos-first change", () => {
+    const hubRegister = join(monorepoApps, "hub/src/views/RegisterPage.tsx");
+    const hrRegister = join(
+      monorepoApps,
+      "hr/src/components/forms/RegisterForm.tsx",
     );
     expect(existsSync(hubRegister)).toBe(true);
+    expect(existsSync(hrRegister)).toBe(true);
+
+    const hubSrc = readFileSync(hubRegister, "utf8");
+    const hrSrc = readFileSync(hrRegister, "utf8");
+    // Pos wizard paths / rubro stepper must not leak into Hub/HR register
+    expect(hubSrc).not.toMatch(/onboarding\/rubro|registrationWizardStep|WizardShell/);
+    expect(hrSrc).not.toMatch(/onboarding\/rubro|registrationWizardStep|WizardShell/);
+    expect(hubSrc).not.toMatch(/businessType/);
+    expect(hrSrc).not.toMatch(/businessType/);
+  });
+
+  it("4.3 Empresa step uses shared WizardShell (same chrome as Rubro/Local)", () => {
+    const empresaSrc = readFileSync(
+      join(posRoot, "views/CompanyOnboardingPage.tsx"),
+      "utf8",
+    );
+    expect(empresaSrc).toMatch(/WizardShell/);
+    expect(empresaSrc).toMatch(/step=\"empresa\"/);
+    expect(empresaSrc).not.toMatch(/function OnboardingVisualPanel/);
   });
 });

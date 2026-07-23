@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, afterEach, beforeEach } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { toast } from "sonner";
 
 // --- Mocks (top-level, hoist-safe) ---
 const replaceMock = vi.fn();
@@ -36,7 +37,6 @@ vi.mock("@/lib/api/client", () => ({
   },
 }));
 
-// Mock sonner toast
 vi.mock("sonner", () => ({
   toast: {
     error: vi.fn(),
@@ -64,6 +64,8 @@ afterEach(() => {
   mockApiPut.mockClear();
   mockApiGet.mockClear();
   mockInvalidateQueries.mockClear();
+  vi.mocked(toast.error).mockClear();
+  vi.mocked(toast.success).mockClear();
 });
 
 describe("CompanyOnboardingPage wizard submit", () => {
@@ -75,6 +77,14 @@ describe("CompanyOnboardingPage wizard submit", () => {
   beforeEach(() => {
     mockApiGet.mockResolvedValue({ success: true, data: {} });
     mockApiPut.mockResolvedValue({ success: true });
+  });
+
+  it("uses WizardShell empresa step chrome", async () => {
+    mockUseUser.mockReturnValue({ data: OWNER_USER, isLoading: false });
+    const Page = await loadPage();
+    render(<Page />);
+    expect(screen.getByLabelText("Progreso del registro")).not.toBeNull();
+    expect(screen.getByText("Empresa")).not.toBeNull();
   });
 
   it("prefills taxId (and optionals) from GET /v1/companies/:id", async () => {
@@ -101,22 +111,23 @@ describe("CompanyOnboardingPage wizard submit", () => {
         "TAX-999",
       );
     });
-    expect((screen.getByLabelText(/nombre/i) as HTMLInputElement).value).toBe(
+    expect((screen.getByLabelText(/^nombre/i) as HTMLInputElement).value).toBe(
       "Acme Prefill",
     );
-    expect((screen.getByLabelText(/logo/i) as HTMLInputElement).value).toBe(
+    expect(screen.getByAltText("Logo preview").getAttribute("src")).toBe(
       "https://cdn.example/logo.png",
     );
   });
 
-  it("renders optional logo URL field", async () => {
+  it("renders optional logo file field", async () => {
     mockUseUser.mockReturnValue({ data: OWNER_USER, isLoading: false });
     const Page = await loadPage();
     render(<Page />);
-    expect(screen.getByLabelText(/logo/i)).not.toBeNull();
+    const logoInput = screen.getByLabelText(/^logo$/i) as HTMLInputElement;
+    expect(logoInput).not.toBeNull();
+    expect(logoInput.type).toBe("file");
   });
 
-  // 4.1.a: Valid name + taxId → calls PUT /v1/companies/:id
   it("submits valid name and taxId via PUT /v1/companies/:id", async () => {
     mockUseUser.mockReturnValue({ data: OWNER_USER, isLoading: false });
 
@@ -124,17 +135,13 @@ describe("CompanyOnboardingPage wizard submit", () => {
     render(<Page />);
     await waitFor(() => expect(mockApiGet).toHaveBeenCalled());
 
-    // Fill in company name
-    const nameInput = screen.getByLabelText(/nombre/i);
-    fireEvent.change(nameInput, { target: { value: "   Acme Corp   " } });
-
-    // Fill in taxId
-    const taxIdInput = screen.getByLabelText(/rfc|cuit|tax/i);
-    fireEvent.change(taxIdInput, { target: { value: "ABC-123" } });
-
-    // Submit
-    const submitBtn = screen.getByRole("button", { name: /guardar|continuar/i });
-    fireEvent.click(submitBtn);
+    fireEvent.change(screen.getByLabelText(/^nombre/i), {
+      target: { value: "   Acme Corp   " },
+    });
+    fireEvent.change(screen.getByLabelText(/rfc|cuit|tax/i), {
+      target: { value: "ABC-123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /guardar|continuar/i }));
 
     await waitFor(() => {
       expect(mockApiPut).toHaveBeenCalledWith(
@@ -147,7 +154,6 @@ describe("CompanyOnboardingPage wizard submit", () => {
     });
   });
 
-  // 4.1.b: Sentinel "mi empresa" → rejected (doesn't call PUT)
   it("rejects sentinel 'mi empresa' as company name", async () => {
     mockUseUser.mockReturnValue({ data: OWNER_USER, isLoading: false });
 
@@ -155,23 +161,23 @@ describe("CompanyOnboardingPage wizard submit", () => {
     render(<Page />);
     await waitFor(() => expect(mockApiGet).toHaveBeenCalled());
 
-    const nameInput = screen.getByLabelText(/nombre/i);
-    fireEvent.change(nameInput, { target: { value: "mi empresa" } });
+    fireEvent.change(screen.getByLabelText(/^nombre/i), {
+      target: { value: "mi empresa" },
+    });
+    fireEvent.change(screen.getByLabelText(/rfc|cuit|tax/i), {
+      target: { value: "ABC-123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /guardar|continuar/i }));
 
-    const taxIdInput = screen.getByLabelText(/rfc|cuit|tax/i);
-    fireEvent.change(taxIdInput, { target: { value: "ABC-123" } });
-
-    const submitBtn = screen.getByRole("button", { name: /guardar|continuar/i });
-    fireEvent.click(submitBtn);
-
-    // Should show an error message and NOT call the API
     await waitFor(() => {
-      expect(screen.queryByText(/empresa válido/i)).not.toBeNull();
+      expect(toast.error).toHaveBeenCalledWith(
+        expect.stringMatching(/empresa válido/i),
+        expect.any(Object),
+      );
     });
     expect(mockApiPut).not.toHaveBeenCalled();
   });
 
-  // 4.1.c: Empty name after trim → rejected
   it("rejects empty name after trimming", async () => {
     mockUseUser.mockReturnValue({ data: OWNER_USER, isLoading: false });
 
@@ -179,23 +185,23 @@ describe("CompanyOnboardingPage wizard submit", () => {
     render(<Page />);
     await waitFor(() => expect(mockApiGet).toHaveBeenCalled());
 
-    const nameInput = screen.getByLabelText(/nombre/i);
-    fireEvent.change(nameInput, { target: { value: "   " } });
-
-    const taxIdInput = screen.getByLabelText(/rfc|cuit|tax/i);
-    fireEvent.change(taxIdInput, { target: { value: "ABC-123" } });
-
-    const submitBtn = screen.getByRole("button", { name: /guardar|continuar/i });
-    fireEvent.click(submitBtn);
+    fireEvent.change(screen.getByLabelText(/^nombre/i), {
+      target: { value: "   " },
+    });
+    fireEvent.change(screen.getByLabelText(/rfc|cuit|tax/i), {
+      target: { value: "ABC-123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /guardar|continuar/i }));
 
     await waitFor(() => {
-      // Should show an error message (name is required)
-      expect(screen.queryByText(/obligatorio/i)).not.toBeNull();
+      expect(toast.error).toHaveBeenCalledWith(
+        expect.stringMatching(/obligatorio/i),
+        expect.any(Object),
+      );
     });
     expect(mockApiPut).not.toHaveBeenCalled();
   });
 
-  // 4.1.d: Empty taxId → rejected
   it("rejects empty taxId", async () => {
     mockUseUser.mockReturnValue({ data: OWNER_USER, isLoading: false });
 
@@ -203,22 +209,23 @@ describe("CompanyOnboardingPage wizard submit", () => {
     render(<Page />);
     await waitFor(() => expect(mockApiGet).toHaveBeenCalled());
 
-    const nameInput = screen.getByLabelText(/nombre/i);
-    fireEvent.change(nameInput, { target: { value: "Acme Corp" } });
-
-    const taxIdInput = screen.getByLabelText(/rfc|cuit|tax/i);
-    fireEvent.change(taxIdInput, { target: { value: "" } });
-
-    const submitBtn = screen.getByRole("button", { name: /guardar|continuar/i });
-    fireEvent.click(submitBtn);
+    fireEvent.change(screen.getByLabelText(/^nombre/i), {
+      target: { value: "Acme Corp" },
+    });
+    fireEvent.change(screen.getByLabelText(/rfc|cuit|tax/i), {
+      target: { value: "" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /guardar|continuar/i }));
 
     await waitFor(() => {
-      expect(screen.queryByText(/obligatorio/i)).not.toBeNull();
+      expect(toast.error).toHaveBeenCalledWith(
+        expect.stringMatching(/obligatorio/i),
+        expect.any(Object),
+      );
     });
     expect(mockApiPut).not.toHaveBeenCalled();
   });
 
-  // After Empresa submit → advance to Rubro (not dashboard; wizard continues)
   it("after valid submit, invalidates user query and redirects to Rubro step", async () => {
     mockUseUser.mockReturnValue({ data: OWNER_USER, isLoading: false });
     mockApiPut.mockResolvedValue({ success: true });
@@ -227,23 +234,20 @@ describe("CompanyOnboardingPage wizard submit", () => {
     render(<Page />);
     await waitFor(() => expect(mockApiGet).toHaveBeenCalled());
 
-    const nameInput = screen.getByLabelText(/nombre/i);
-    fireEvent.change(nameInput, { target: { value: "Acme Corp" } });
-
-    const taxIdInput = screen.getByLabelText(/rfc|cuit|tax/i);
-    fireEvent.change(taxIdInput, { target: { value: "ABC-123" } });
-
-    const submitBtn = screen.getByRole("button", { name: /guardar|continuar/i });
-    fireEvent.click(submitBtn);
+    fireEvent.change(screen.getByLabelText(/^nombre/i), {
+      target: { value: "Acme Corp" },
+    });
+    fireEvent.change(screen.getByLabelText(/rfc|cuit|tax/i), {
+      target: { value: "ABC-123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /guardar|continuar/i }));
 
     await waitFor(() => {
       expect(mockApiPut).toHaveBeenCalled();
     });
-
     await waitFor(() => {
       expect(mockInvalidateQueries).toHaveBeenCalledWith({ queryKey: ["user"] });
     });
-
     await waitFor(() => {
       expect(replaceMock).toHaveBeenCalled();
     });
@@ -251,22 +255,31 @@ describe("CompanyOnboardingPage wizard submit", () => {
     expect(arg).toContain("/app/onboarding/rubro");
   });
 
-  it("includes optional logo in PUT body when provided", async () => {
+  it("includes prefilled logo in PUT body when provided", async () => {
     mockUseUser.mockReturnValue({ data: OWNER_USER, isLoading: false });
+    mockApiGet.mockResolvedValue({
+      success: true,
+      data: {
+        name: "Acme Prefill",
+        taxId: "TAX-1",
+        logo: "https://cdn.example/a.png",
+      },
+    });
     mockApiPut.mockResolvedValue({ success: true });
 
     const Page = await loadPage();
     render(<Page />);
-    await waitFor(() => expect(mockApiGet).toHaveBeenCalled());
+    await waitFor(() => {
+      expect(screen.getByAltText("Logo preview").getAttribute("src")).toBe(
+        "https://cdn.example/a.png",
+      );
+    });
 
-    fireEvent.change(screen.getByLabelText(/nombre/i), {
+    fireEvent.change(screen.getByLabelText(/^nombre/i), {
       target: { value: "Acme Corp" },
     });
     fireEvent.change(screen.getByLabelText(/rfc|cuit|tax/i), {
       target: { value: "ABC-123" },
-    });
-    fireEvent.change(screen.getByLabelText(/logo/i), {
-      target: { value: "https://cdn.example/a.png" },
     });
     fireEvent.click(screen.getByRole("button", { name: /guardar|continuar/i }));
 

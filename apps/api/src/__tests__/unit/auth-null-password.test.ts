@@ -15,6 +15,8 @@ vi.mock('../../db/index.js', () => ({
   prisma: {
     user: {
       findUnique: mockUserFindUnique,
+      // Email login uses findFirst; keep the same mock for OAuth-null password cases.
+      findFirst: mockUserFindUnique,
       update: mockUserUpdate,
     },
     companyMember: {

@@ -194,23 +194,20 @@ describe('login / floorLogin with userCode', () => {
     )
   })
 
-  it('codes-only userCode login revokes prior sessions', async () => {
+  it('codes-only userCode login succeeds without revoking in login() (revoke deferred to session attach)', async () => {
     const password = await hashedPassword()
     mockUserFindUnique.mockResolvedValue(baseUser({ password, email: null }))
     mockSessionFindMany.mockResolvedValue([{ accessJti: 'jti-old' }])
 
-    await login({ userCode: USER_CODE, password: PASSWORD })
+    const result = await login({ userCode: USER_CODE, password: PASSWORD })
 
-    expect(mockSessionFindMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { userId: USER_ID } }),
-    )
-    expect(mockBlacklistJtis).toHaveBeenCalled()
-    expect(mockSessionDeleteMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { userId: USER_ID } }),
-    )
+    expect(result.token).toBeTruthy()
+    // Session revoke moved to createWebSessionPair / createSession (controller).
+    expect(mockSessionDeleteMany).not.toHaveBeenCalled()
+    expect(mockBlacklistJtis).not.toHaveBeenCalled()
   })
 
-  it('userCode login with email set does not revoke all sessions', async () => {
+  it('userCode login with email set does not revoke all sessions in login()', async () => {
     const password = await hashedPassword()
     mockUserFindUnique.mockResolvedValue(
       baseUser({ password, email: 'ana@example.com' }),
