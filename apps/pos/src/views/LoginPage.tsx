@@ -13,7 +13,6 @@ import {
   shouldShowFloorTurnstile,
 } from "@/lib/validations/auth";
 import { authApi } from "@/lib/api/client";
-import { getLandingUrls } from "@/lib/landingUrls";
 import { RegistrationTurnstile } from "@/components/auth/RegistrationTurnstile";
 import { safeNextPath, startGoogleOAuth, googleOAuthErrorMessage } from "@/lib/auth/googleOAuth";
 import {
@@ -26,11 +25,6 @@ const TOAST_MS = 4000;
 
 function notifyError(message: string) {
   toast.error(message, { duration: TOAST_MS });
-}
-
-function hubForgotPasswordUrl(): string {
-  const base = getLandingUrls().hub.replace(/\/$/, "");
-  return `${base}/forgot-password`;
 }
 
 const labelClass = "text-sm font-medium text-slate-600";
@@ -438,14 +432,12 @@ export function LoginPage() {
                       <Label htmlFor="sf-code-password" className={labelClass}>
                         Contraseña
                       </Label>
-                      <a
-                        href={hubForgotPasswordUrl()}
+                      <Link
+                        to="/forgot-password"
                         className="text-xs font-medium text-[#0085db] hover:text-[#0074c2]"
-                        target="_blank"
-                        rel="noopener noreferrer"
                       >
                         ¿Olvidaste tu contraseña?
-                      </a>
+                      </Link>
                     </div>
                     <Input
                       id="sf-code-password"
