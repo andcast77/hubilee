@@ -12,6 +12,7 @@ import { assertAllowlistedOrigin } from '../core/cors-reflect.js'
 import { findModulesByKeys } from '../core/modules.js'
 import { prisma } from '../db/index.js'
 import type { LoginResult } from './auth.service.js'
+import { allocateUniqueUserCode } from './user-code.js'
 
 const OAUTH_STATE_PREFIX = 'oauth:google:'
 const OAUTH_STATE_TTL_SECONDS = 600
@@ -113,29 +114,40 @@ export async function consumeGoogleOAuthState(state: string): Promise<GoogleOAut
   const key = `${OAUTH_STATE_PREFIX}${state}`
   const raw = await redis.get(key)
   await redis.del(key)
-  if (typeof raw !== 'string' || !raw) {
+  // Upstash REST may auto-deserialize JSON → object; mocks usually return string.
+  const parsed = parseOAuthStatePayload(raw)
+  if (!parsed) {
     throw new BadRequestError('Estado OAuth inválido o expirado', 'OAUTH_STATE_INVALID')
   }
-  let parsed: unknown
-  try {
-    parsed = JSON.parse(raw)
-  } catch {
-    throw new BadRequestError('Estado OAuth inválido o expirado', 'OAUTH_STATE_INVALID')
+  return parsed
+}
+
+/** Upstash may return JSON as string or already-parsed object. */
+function parseOAuthStatePayload(raw: unknown): GoogleOAuthStatePayload | null {
+  if (raw == null) return null
+  let value: unknown = raw
+  if (typeof raw === 'string') {
+    if (!raw) return null
+    try {
+      value = JSON.parse(raw)
+    } catch {
+      return null
+    }
   }
-  if (
-    !parsed ||
-    typeof parsed !== 'object' ||
-    typeof (parsed as GoogleOAuthStatePayload).returnOrigin !== 'string' ||
-    ((parsed as GoogleOAuthStatePayload).intent !== 'login' &&
-      (parsed as GoogleOAuthStatePayload).intent !== 'register')
-  ) {
-    throw new BadRequestError('Estado OAuth inválido o expirado', 'OAUTH_STATE_INVALID')
-  }
-  const p = parsed as GoogleOAuthStatePayload
+  if (!value || typeof value !== 'object') return null
+  const obj = value as Record<string, unknown>
+  if (typeof obj.returnOrigin !== 'string') return null
+  if (obj.intent !== 'login' && obj.intent !== 'register') return null
+  const next =
+    obj.next === null || obj.next === undefined
+      ? null
+      : typeof obj.next === 'string'
+        ? obj.next
+        : null
   return {
-    returnOrigin: p.returnOrigin,
-    intent: p.intent,
-    next: typeof p.next === 'string' ? p.next : null,
+    returnOrigin: obj.returnOrigin,
+    intent: obj.intent,
+    next,
   }
 }
 
@@ -224,7 +236,7 @@ export async function resolveOrCreateGoogleUser(info: GoogleUserInfo): Promise<{
     },
     select: { userId: true },
   })
-  const existingByEmail = await prisma.user.findUnique({
+  const existingByEmail = await prisma.user.findFirst({
     where: { email },
     select: { id: true },
   })
@@ -259,9 +271,11 @@ export async function resolveOrCreateGoogleUser(info: GoogleUserInfo): Promise<{
 
   const firstName = info.given_name?.trim() || email.split('@')[0] || 'User'
   const lastName = info.family_name?.trim() || ''
+  const userCode = await allocateUniqueUserCode()
   const user = await prisma.user.create({
     data: {
       email,
+      userCode,
       password: null,
       firstName,
       lastName,

@@ -36,6 +36,7 @@ vi.mock('../../db/index.js', () => ({
     },
     user: {
       findUnique: mockUserFindUnique,
+      findFirst: mockUserFindUnique,
       create: mockUserCreate,
     },
     companyMember: {
@@ -43,6 +44,10 @@ vi.mock('../../db/index.js', () => ({
     },
     $transaction: (...args: unknown[]) => mockTransaction(...args),
   },
+}))
+
+vi.mock('../../services/user-code.js', () => ({
+  allocateUniqueUserCode: vi.fn(async () => '12345678'),
 }))
 
 vi.mock('../../core/modules.js', async (importOriginal) => {
@@ -136,6 +141,21 @@ describe('Google OAuth Redis state', () => {
       next: '/dashboard',
     })
     await expect(consumeGoogleOAuthState(state)).rejects.toBeInstanceOf(BadRequestError)
+  })
+
+  it('consume accepts Upstash auto-deserialized object (not only JSON string)', async () => {
+    const state = 'test-state-upstash-object'
+    redisBacking.map.set(`oauth:google:${state}`, {
+      returnOrigin: 'http://localhost:3002',
+      intent: 'register',
+      next: null,
+    })
+    const payload = await consumeGoogleOAuthState(state)
+    expect(payload).toEqual({
+      returnOrigin: 'http://localhost:3002',
+      intent: 'register',
+      next: null,
+    })
   })
 })
 
