@@ -16,6 +16,10 @@ import { authApi } from "@/lib/api/client";
 import { getLandingUrls } from "@/lib/landingUrls";
 import { RegistrationTurnstile } from "@/components/auth/RegistrationTurnstile";
 import { safeNextPath, startGoogleOAuth, googleOAuthErrorMessage } from "@/lib/auth/googleOAuth";
+import {
+  AuthSessionBootScreen,
+  useRedirectIfAuthenticated,
+} from "@/lib/auth/useRedirectIfAuthenticated";
 import { toast } from "sonner";
 
 const TOAST_MS = 4000;
@@ -171,6 +175,12 @@ export function LoginPage() {
   const [mfaBackup, setMfaBackup] = useState(false);
 
   const showCodeTurnstile = shouldShowFloorTurnstile(codeFailCount);
+  const skipAuthRedirect =
+    Boolean(search.mfa === "1" && search.tempToken?.trim()) || mfaStep;
+  const { ready: sessionReady } = useRedirectIfAuthenticated({
+    next: nextPath,
+    skip: skipAuthRedirect,
+  });
 
   useEffect(() => {
     if (search.oauth_error) {
@@ -302,6 +312,10 @@ export function LoginPage() {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  if (!sessionReady) {
+    return <AuthSessionBootScreen />;
   }
 
   return (

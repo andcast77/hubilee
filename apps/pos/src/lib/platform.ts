@@ -42,6 +42,7 @@ export async function clearDesktopSession(): Promise<void> {
 }
 
 export function createApiClientOptions(): ApiClientOptions {
-  if (!isDesktop()) return {};
+  // Web: cookie jar + silent refresh on 401 (Hub pattern). Desktop: Bearer + refresh.
+  if (!isDesktop()) return { refreshOn401: true };
   return { refreshOn401: true, authTransport: createAuthTransport() };
 }

@@ -1,5 +1,5 @@
 /**
- * Floor roles replace existing sessions on new web login/OAuth (no 409).
+ * Every successful web session issue revokes prior sessions (one session per user).
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -51,7 +51,7 @@ describe('createWebSessionPair', () => {
     mockSessionCreate.mockResolvedValue({ id: 'sess-1' })
   })
 
-  it('replaces prior sessions for non-admin instead of ConflictError', async () => {
+  it('replaces prior sessions for codes-only / floor roles', async () => {
     mockUserFindUnique.mockResolvedValue({ id: USER_ID, role: 'CASHIER' })
 
     await expect(
@@ -63,14 +63,26 @@ describe('createWebSessionPair', () => {
     expect(mockSessionCreate).toHaveBeenCalled()
   })
 
-  it('keeps existing sessions for ADMIN (no revoke)', async () => {
+  it('revokes prior sessions for ADMIN (single session all roles)', async () => {
     mockUserFindUnique.mockResolvedValue({ id: USER_ID, role: 'ADMIN' })
 
     await expect(
       createWebSessionPair(USER_ID, accessJwt(), {}, { ipAddress: null, userAgent: null }),
     ).resolves.toMatchObject({ refreshPlain: expect.any(String) })
 
-    expect(mockSessionDeleteMany).not.toHaveBeenCalled()
+    expect(mockBlacklistJtis).toHaveBeenCalledWith(['old-jti'], expect.any(Number))
+    expect(mockSessionDeleteMany).toHaveBeenCalledWith({ where: { userId: USER_ID } })
     expect(mockSessionCreate).toHaveBeenCalled()
+  })
+
+  it('revokes prior sessions for SUPERADMIN', async () => {
+    mockUserFindUnique.mockResolvedValue({ id: USER_ID, role: 'SUPERADMIN' })
+
+    await expect(
+      createWebSessionPair(USER_ID, accessJwt(), {}, { ipAddress: null, userAgent: null }),
+    ).resolves.toMatchObject({ refreshPlain: expect.any(String) })
+
+    expect(mockSessionDeleteMany).toHaveBeenCalledWith({ where: { userId: USER_ID } })
+    expect(mockBlacklistJtis).toHaveBeenCalled()
   })
 })

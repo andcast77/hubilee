@@ -31,18 +31,18 @@ export function jwtExpiresInToMaxAgeSeconds(expiresIn: string): number {
 }
 
 export function attachAuthSessionCookie(reply: FastifyReply, token: string, config: AppConfig): void {
-  const maxAge = jwtExpiresInToMaxAgeSeconds(config.JWT_ACCESS_EXPIRES_IN)
-  appendSetCookie(reply, cookieSegments(AUTH_SESSION_COOKIE, token, maxAge, config))
+  // Browser session cookie: omit Max-Age/Expires so the jar drops on browser close.
+  appendSetCookie(reply, cookieSegments(AUTH_SESSION_COOKIE, token, config))
 }
 
-function cookieSegments(name: string, value: string, maxAge: number, config: AppConfig): string {
+/** Attach-only segments: no Max-Age / Expires (browser session lifetime). */
+function cookieSegments(name: string, value: string, config: AppConfig): string {
   const insecureDev =
     config.NODE_ENV !== 'production' && !process.env.VERCEL
   const segments = [
     `${name}=${encodeURIComponent(value)}`,
     'Path=/',
     'HttpOnly',
-    `Max-Age=${maxAge}`,
     insecureDev ? 'SameSite=Lax' : 'SameSite=None',
   ]
   if (!insecureDev) segments.push('Secure')
@@ -59,8 +59,7 @@ export function clearAuthSessionCookie(reply: FastifyReply, config: AppConfig): 
 }
 
 export function attachRefreshSessionCookie(reply: FastifyReply, refreshPlain: string, config: AppConfig): void {
-  const maxAge = jwtExpiresInToMaxAgeSeconds(config.REFRESH_TOKEN_EXPIRES_IN)
-  appendSetCookie(reply, cookieSegments(AUTH_REFRESH_COOKIE, refreshPlain, maxAge, config))
+  appendSetCookie(reply, cookieSegments(AUTH_REFRESH_COOKIE, refreshPlain, config))
 }
 
 export function clearRefreshSessionCookie(reply: FastifyReply, config: AppConfig): void {

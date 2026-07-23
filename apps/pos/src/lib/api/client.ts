@@ -42,9 +42,12 @@ function withStoreIdHeader(options?: RequestInit): RequestInit {
 
 // Cookie transport (web, default) or Bearer transport backed by Electron
 // secure storage (desktop) — see `pos-desktop-auth-transport` / platform.ts.
-// `platform.ts`. `createApiClientOptions()` returns `{}` on web, so this is
-// byte-identical to `new SharedApiClient(API_URL)` there.
+// Options come from `createApiClientOptions()`: web `{ refreshOn401: true }`,
+// desktop `{ refreshOn401: true, authTransport: bearer }`.
 const sharedClient = new SharedApiClient(API_URL, createApiClientOptions())
+
+/** Same origin/credentials as main client, but no refresh-on-401 — guest login/register probes. */
+const guestProbeClient = new SharedApiClient(API_URL, { refreshOn401: false })
 
 /** Auth headers for fetch to external API (e.g. FormData uploads). */
 export function getAuthHeaders(): HeadersInit {
@@ -105,6 +108,11 @@ export const authApi = {
   delete: <T>(endpoint: string, data?: unknown, options?: RequestInit) =>
     apiClient.delete<T>(`/v1/auth${endpoint}`, data, options),
   me: () => apiClient.get<MeResponse>('/v1/auth/me'),
+  /**
+   * GET /v1/auth/me without refresh-on-401. For login/register “already logged in?” checks only.
+   * Unauthenticated users still get 401 once (expected); avoids an extra POST /v1/auth/refresh 401.
+   */
+  meGuestProbe: () => guestProbeClient.get<MeResponse>('/v1/auth/me'),
 }
 
 export const accountApi = {

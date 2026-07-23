@@ -144,7 +144,7 @@ async function clearLoginLockout(userId: string, wasLocked: boolean, auditCompan
   }
 }
 
-/** Revoke all Session rows for a user (floor login: one cashier / one terminal). */
+/** Revoke all Session rows for a user (single active session on new login). */
 async function revokeAllUserSessions(userId: string): Promise<void> {
   const others = await prisma.session.findMany({
     where: { userId },
@@ -325,10 +325,8 @@ export async function login(body: LoginBody): Promise<LoginResult> {
   const auditCoClear = await resolveAuditCompanyId(user.id, bodyCompanyId)
   await clearLoginLockout(user.id, wasLocked, auditCoClear)
 
-  // One terminal for codes-only floor staff.
-  if (viaCode && user.email == null) {
-    await revokeAllUserSessions(user.id)
-  }
+  // Session revoke for all roles happens in createWebSessionPair / createSession
+  // when the controller attaches the web session (or desktop creates a Session row).
 
   const companies = await getUserCompanies(user.id, user.isSuperuser ?? false)
   const preferredCompanyId = bodyCompanyId ?? user.posPreferredCompanyId ?? undefined
@@ -769,10 +767,6 @@ export async function setContext(
   return { token, companyId, membershipRole: membershipRole ?? null, company: companyWithModules }
 }
 
-function allowsConcurrentSessions(role: string): boolean {
-  return role === 'ADMIN' || role === 'SUPERADMIN'
-}
-
 export async function createWebSessionPair(
   userId: string,
   accessToken: string,
@@ -781,13 +775,11 @@ export async function createWebSessionPair(
 ): Promise<{ refreshPlain: string }> {
   const user = await prisma.user.findUnique({
     where: { id: userId, isActive: true },
-    select: { id: true, role: true },
+    select: { id: true },
   })
   if (!user) throw new NotFoundError('Usuario no encontrado')
-  // Floor roles: one active session — new login/OAuth replaces prior (kick), not 409.
-  if (!allowsConcurrentSessions(user.role)) {
-    await revokeAllUserSessions(userId)
-  }
+  // One active session per user — new login/OAuth replaces prior (all roles).
+  await revokeAllUserSessions(userId)
   const refreshPlain = generateRefreshTokenPlain()
   const sessionToken = hashRefreshToken(refreshPlain)
   const accessJti = accessJtiFromJwtString(accessToken)
@@ -917,12 +909,10 @@ export async function createSession(body: {
   if (!verified) throw new BadRequestError('sessionToken debe ser un JWT de acceso válido')
   const user = await prisma.user.findUnique({
     where: { id: userId, isActive: true },
-    select: { id: true, role: true },
+    select: { id: true },
   })
   if (!user) throw new NotFoundError('Usuario no encontrado')
-  if (!allowsConcurrentSessions(user.role)) {
-    await revokeAllUserSessions(userId)
-  }
+  await revokeAllUserSessions(userId)
   const expiresAtVal = expiresAt ? new Date(expiresAt) : refreshSessionExpiresAt()
   const accessJti = accessJtiFromJwtString(sessionToken)
   await prisma.session.create({

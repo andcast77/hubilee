@@ -93,9 +93,9 @@ describe("platform.createApiClientOptions", () => {
     setDesktop(false);
   });
 
-  it("returns empty options on web", () => {
+  it("returns refreshOn401 on web (cookie silent refresh)", () => {
     setDesktop(false);
-    expect(createApiClientOptions()).toEqual({});
+    expect(createApiClientOptions()).toEqual({ refreshOn401: true });
   });
 
   it("returns refreshOn401 + bearer authTransport on desktop", () => {

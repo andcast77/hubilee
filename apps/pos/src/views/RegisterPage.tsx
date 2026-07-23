@@ -17,6 +17,10 @@ import { authApi } from "@/lib/api/client";
 import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
 import { RegistrationTurnstile } from "@/components/auth/RegistrationTurnstile";
 import { startGoogleOAuth } from "@/lib/auth/googleOAuth";
+import {
+  AuthSessionBootScreen,
+  useRedirectIfAuthenticated,
+} from "@/lib/auth/useRedirectIfAuthenticated";
 import { toast } from "sonner";
 
 const TOAST_MS = 4000;
@@ -150,6 +154,7 @@ export function RegisterPage() {
   const [step, setStep] = useState<Step>("form");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [turnstileKey, setTurnstileKey] = useState(0);
+  const { ready: sessionReady } = useRedirectIfAuthenticated();
 
   function handleGoogleClick() {
     startGoogleOAuth({
@@ -223,6 +228,10 @@ export function RegisterPage() {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  if (!sessionReady) {
+    return <AuthSessionBootScreen />;
   }
 
   return (

@@ -21,10 +21,17 @@ vi.mock("next/link", () => ({
   ),
 }));
 
+vi.mock("@/lib/auth/useRedirectIfAuthenticated", () => ({
+  useRedirectIfAuthenticated: () => ({ ready: true }),
+  AuthSessionBootScreen: () => null,
+}));
+
 // Mock authApi post — returns an empty success response
 const authApiPostMock = vi.fn(async (_endpoint: string, _data?: unknown) => ({}));
 vi.mock("@/lib/api/client", () => ({
-  authApi: { post: (endpoint: string, data?: unknown) => authApiPostMock(endpoint, data) },
+  authApi: {
+    post: (endpoint: string, data?: unknown) => authApiPostMock(endpoint, data),
+  },
 }));
 
 // Mock RegistrationTurnstile — immediately supplies a captcha token on mount

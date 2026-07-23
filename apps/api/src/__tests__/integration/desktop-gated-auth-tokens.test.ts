@@ -80,7 +80,7 @@ describe('web-desktop-vite-tauri PR1: gated desktop auth tokens', () => {
         password: pwHash,
         firstName: 'Wdvt',
         lastName: 'Desktop',
-        // ADMIN keeps concurrent sessions; non-admin replace-on-login (createWebSessionPair).
+        // All roles: replace prior sessions on new login (createWebSessionPair).
         // This suite logs in repeatedly across independent test cases.
         role: 'ADMIN',
         isActive: true,
