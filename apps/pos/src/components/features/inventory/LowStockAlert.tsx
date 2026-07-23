@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Link } from '@/lib/next-nav'
 import { useLowStockProducts } from '@/hooks/useInventory'
 import {
@@ -12,11 +13,21 @@ import {
 } from '@hubilee/ui'
 import { Skeleton } from '@hubilee/ui'
 import { AlertTriangle, Package } from 'lucide-react'
-import { Badge } from '@hubilee/ui'
 import { Button } from '@hubilee/ui'
+import { AdminListToolbar } from '@/components/admin/AdminListToolbar'
+import { IdentityCell } from '@/components/admin/IdentityCell'
 
 export function LowStockAlert() {
+  const [search, setSearch] = useState('')
   const { data: products, isLoading, error } = useLowStockProducts()
+
+  const filtered = search.trim() && products
+    ? products.filter(
+        (p: any) =>
+          (p.name ?? '').toLowerCase().includes(search.trim().toLowerCase()) ||
+          (p.sku ?? '').toLowerCase().includes(search.trim().toLowerCase()),
+      )
+    : products
 
   if (error) {
     return (
@@ -57,13 +68,17 @@ export function LowStockAlert() {
     )
   }
 
-  if (!products || products.length === 0) {
+  if (!filtered || filtered.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12">
         <Package className="h-12 w-12 text-gray-400" />
-        <h3 className="mt-4 text-lg font-semibold">No hay productos con stock bajo</h3>
+        <h3 className="mt-4 text-lg font-semibold">
+          {search ? 'No se encontraron productos' : 'No hay productos con stock bajo'}
+        </h3>
         <p className="mt-2 text-sm text-gray-500">
-          Todos los productos tienen suficiente inventario.
+          {search
+            ? 'No hay productos que coincidan con tu búsqueda.'
+            : 'Todos los productos tienen suficiente inventario.'}
         </p>
       </div>
     )
@@ -74,16 +89,23 @@ export function LowStockAlert() {
       <div className="flex items-center gap-2">
         <AlertTriangle className="h-5 w-5 text-yellow-500" />
         <h3 className="text-lg font-semibold">
-          Productos con Stock Bajo ({products.length})
+          Productos con Stock Bajo ({filtered.length})
         </h3>
       </div>
+
+      <AdminListToolbar
+        search={{
+          value: search,
+          onChange: setSearch,
+          placeholder: 'Buscar productos...',
+        }}
+      />
 
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Producto</TableHead>
-              <TableHead>SKU</TableHead>
               <TableHead>Categoría</TableHead>
               <TableHead>Stock Actual</TableHead>
               <TableHead>Stock Mínimo</TableHead>
@@ -91,13 +113,17 @@ export function LowStockAlert() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {products.map((product: any) => (
+            {filtered.map((product: any) => (
               <TableRow key={product.id}>
-                <TableCell className="font-medium">{product.name}</TableCell>
-                <TableCell className="text-gray-500">{product.sku}</TableCell>
+                <TableCell>
+                  <IdentityCell
+                    title={product.name}
+                    subtitle={product.sku ?? undefined}
+                  />
+                </TableCell>
                 <TableCell>
                   {product.category ? (
-                    <Badge variant="outline">{product.category.name}</Badge>
+                    <span className="text-sm text-gray-600">{product.category.name}</span>
                   ) : (
                     <span className="text-gray-400">Sin categoría</span>
                   )}

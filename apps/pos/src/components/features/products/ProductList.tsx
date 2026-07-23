@@ -3,8 +3,7 @@
 import { useState } from 'react'
 import { Link } from '@/lib/next-nav'
 import { useProducts, useDeleteProduct } from '@/hooks/useProducts'
-import { Button } from '@hubilee/ui'
-import { Input } from '@hubilee/ui'
+import { Badge, Button } from '@hubilee/ui'
 import {
   Table,
   TableBody,
@@ -32,9 +31,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@hubilee/ui'
-import { Plus, Search, Package, AlertTriangle, Edit, Trash2, ChevronsUpDown, ChevronUp, ChevronDown } from 'lucide-react'
+import { Package, AlertTriangle, Edit, Trash2, ChevronsUpDown, ChevronUp, ChevronDown, Plus } from 'lucide-react'
 import type { Product } from '@/types'
-import { Badge } from '@hubilee/ui'
+import { AdminListToolbar } from '@/components/admin/AdminListToolbar'
+import { IdentityCell } from '@/components/admin/IdentityCell'
+import { SoftStatusPill } from '@/components/admin/SoftStatusPill'
 
 interface ProductListProps {
   onProductClick?: (product: Product) => void
@@ -101,21 +102,14 @@ export function ProductList({ onProductClick }: ProductListProps) {
 
   return (
     <div className="space-y-4">
-      {/* Header with search and filters - always visible */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 items-center gap-2">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <Input
-              placeholder="Buscar productos..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value)
-                setPage(1)
-              }}
-              className="pl-10"
-            />
-          </div>
+      {/* AdminListToolbar: search + active filter + CTA */}
+      <AdminListToolbar
+        search={{
+          value: search,
+          onChange: (v) => { setSearch(v); setPage(1) },
+          placeholder: 'Buscar productos...',
+        }}
+        filters={
           <Select value={activeFilter} onValueChange={setActiveFilter}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Estado" />
@@ -126,14 +120,9 @@ export function ProductList({ onProductClick }: ProductListProps) {
               <SelectItem value="inactive">Inactivos</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-        <Link to="/products/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Nuevo Producto
-          </Button>
-        </Link>
-      </div>
+        }
+        primaryAction={{ label: 'Nuevo Producto', href: '/products/new' }}
+      />
 
       {/* Error state - only table area */}
       {error && (
@@ -149,7 +138,6 @@ export function ProductList({ onProductClick }: ProductListProps) {
             <TableHeader>
               <TableRow>
                 <TableHead>Nombre</TableHead>
-                <TableHead>SKU</TableHead>
                 <TableHead>Categoría</TableHead>
                 <TableHead>Stock</TableHead>
                 <TableHead>Precio</TableHead>
@@ -161,7 +149,6 @@ export function ProductList({ onProductClick }: ProductListProps) {
               {Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
                   <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                   <TableCell><Skeleton className="h-5 w-20" /></TableCell>
                   <TableCell><Skeleton className="h-5 w-12" /></TableCell>
                   <TableCell><Skeleton className="h-5 w-16" /></TableCell>
@@ -185,12 +172,6 @@ export function ProductList({ onProductClick }: ProductListProps) {
                   <Button variant="ghost" className="-ml-3 h-8 font-semibold" onClick={() => toggleSort('name')}>
                     Nombre
                     <SortIcon column="name" />
-                  </Button>
-                </TableHead>
-                <TableHead>
-                  <Button variant="ghost" className="-ml-3 h-8 font-semibold" onClick={() => toggleSort('sku')}>
-                    SKU
-                    <SortIcon column="sku" />
                   </Button>
                 </TableHead>
                 <TableHead>
@@ -227,8 +208,12 @@ export function ProductList({ onProductClick }: ProductListProps) {
                     className={onProductClick ? 'cursor-pointer' : ''}
                     onClick={() => onProductClick?.(product)}
                   >
-                    <TableCell className="font-medium">{product.name}</TableCell>
-                    <TableCell className="text-gray-500">{product.sku}</TableCell>
+                    <TableCell>
+                      <IdentityCell
+                        title={product.name}
+                        subtitle={product.sku ?? undefined}
+                      />
+                    </TableCell>
                     <TableCell>
                       {product.categoryName ? (
                         <Badge variant="outline">{product.categoryName}</Badge>
@@ -246,9 +231,10 @@ export function ProductList({ onProductClick }: ProductListProps) {
                     </TableCell>
                     <TableCell>{formatCurrency(product.price)}</TableCell>
                     <TableCell>
-                      <Badge variant={product.active ? 'default' : 'secondary'}>
-                        {product.active ? 'Activo' : 'Inactivo'}
-                      </Badge>
+                      <SoftStatusPill
+                        status={product.active ? 'active' : 'inactive'}
+                        label={product.active ? 'Activo' : 'Inactivo'}
+                      />
                     </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end gap-2">

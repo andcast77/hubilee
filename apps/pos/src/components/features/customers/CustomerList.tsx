@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { Link } from '@/lib/next-nav'
 import { useCustomers, useDeleteCustomer } from '@/hooks/useCustomers'
 import { Button } from '@hubilee/ui'
-import { Input } from '@hubilee/ui'
 import {
   Table,
   TableBody,
@@ -25,7 +24,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@hubilee/ui'
-import { Plus, Search, User, Mail, Phone, Edit, Trash2, ChevronsUpDown, ChevronUp, ChevronDown } from 'lucide-react'
+import { Edit, Trash2, ChevronsUpDown, ChevronUp, ChevronDown, Phone } from 'lucide-react'
+import { AdminListToolbar } from '@/components/admin/AdminListToolbar'
+import { IdentityCell } from '@/components/admin/IdentityCell'
+import { SoftStatusPill } from '@/components/admin/SoftStatusPill'
 import type { Customer } from '@/types'
 
 interface CustomerListProps {
@@ -92,28 +94,22 @@ export function CustomerList({ onCustomerClick }: CustomerListProps) {
 
   return (
     <div className="space-y-4">
-      {/* Header with search */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <Input
-            placeholder="Buscar clientes..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <Link to="/customers/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Nuevo Cliente
-          </Button>
-        </Link>
-      </div>
+      {/* AdminListToolbar: search + CTA */}
+      <AdminListToolbar
+        search={{
+          value: search,
+          onChange: setSearch,
+          placeholder: 'Buscar clientes...',
+        }}
+        primaryAction={{ label: 'Crear Cliente', href: '/customers/new' }}
+      />
 
       {/* Error state */}
       {error && (
-        <div className="flex items-center justify-center rounded-lg border border-dashed border-red-200 bg-red-50/50 p-8">
+        <div
+          data-testid="list-error"
+          className="flex items-center justify-center rounded-lg border border-dashed border-red-200 bg-red-50/50 p-8"
+        >
           <p className="text-sm text-red-600">Error al cargar clientes: {String(error)}</p>
         </div>
       )}
@@ -129,6 +125,7 @@ export function CustomerList({ onCustomerClick }: CustomerListProps) {
                 <TableHead>Teléfono</TableHead>
                 <TableHead>Ciudad</TableHead>
                 <TableHead>Compras</TableHead>
+                <TableHead className="text-center">Estado</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -140,6 +137,7 @@ export function CustomerList({ onCustomerClick }: CustomerListProps) {
                   <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                   <TableCell><Skeleton className="h-5 w-20" /></TableCell>
                   <TableCell><Skeleton className="h-5 w-12" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-16 mx-auto" /></TableCell>
                   <TableCell className="text-right"><Skeleton className="h-8 w-12 ml-auto" /></TableCell>
                 </TableRow>
               ))}
@@ -156,14 +154,8 @@ export function CustomerList({ onCustomerClick }: CustomerListProps) {
               <TableRow>
                 <TableHead>
                   <Button variant="ghost" className="-ml-3 h-8 font-semibold" onClick={() => toggleSort('name')}>
-                    Nombre
+                    Cliente
                     <SortIcon column="name" />
-                  </Button>
-                </TableHead>
-                <TableHead>
-                  <Button variant="ghost" className="-ml-3 h-8 font-semibold" onClick={() => toggleSort('email')}>
-                    Email
-                    <SortIcon column="email" />
                   </Button>
                 </TableHead>
                 <TableHead>
@@ -184,6 +176,7 @@ export function CustomerList({ onCustomerClick }: CustomerListProps) {
                     <SortIcon column="sales" />
                   </Button>
                 </TableHead>
+                <TableHead className="text-center">Estado</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -194,21 +187,11 @@ export function CustomerList({ onCustomerClick }: CustomerListProps) {
                   className={onCustomerClick ? 'cursor-pointer' : ''}
                   onClick={() => onCustomerClick?.(customer)}
                 >
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-gray-400" />
-                      {customer.name}
-                    </div>
-                  </TableCell>
                   <TableCell>
-                    {customer.email ? (
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-gray-400" />
-                        {customer.email}
-                      </div>
-                    ) : (
-                      <span className="text-gray-400">—</span>
-                    )}
+                    <IdentityCell
+                      title={customer.name}
+                      subtitle={customer.email ?? undefined}
+                    />
                   </TableCell>
                   <TableCell>
                     {customer.phone ? (
@@ -234,16 +217,19 @@ export function CustomerList({ onCustomerClick }: CustomerListProps) {
                       <span className="text-gray-400">0</span>
                     )}
                   </TableCell>
+                  <TableCell className="text-center">
+                    <SoftStatusPill status="active" label="Activo" />
+                  </TableCell>
                   <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-end gap-2">
                       <Link to="/customers/$id" params={{ id: customer.id }}>
-                        <Button variant="ghost" size="sm" title="Editar">
+                        <Button variant="ghost" size="sm" title="Editar" aria-label="Editar">
                           <Edit className="h-4 w-4" />
                         </Button>
                       </Link>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="sm" title="Eliminar">
+                          <Button variant="ghost" size="sm" title="Eliminar" aria-label="Eliminar">
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
@@ -299,9 +285,11 @@ export function CustomerList({ onCustomerClick }: CustomerListProps) {
           )}
         </div>
       ) : !error && !isLoading ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12">
-          <User className="h-12 w-12 text-gray-400" />
-          <h3 className="mt-4 text-lg font-semibold">No hay clientes</h3>
+        <div
+          data-testid="list-empty"
+          className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12"
+        >
+          <h3 className="text-lg font-semibold">No hay clientes</h3>
           <p className="mt-2 text-sm text-gray-500">
             {search
               ? 'No se encontraron clientes que coincidan con tu búsqueda.'
@@ -310,8 +298,7 @@ export function CustomerList({ onCustomerClick }: CustomerListProps) {
           {!search && (
             <Link to="/customers/new" className="mt-4">
               <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Nuevo Cliente
+                Crear Cliente
               </Button>
             </Link>
           )}

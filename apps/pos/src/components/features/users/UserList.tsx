@@ -10,8 +10,7 @@ import {
   useResetMemberPassword,
 } from '@/hooks/useUsers'
 import { formatUserCodeForDisplay, memberHasUserCode } from '@/lib/user-code'
-import { Button } from '@hubilee/ui'
-import { Input } from '@hubilee/ui'
+import { Badge, Button, Input } from '@hubilee/ui'
 import {
   Table,
   TableBody,
@@ -50,7 +49,6 @@ import {
 import { Label } from '@hubilee/ui'
 import {
   Plus,
-  Search,
   User as UserIcon,
   Edit,
   Trash2,
@@ -61,7 +59,9 @@ import {
   KeyRound,
   Mail,
 } from 'lucide-react'
-import { Badge } from '@hubilee/ui'
+import { AdminListToolbar } from '@/components/admin/AdminListToolbar'
+import { IdentityCell } from '@/components/admin/IdentityCell'
+import { SoftStatusPill } from '@/components/admin/SoftStatusPill'
 import type { UserRole } from '@/types'
 
 const PAGE_SIZE = 20
@@ -316,20 +316,13 @@ export function UserList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 items-center gap-2">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <Input
-              placeholder="Buscar usuarios..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value)
-                setPage(1)
-              }}
-              className="pl-10"
-            />
-          </div>
+      <AdminListToolbar
+        search={{
+          value: search,
+          onChange: (v) => { setSearch(v); setPage(1) },
+          placeholder: 'Buscar usuarios...',
+        }}
+        filters={
           <Select value={roleFilter} onValueChange={(v) => { setRoleFilter(v); setPage(1) }}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Rol" />
@@ -341,11 +334,9 @@ export function UserList() {
               <SelectItem value="USER">Cajero</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-        <Link to="/admin/users/new">
-          <Button><Plus className="mr-2 h-4 w-4" />Nuevo Usuario</Button>
-        </Link>
-      </div>
+        }
+        primaryAction={{ label: 'Nuevo Usuario', href: '/admin/users/new' }}
+      />
 
       {users.length > 0 ? (
         <>
@@ -355,14 +346,8 @@ export function UserList() {
                 <TableRow>
                   <TableHead>
                     <Button variant="ghost" className="-ml-3 h-8 font-semibold" onClick={() => toggleSort('name')}>
-                      Nombre
+                      Usuario
                       <SortIcon column="name" />
-                    </Button>
-                  </TableHead>
-                  <TableHead>
-                    <Button variant="ghost" className="-ml-3 h-8 font-semibold" onClick={() => toggleSort('email')}>
-                      Email
-                      <SortIcon column="email" />
                     </Button>
                   </TableHead>
                   <TableHead>Código de usuario</TableHead>
@@ -386,13 +371,12 @@ export function UserList() {
                   const userCode = user.userCode ?? null
                   return (
                   <TableRow key={user.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <UserIcon className="h-4 w-4 text-gray-400" />
-                        {user.name}
-                      </div>
+                    <TableCell>
+                      <IdentityCell
+                        title={user.name}
+                        subtitle={user.email ?? undefined}
+                      />
                     </TableCell>
-                    <TableCell>{user.email || '—'}</TableCell>
                     <TableCell>
                       {userCode ? (
                         <code className="select-all text-sm">{userCode}</code>
@@ -406,9 +390,10 @@ export function UserList() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={user.active ? 'default' : 'secondary'}>
-                        {user.active ? 'Activo' : 'Inactivo'}
-                      </Badge>
+                      <SoftStatusPill
+                        status={user.active ? 'active' : 'inactive'}
+                        label={user.active ? 'Activo' : 'Inactivo'}
+                      />
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">

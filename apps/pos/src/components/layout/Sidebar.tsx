@@ -9,34 +9,19 @@ import { useCompanies } from '@/hooks/useCompanies'
 import { useStoreContextOptional } from '@/components/providers/StoreContext'
 import { authApi } from '@/lib/api/client'
 import { Module } from '@/lib/permissions'
-import {
-  LayoutDashboard,
-  ShoppingCart,
-  ClipboardList,
-  Wallet,
-  Store,
-  MapPin,
-  Package,
-  Users,
-  Warehouse,
-  Truck,
-  UserCog,
-  Settings,
-  HardDrive,
-  BarChart,
-  Tags,
-} from 'lucide-react'
+import { Store, MapPin } from 'lucide-react'
 import { Sidebar as SidebarComponent } from '@hubilee/ui'
 import {
-  InAppNotificationBell,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@hubilee/ui'
-import { useInAppNotifications } from '@/hooks/useInAppNotifications'
 import { Link, useLocation } from '@/lib/next-nav'
+import { posNavGroups } from '@/components/layout/posNavGroups'
+
+type SidebarProps = React.ComponentProps<typeof SidebarComponent>
 
 /**
  * `@hubilee/ui`'s Sidebar already calls its injected `Link` with both
@@ -49,48 +34,7 @@ function useRouterPathname(): string {
   return (typeof selected === 'string' ? selected : '/') || '/'
 }
 
-// Navigation groups - Only add routes that actually exist!
-type SidebarProps = React.ComponentProps<typeof SidebarComponent>
-
-const navGroups: SidebarProps['navGroups'] = [
-  {
-    title: 'Principal',
-    items: [
-      { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-      { title: 'Punto de Venta', href: '/pos', icon: ShoppingCart, module: Module.SALES },
-      { title: 'Pedidos (Vendedor)', href: '/pos-vendedor', icon: ClipboardList, module: Module.SALES },
-      { title: 'Caja', href: '/caja', icon: Wallet, module: Module.SALES },
-    ],
-  },
-  {
-    title: 'Gestión',
-    items: [
-      { title: 'Productos', href: '/products', icon: Package, module: Module.PRODUCTS },
-      { title: 'Categorías', href: '/categories', icon: Tags, module: Module.CATEGORIES },
-      { title: 'Inventario', href: '/inventory', icon: Warehouse, module: Module.INVENTORY },
-      { title: 'Reportes', href: '/reports', icon: BarChart, module: Module.REPORTS },
-    ],
-  },
-  {
-    title: 'Administración',
-    items: [
-      { title: 'Clientes', href: '/customers', icon: Users, module: Module.CUSTOMERS },
-      { title: 'Proveedores', href: '/suppliers', icon: Truck, module: Module.SUPPLIERS },
-      { title: 'Usuarios', href: '/admin/users', icon: UserCog, module: Module.USERS },
-      { title: 'Configuración', href: '/admin/settings', icon: Settings, module: Module.STORE_CONFIG },
-      // FIX D (pos-cash-session round 2, scope removal): loyalty is OUT of the POS MVP — the
-      // nav entry is removed so it's not reachable from the sidebar. `/admin/loyalty` route
-      // code and the backend loyalty feature are untouched (pre-existing, other screens use
-      // them); this only unlinks the POS-facing entry point.
-    ],
-  },
-  {
-    title: 'Avanzado',
-    items: [
-      { title: 'Copias de Seguridad', href: '/admin/backup', icon: HardDrive, module: Module.STORE_CONFIG },
-    ],
-  },
-]
+const navGroups = posNavGroups
 
 const COMPANY_SELECT_PLACEHOLDER = '__none__'
 
@@ -200,11 +144,11 @@ export function Sidebar() {
       disabled={companiesQuery.isLoading}
     >
       <SelectTrigger
-        className="w-full h-11 pl-3 pr-3 text-left border border-gray-700 bg-gray-800 hover:bg-gray-700 cursor-pointer gap-2 text-white"
+        className="w-full h-11 pl-3 pr-3 text-left border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer gap-2 text-slate-900"
         aria-label="Seleccionar empresa"
       >
-        <Store className="h-5 w-5 shrink-0 text-white" />
-        <span className="flex-1 truncate text-sm font-medium text-white">
+        <Store className="h-5 w-5 shrink-0 text-slate-500" />
+        <span className="flex-1 truncate text-sm font-medium text-slate-900">
           <SelectValue
             placeholder={
               companiesQuery.isLoading
@@ -245,7 +189,7 @@ export function Sidebar() {
     
     if (isLoading) {
       return (
-        <div className="flex items-center gap-2 text-sm text-gray-300 px-1">
+        <div className="flex items-center gap-2 text-sm text-slate-400 px-1">
           <MapPin className="h-4 w-4 shrink-0" />
           <span>Cargando locales...</span>
         </div>
@@ -254,7 +198,7 @@ export function Sidebar() {
     
     if (isError) {
       return (
-        <div className="text-sm text-amber-500 px-1" title="Error al cargar locales. Revisa que la API esté en marcha y uses la misma base de datos.">
+        <div className="text-sm text-amber-600 px-1" title="Error al cargar locales. Revisa que la API esté en marcha y uses la misma base de datos.">
           <MapPin className="h-4 w-4 inline-block mr-1.5 align-middle" />
           Error al cargar locales
         </div>
@@ -263,7 +207,7 @@ export function Sidebar() {
     
     if (activeStores.length === 0) {
       return (
-        <div className="text-sm text-gray-300 px-1" title="Ejecuta el seed en la carpeta database contra la misma base de datos que usa la API (misma DATABASE_URL).">
+        <div className="text-sm text-slate-400 px-1" title="Ejecuta el seed en la carpeta database contra la misma base de datos que usa la API (misma DATABASE_URL).">
           <MapPin className="h-4 w-4 inline-block mr-1.5 align-middle" />
           Sin locales de venta
         </div>
@@ -279,11 +223,11 @@ export function Sidebar() {
         }}
       >
         <SelectTrigger
-          className="w-full h-10 pl-3 pr-3 text-left border border-gray-700 bg-gray-800 hover:bg-gray-700 cursor-pointer gap-2 text-white"
+          className="w-full h-10 pl-3 pr-3 text-left border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer gap-2 text-slate-900"
           aria-label="Seleccionar local de venta"
         >
-          <MapPin className="h-4 w-4 shrink-0 text-white" />
-          <span className="flex-1 truncate text-sm text-white">
+          <MapPin className="h-4 w-4 shrink-0 text-slate-500" />
+          <span className="flex-1 truncate text-sm text-slate-900">
             <SelectValue placeholder="Seleccionar local de venta" />
           </span>
         </SelectTrigger>
@@ -298,15 +242,13 @@ export function Sidebar() {
     )
   })()
 
-  const notif = useInAppNotifications(user?.id, user?.companyId)
-
   const showMobileContext =
     needCompanySelector || !!storeSelector || !!(user?.companyId && user?.company?.name)
 
   return (
     <>
       {showMobileContext ? (
-        <div className="lg:hidden w-full shrink-0 border-b border-gray-700 bg-gray-900 px-3 py-2 space-y-2">
+        <div className="lg:hidden w-full shrink-0 border-b border-slate-200 bg-white px-3 py-2 space-y-2">
           {companySelector}
           {storeSelector}
         </div>
@@ -323,22 +265,8 @@ export function Sidebar() {
         checkModuleAccess={checkModuleAccess}
         companySelector={companySelector}
         storeSelector={storeSelector}
-        variant="dark"
-        appendContent={
-          user?.id ? (
-            <div className="flex justify-center px-1">
-              <InAppNotificationBell
-                unreadCount={notif.unreadCount}
-                items={notif.items}
-                loading={notif.isLoading}
-                onOpen={notif.refetch}
-                onMarkRead={notif.markRead}
-                onMarkAllRead={notif.markAllRead}
-                align="start"
-              />
-            </div>
-          ) : null
-        }
+        variant="light"
+        appendContent={null}
       />
     </>
   )

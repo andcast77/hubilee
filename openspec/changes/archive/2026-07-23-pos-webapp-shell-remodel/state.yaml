@@ -1,0 +1,37 @@
+change: pos-webapp-shell-remodel
+status: archived
+strict_tdd: true
+artifact_store: hybrid
+updated: 2026-07-23T16:40:00Z
+phases:
+  explore: skipped
+  propose: done
+  spec: done
+  design: done
+  tasks: done
+  apply: done
+  verify: done
+  archive: done
+next: none
+awaiting: none
+notes:
+  - inspiration_spike_admin_layout_not_pixel_copy
+  - locked_pos_only
+  - locked_shell_plus_existing_lists
+  - verify_pass_then_warning_fixes_applied
+  - admin_canvas_vs_content_card_split
+  - hamburger_mobile_overlay_wired
+  - soft_status_pill_css_vars
+  - partial_scenario_smokes_added
+  - archive_supersedes_premature_engram_report_551
+  - final_verify_pass_vitest_74_74
+artifacts:
+  proposal: openspec/changes/archive/2026-07-23-pos-webapp-shell-remodel/proposal.md
+  design: openspec/changes/archive/2026-07-23-pos-webapp-shell-remodel/design.md
+  tasks: openspec/changes/archive/2026-07-23-pos-webapp-shell-remodel/tasks.md
+  verify: openspec/changes/archive/2026-07-23-pos-webapp-shell-remodel/verify.md
+  archive_report: openspec/changes/archive/2026-07-23-pos-webapp-shell-remodel/archive-report.md
+  specs:
+    - openspec/specs/pos-webapp-admin-shell/spec.md
+    - openspec/specs/pos-admin-list-pattern/spec.md
+  visual_ref: /home/sendouh/.cursor/projects/home-sendouh-Projects-multisystem/assets/image-dab39808-6473-4ca4-8904-3ed6ac957cae.png

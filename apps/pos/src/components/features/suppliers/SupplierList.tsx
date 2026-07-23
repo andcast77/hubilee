@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { Link } from '@/lib/next-nav'
 import { useSuppliers, useDeleteSupplier } from '@/hooks/useSuppliers'
 import { Button } from '@hubilee/ui'
-import { Input } from '@hubilee/ui'
 import {
   Table,
   TableBody,
@@ -25,8 +24,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@hubilee/ui'
-import { Plus, Search, Truck, Mail, Phone, Edit, Trash2, ChevronsUpDown, ChevronUp, ChevronDown } from 'lucide-react'
-import { Badge } from '@hubilee/ui'
+import { Truck, Edit, Trash2, ChevronsUpDown, ChevronUp, ChevronDown, Plus } from 'lucide-react'
+import { AdminListToolbar } from '@/components/admin/AdminListToolbar'
+import { IdentityCell } from '@/components/admin/IdentityCell'
+import { SoftStatusPill } from '@/components/admin/SoftStatusPill'
 
 type SortCol = 'name' | 'contact' | 'location' | 'active'
 type SortOrder = 'asc' | 'desc'
@@ -84,23 +85,14 @@ export function SupplierList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <Input
-            placeholder="Buscar proveedores..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <Link to="/suppliers/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Nuevo Proveedor
-          </Button>
-        </Link>
-      </div>
+      <AdminListToolbar
+        search={{
+          value: search,
+          onChange: setSearch,
+          placeholder: 'Buscar proveedores...',
+        }}
+        primaryAction={{ label: 'Nuevo Proveedor', href: '/suppliers/new' }}
+      />
 
       {/* Error state */}
       {error && (
@@ -173,30 +165,11 @@ export function SupplierList() {
             <TableBody>
               {suppliers.map((supplier) => (
                 <TableRow key={supplier.id}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      <Truck className="h-4 w-4 text-gray-400" />
-                      {supplier.name}
-                    </div>
-                  </TableCell>
                   <TableCell>
-                    <div className="space-y-1">
-                      {supplier.email && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <Mail className="h-3 w-3 text-gray-400" />
-                          {supplier.email}
-                        </div>
-                      )}
-                      {supplier.phone && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <Phone className="h-3 w-3 text-gray-400" />
-                          {supplier.phone}
-                        </div>
-                      )}
-                      {!supplier.email && !supplier.phone && (
-                        <span className="text-gray-400 text-sm">—</span>
-                      )}
-                    </div>
+                    <IdentityCell
+                      title={supplier.name}
+                      subtitle={supplier.email ?? supplier.phone ?? undefined}
+                    />
                   </TableCell>
                   <TableCell>
                     {supplier.city ? (
@@ -206,9 +179,10 @@ export function SupplierList() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={supplier.active ? 'default' : 'secondary'}>
-                      {supplier.active ? 'Activo' : 'Inactivo'}
-                    </Badge>
+                    <SoftStatusPill
+                      status={supplier.active ? 'active' : 'inactive'}
+                      label={supplier.active ? 'Activo' : 'Inactivo'}
+                    />
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">

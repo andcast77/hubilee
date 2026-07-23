@@ -26,6 +26,7 @@ import { UserForm } from "@/components/features/users/UserForm";
 import { InventoryOverview } from "@/components/features/inventory/InventoryOverview";
 import { InventoryAdjustmentForm } from "@/components/features/inventory/InventoryAdjustmentForm";
 import { LowStockAlert } from "@/components/features/inventory/LowStockAlert";
+import { CategoriesPage } from "@/components/features/categories/CategoriesPage";
 import { StoreConfigForm } from "@/components/features/store-config/StoreConfigForm";
 import { TicketConfigForm } from "@/components/features/settings/TicketConfigForm";
 import { useStoreContextOptional } from "@/components/providers/StoreContext";
@@ -33,7 +34,6 @@ import { useInventoryStats } from "@/hooks/useReports";
 import { useStoreConfig, useUpdateStoreConfig } from "@/hooks/useStoreConfig";
 import { useTicketConfig, useUpdateTicketConfig } from "@/hooks/useTicketConfig";
 import { useCreateProduct, useProduct, useUpdateProduct, useProducts } from "@/hooks/useProducts";
-import { useCategories, useCreateCategory, useDeleteCategory } from "@/hooks/useCategories";
 import { useCreateCustomer, useCustomer, useUpdateCustomer } from "@/hooks/useCustomers";
 import { useCreateSupplier, useSupplier, useUpdateSupplier } from "@/hooks/useSuppliers";
 import {
@@ -139,57 +139,7 @@ export function POSPage() {
   );
 }
 
-export function CategoriesPage() {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const { data = [], isLoading } = useCategories();
-  const createMutation = useCreateCategory();
-  const deleteMutation = useDeleteCategory();
-  return (
-    <PageFrame
-      title="Categorias"
-      breadcrumbs={[
-        { label: "Panel", href: "/dashboard" },
-        { label: "Categorías" },
-      ]}
-    >
-      <div className="space-y-6">
-        <Card>
-          <CardHeader><CardTitle>Nueva categoria</CardTitle></CardHeader>
-          <CardContent className="flex flex-col gap-3 md:flex-row">
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre" />
-            <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Descripcion" />
-            <Button
-              onClick={async () => {
-                if (!name.trim()) return;
-                await createMutation.mutateAsync({ name: name.trim(), description: description || undefined });
-                setName("");
-                setDescription("");
-              }}
-              disabled={createMutation.isPending}
-            >
-              Crear
-            </Button>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Listado</CardTitle></CardHeader>
-          <CardContent className="space-y-2">
-            {isLoading ? <p>Cargando...</p> : data.map((c: any) => (
-              <div key={c.id} className="flex items-center justify-between rounded border p-2">
-                <div>
-                  <p className="font-medium">{c.name}</p>
-                  <p className="text-xs text-slate-500">{c.description || "Sin descripcion"}</p>
-                </div>
-                <Button variant="outline" onClick={() => deleteMutation.mutate(c.id)}>Eliminar</Button>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
-    </PageFrame>
-  );
-}
+export { CategoriesPage } from "@/components/features/categories/CategoriesPage";
 
 function CrudGuard({ children, loading, notFound }: { children: React.ReactNode; loading: boolean; notFound: boolean }) {
   if (loading) return <PageFrame title="Cargando"><p>Cargando...</p></PageFrame>;
