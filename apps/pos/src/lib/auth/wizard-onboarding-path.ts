@@ -54,9 +54,25 @@ export function isOwnerRegistrationIncomplete(user: WizardUserSignals): boolean 
   return false;
 }
 
+/** Index among Empresa → Rubro → Local (Cuenta has no onboarding route). */
+function firstIncompleteStepIndex(
+  step: RegistrationWizardStep | null | undefined,
+): number {
+  if (step === "RUBRO") return 1;
+  if (step === "LOCAL") return 2;
+  return 0; // EMPRESA, CUENTA, or unknown
+}
+
+function onboardingPathStepIndex(pathname: string): number | null {
+  if (pathname === WIZARD_ONBOARDING_PATHS.EMPRESA) return 0;
+  if (pathname === WIZARD_ONBOARDING_PATHS.RUBRO) return 1;
+  if (pathname === WIZARD_ONBOARDING_PATHS.LOCAL) return 2;
+  return null;
+}
+
 /**
- * Where an incomplete OWNER must go from `pathname`, or null if already there /
- * not gated.
+ * Where an incomplete OWNER must go from `pathname`, or null if already allowed.
+ * Blocks skipping ahead to incomplete steps; allows revisiting completed ones.
  */
 export function resolveOwnerWizardRedirect(
   user: WizardUserSignals,
@@ -64,6 +80,10 @@ export function resolveOwnerWizardRedirect(
 ): string | null {
   if (!isOwnerRegistrationIncomplete(user)) return null;
   const target = wizardStepToPath(user.registrationWizardStep);
+  const pathIdx = onboardingPathStepIndex(pathname);
+  const maxIdx = firstIncompleteStepIndex(user.registrationWizardStep);
+  // Current incomplete step or any completed earlier step.
+  if (pathIdx !== null && pathIdx <= maxIdx) return null;
   if (pathname === target) return null;
   return target;
 }

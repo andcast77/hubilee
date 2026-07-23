@@ -11,6 +11,7 @@ type CompanyWithOwner = {
   taxId: string | null
   address: string | null
   phone: string | null
+  businessType: CompanyResponse['businessType']
   createdAt: Date
   updatedAt: Date
   owner: { email: string | null; firstName: string; lastName: string } | null
@@ -41,6 +42,7 @@ export async function toCompanyResponse(company: CompanyWithOwner): Promise<Comp
     taxId: company.taxId,
     address: company.address,
     phone: company.phone,
+    businessType: company.businessType ?? null,
     createdAt: company.createdAt,
     updatedAt: company.updatedAt,
   }

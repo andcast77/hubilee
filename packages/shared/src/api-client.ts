@@ -105,7 +105,8 @@ export class ApiClient {
     if (
       response.status === 401 &&
       this.clientOptions?.refreshOn401 === true &&
-      !endpoint.startsWith('/v1/auth/refresh')
+      !endpoint.startsWith('/v1/auth/refresh') &&
+      !endpoint.startsWith('/v1/auth/logout')
     ) {
       const refreshRes = await fetch(`${this.baseURL}/v1/auth/refresh`, {
         method: 'POST',
@@ -115,6 +116,15 @@ export class ApiClient {
       })
       if (refreshRes.ok) {
         response = await fetchOnce()
+      } else {
+        // Stale cookies after DB reset / revoked session: ask API to expire httpOnly jar.
+        // Without this, login keeps seeing cookies and re-probes /me in a loop.
+        void fetch(`${this.baseURL}/v1/auth/logout`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: '{}',
+        }).catch(() => {})
       }
     }
 

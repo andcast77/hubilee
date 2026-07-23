@@ -456,18 +456,27 @@ export async function refreshTokens(request: FastifyRequest, reply: FastifyReply
   const cookieRefresh = getRefreshTokenFromCookieHeader(request.headers.cookie)
   const refreshPlain =
     cookieRefresh ?? (desktop ? validateBody(refreshBodySchema, request.body ?? {}).refreshToken : undefined)
-  if (!refreshPlain) throw new UnauthorizedError('Sesión no encontrada')
   const config = getConfig()
-  const { accessToken, refreshPlain: newRefresh } = await authService.refreshAccessTokenFromCookie(refreshPlain, {
-    ipAddress: request.ip,
-    userAgent: (request.headers['user-agent'] as string | undefined) ?? null,
-  })
-  attachAuthSessionCookie(reply, accessToken, config)
-  attachRefreshSessionCookie(reply, newRefresh, config)
-  if (desktop) {
-    return ok({ tokens: { accessToken, refreshToken: newRefresh } })
+  if (!refreshPlain) {
+    // Drop stale jar after db reset / expired session so the SPA stops probing as "logged in".
+    clearAllAuthCookies(reply, config)
+    throw new UnauthorizedError('Sesión no encontrada')
   }
-  return ok({ refreshed: true })
+  try {
+    const { accessToken, refreshPlain: newRefresh } = await authService.refreshAccessTokenFromCookie(refreshPlain, {
+      ipAddress: request.ip,
+      userAgent: (request.headers['user-agent'] as string | undefined) ?? null,
+    })
+    attachAuthSessionCookie(reply, accessToken, config)
+    attachRefreshSessionCookie(reply, newRefresh, config)
+    if (desktop) {
+      return ok({ tokens: { accessToken, refreshToken: newRefresh } })
+    }
+    return ok({ refreshed: true })
+  } catch (err) {
+    clearAllAuthCookies(reply, config)
+    throw err
+  }
 }
 
 export async function deleteSessionByIdHandler(

@@ -102,7 +102,7 @@ export async function createStore(
       email: body.email ?? null,
       taxId: body.taxId ?? null,
     })
-    await repos.cash.createRegister({ storeId: store.id, name: 'Caja 1' })
+    await repos.cash.createRegister({ storeId: store.id, name: 'Caja principal' })
     return store
   })
 }

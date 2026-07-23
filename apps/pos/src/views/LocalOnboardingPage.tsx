@@ -46,7 +46,7 @@ export function LocalOnboardingPage() {
         ...(address.trim() ? { address: address.trim() } : {}),
       });
       await queryClient.invalidateQueries({ queryKey: ["user"] });
-      toast.success("Local creado. Se provisionó Caja 1 automáticamente.", {
+      toast.success("Local creado. Se provisionó Caja principal automáticamente.", {
         duration: TOAST_MS,
       });
       setTimeout(() => {
@@ -74,8 +74,7 @@ export function LocalOnboardingPage() {
     <WizardShell
       step="local"
       title="Creá tu primer local"
-      subtitle="Al guardar, el sistema crea automáticamente la Caja 1. Sin paso de caja ni fondo de apertura."
-      blurb="Tu local es el punto de operación. La caja se crea sola para que puedas vender."
+      subtitle="Al guardar, el sistema crea automáticamente la Caja principal. Sin paso de caja ni fondo de apertura."
     >
       <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5">
         <div className="space-y-2">

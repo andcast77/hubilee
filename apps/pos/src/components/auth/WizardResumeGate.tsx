@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "@/lib/next-nav";
 import { useUser } from "@/hooks/useUser";
 import {
@@ -9,12 +9,14 @@ import {
 } from "@/lib/auth/wizard-onboarding-path";
 
 /**
- * Keeps incomplete OWNER on the first incomplete wizard step (no skip).
- * Complete OWNER who lands on onboarding is sent to the dashboard.
+ * Blocks skipping ahead past the first incomplete wizard step.
+ * Allows revisiting completed steps. Complete OWNER on onboarding → dashboard.
  */
 export function WizardResumeGate({ children }: { children: React.ReactNode }) {
   const { data: user, isLoading } = useUser();
   const navigate = useNavigate();
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
   const pathname = useLocation({ select: (l) => l.pathname });
 
   const redirectTo =
@@ -31,13 +33,13 @@ export function WizardResumeGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (redirectTo) {
-      void navigate({ to: redirectTo, replace: true });
+      void navigateRef.current({ to: redirectTo, replace: true });
       return;
     }
     if (completeOwnerOnOnboarding) {
-      void navigate({ to: "/app/dashboard", replace: true });
+      void navigateRef.current({ to: "/app/dashboard", replace: true });
     }
-  }, [redirectTo, completeOwnerOnOnboarding, navigate]);
+  }, [redirectTo, completeOwnerOnOnboarding]);
 
   if (isLoading || redirectTo || completeOwnerOnOnboarding) {
     return (

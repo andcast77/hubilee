@@ -1,8 +1,8 @@
 /**
- * Strict TDD — RED: Write failing tests for createStore auto-caja BEFORE implementation.
+ * Strict TDD — createStore auto-caja.
  *
  * Verifies:
- * - createStore creates a CashRegister "Caja 1" alongside the store
+ * - createStore creates a CashRegister "Caja principal" alongside the store
  * - Failure to create the register rolls back the store (transactional)
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -52,9 +52,9 @@ describe('pos.service — createStore auto-caja', () => {
     vi.mocked(createRepositories).mockReturnValue(mockRepos as any)
   })
 
-  // ── RED 1: auto-caja named "Caja 1" ──
+  // ── auto-caja named "Caja principal" ──
 
-  it('RED: creates a CashRegister named "Caja 1" when store is created', async () => {
+  it('creates a CashRegister named "Caja principal" when store is created', async () => {
     const expectedStore = {
       id: 'store-1',
       companyId: 'company-1',
@@ -65,7 +65,7 @@ describe('pos.service — createStore auto-caja', () => {
       id: 'caja-1',
       storeId: 'store-1',
       companyId: 'company-1',
-      name: 'Caja 1',
+      name: 'Caja principal',
     }
     mockStoresCreate.mockResolvedValue(expectedStore)
     mockCashCreateRegister.mockResolvedValue(expectedRegister)
@@ -82,15 +82,15 @@ describe('pos.service — createStore auto-caja', () => {
     // CashRegister created for that store
     expect(mockCashCreateRegister).toHaveBeenCalledWith({
       storeId: 'store-1',
-      name: 'Caja 1',
+      name: 'Caja principal',
     })
     // Returns the store object
     expect(result).toEqual(expectedStore)
   })
 
-  // ── RED 2: transactional rollback on register failure ──
+  // ── transactional rollback on register failure ──
 
-  it('RED: rolls back the store when CashRegister creation fails', async () => {
+  it('rolls back the store when CashRegister creation fails', async () => {
     mockStoresCreate.mockResolvedValue({
       id: 'store-1',
       companyId: 'company-1',
@@ -110,7 +110,7 @@ describe('pos.service — createStore auto-caja', () => {
 
   // ── RED 3: different body data passed through ──
 
-  it('RED: passes full body data through to stores.create within transaction', async () => {
+  it('passes full body data through to stores.create within transaction', async () => {
     const fullBody = {
       name: 'Sucursal Norte',
       code: 'SN-002',
@@ -128,7 +128,7 @@ describe('pos.service — createStore auto-caja', () => {
     mockCashCreateRegister.mockResolvedValue({
       id: 'caja-2',
       storeId: 'store-2',
-      name: 'Caja 1',
+      name: 'Caja principal',
     })
 
     await createStore(ctx, fullBody)

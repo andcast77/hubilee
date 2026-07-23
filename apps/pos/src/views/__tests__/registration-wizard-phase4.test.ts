@@ -66,6 +66,24 @@ describe("Phase 4: registration wizard verification", () => {
     );
     expect(localSrc).not.toMatch(/businessType/);
     expect(shellSrc).not.toMatch(/VERDULERIA|KIOSCO|ELECTRONICA/);
+
+    // Sell / checkout surface must not fork on company businessType either.
+    const floorCandidates = [
+      join(posRoot, "views/POSPages.tsx"),
+      join(posRoot, "components/features/pos"),
+    ];
+    for (const candidate of floorCandidates) {
+      if (!existsSync(candidate)) continue;
+      const st = readFileSync(
+        // If directory, scan key checkout entrypoints only via POSPages + PaymentModal.
+        candidate.endsWith(".tsx")
+          ? candidate
+          : join(candidate, "PaymentModal.tsx"),
+        "utf8",
+      );
+      expect(st).not.toMatch(/\bbusinessType\b/);
+      expect(st).not.toMatch(/VERDULERIA|KIOSCO|ELECTRONICA|ROPA|ACCESORIOS/);
+    }
   });
 
   it("4.3 Hub and HR register UI exist and are outside this Pos-first change", () => {

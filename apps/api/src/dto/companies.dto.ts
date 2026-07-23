@@ -20,6 +20,8 @@ export type CompanyResponse = {
   taxId: string | null
   address: string | null
   phone: string | null
+  /** Rubro — set during registration wizard; null until chosen. */
+  businessType: 'VERDULERIA' | 'KIOSCO' | 'ELECTRONICA' | 'ROPA' | 'ACCESORIOS' | 'OTRO' | null
   createdAt: Date
   updatedAt: Date
 }

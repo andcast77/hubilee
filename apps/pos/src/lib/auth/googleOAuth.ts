@@ -182,8 +182,21 @@ export function startGoogleOAuth(params: {
 
   window.addEventListener('message', onMessage)
 
+  // COOP on the API origin can throw when reading `popup.closed`. Catch so the
+  // interval does not spam the console / main thread (felt as UI lag on later
+  // screens like /onboarding/rubro) while we wait for postMessage or timeout.
+  let coopBlocked = false
   closePollId = setInterval(() => {
-    if (popup.closed) cleanup()
+    if (coopBlocked) return
+    try {
+      if (popup.closed) cleanup()
+    } catch {
+      coopBlocked = true
+      if (closePollId !== undefined) {
+        clearInterval(closePollId)
+        closePollId = undefined
+      }
+    }
   }, 500)
 
   timeoutId = setTimeout(() => {

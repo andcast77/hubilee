@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "@tanstack/react-router";
+import { Link, useNavigate, useParams } from "@/lib/next-nav";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label } from "@hubilee/ui";
 import { PageFrame } from "@/views/PageFrame";
 import { StatsCards } from "@/components/features/reports/StatsCards";

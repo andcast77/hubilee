@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link } from '@/lib/next-nav'
 import { useUser } from '@/hooks/useUser'
 import {
   useAttachMemberEmail,

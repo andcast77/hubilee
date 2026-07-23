@@ -12,7 +12,7 @@
     "test:integration": "NODE_ENV=test vitest run src/__tests__/integration",
     "test:watch": "NODE_ENV=test vitest",
     "test:ui": "NODE_ENV=test vitest --ui",
-    "test:coverage": "NODE_ENV=test vitest run --coverage",
+    "test:coverage": "NODE_ENV=test vitest run --coverage src/__tests__/unit",
     "test:endpoints": "node scripts/test-endpoints.js",
     "load:smoke": "node scripts/load-smoke.mjs",
     "db:generate": "prisma generate",
@@ -70,6 +70,7 @@
     "prisma": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "@vitest/coverage-v8": "catalog:"
   }
 }

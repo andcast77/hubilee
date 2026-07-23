@@ -15,6 +15,7 @@ import {
 } from "next/navigation";
 import {
   forwardRef,
+  useCallback,
   type ComponentPropsWithoutRef,
   type ReactNode,
 } from "react";
@@ -88,11 +89,14 @@ type NavigateOpts = {
 
 export function useNavigate() {
   const router = useRouter();
-  return (opts: NavigateOpts) => {
+  // Must be referentially stable — callers put `navigate` in useEffect deps
+  // (e.g. useRedirectIfAuthenticated). A new function each render re-fires
+  // those effects and loops /me → logout forever.
+  return useCallback((opts: NavigateOpts) => {
     const url = resolveHref(opts.to, opts.params, opts.search);
     if (opts.replace) router.replace(url);
     else router.push(url);
-  };
+  }, [router]);
 }
 
 export function useParams(_opts?: { strict?: boolean }): Record<string, string> {

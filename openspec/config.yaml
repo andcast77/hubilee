@@ -28,7 +28,7 @@ testing:
   coverage:
     available: true
     command: pnpm --filter @hubilee/api run test:coverage
-    note: Vitest v8 provider in apps/api/vitest.config.ts; @vitest/coverage-v8 is resolved in the workspace lockfile
+    note: Vitest v8 via @vitest/coverage-v8 (catalog + apps/api devDependency); unit suite only (no Postgres)
   quality:
     linter:
       available: true

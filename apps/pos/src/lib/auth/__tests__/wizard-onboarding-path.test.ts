@@ -114,7 +114,7 @@ describe("resolveOwnerWizardRedirect", () => {
     ).toBe("/app/onboarding/local");
   });
 
-  it("redirects when on wrong onboarding step (no skip)", () => {
+  it("redirects when skipping ahead to an incomplete step", () => {
     expect(
       resolveOwnerWizardRedirect(
         {
@@ -126,6 +126,31 @@ describe("resolveOwnerWizardRedirect", () => {
         "/app/onboarding/rubro",
       ),
     ).toBe("/app/onboarding/company");
+  });
+
+  it("allows revisiting a completed earlier step", () => {
+    expect(
+      resolveOwnerWizardRedirect(
+        {
+          membershipRole: "OWNER",
+          companyId: "c1",
+          registrationWizardStep: "LOCAL",
+          companyProfileComplete: false,
+        },
+        "/app/onboarding/company",
+      ),
+    ).toBeNull();
+    expect(
+      resolveOwnerWizardRedirect(
+        {
+          membershipRole: "OWNER",
+          companyId: "c1",
+          registrationWizardStep: "LOCAL",
+          companyProfileComplete: false,
+        },
+        "/app/onboarding/rubro",
+      ),
+    ).toBeNull();
   });
 
   it("returns null when already on the resume step", () => {

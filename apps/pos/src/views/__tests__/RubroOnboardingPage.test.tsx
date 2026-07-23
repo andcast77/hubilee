@@ -5,6 +5,7 @@ const replaceMock = vi.fn();
 const usePathnameMock = vi.fn(() => "/app/onboarding/rubro");
 const mockUseUser = vi.fn();
 const mockApiPut = vi.fn();
+const mockApiGet = vi.fn();
 const mockInvalidateQueries = vi.fn();
 
 vi.mock("next/navigation", () => ({
@@ -24,6 +25,7 @@ vi.mock("@/hooks/useUser", () => ({
 
 vi.mock("@/lib/api/client", () => ({
   companiesApi: {
+    get: (companyId: string) => mockApiGet(companyId),
     update: (companyId: string, data: Record<string, unknown>) =>
       mockApiPut(companyId, data),
   },
@@ -50,17 +52,20 @@ afterEach(() => {
   replaceMock.mockClear();
   mockUseUser.mockClear();
   mockApiPut.mockClear();
+  mockApiGet.mockClear();
   mockInvalidateQueries.mockClear();
 });
 
 describe("RubroOnboardingPage", () => {
   async function loadPage() {
+    vi.resetModules();
     const mod = await import("@/views/RubroOnboardingPage");
     return mod.RubroOnboardingPage;
   }
 
   beforeEach(() => {
     mockApiPut.mockResolvedValue({ success: true });
+    mockApiGet.mockResolvedValue({ success: true, data: {} });
     mockUseUser.mockReturnValue({ data: OWNER_USER, isLoading: false });
   });
 
@@ -72,9 +77,31 @@ describe("RubroOnboardingPage", () => {
     expect(screen.getByRole("button", { name: /continuar|guardar/i })).not.toBeNull();
   });
 
+  it("prefills the saved businessType when returning to Rubro", async () => {
+    mockApiGet.mockResolvedValue({
+      success: true,
+      data: { businessType: "KIOSCO" },
+    });
+    const Page = await loadPage();
+    render(<Page />);
+
+    await waitFor(() => {
+      expect(mockApiGet).toHaveBeenCalledWith("c1");
+    });
+    await waitFor(() => {
+      expect(
+        screen.getByRole("radio", { name: /kiosco/i }).getAttribute("aria-checked"),
+      ).toBe("true");
+    });
+  });
+
   it("PUTs businessType ELECTRONICA and advances to Local", async () => {
     const Page = await loadPage();
     render(<Page />);
+
+    await waitFor(() => {
+      expect(mockApiGet).toHaveBeenCalledWith("c1");
+    });
 
     fireEvent.click(screen.getByRole("radio", { name: /electrónica/i }));
     fireEvent.click(screen.getByRole("button", { name: /continuar|guardar/i }));
@@ -98,6 +125,11 @@ describe("RubroOnboardingPage", () => {
   it("does not submit without a selected rubro", async () => {
     const Page = await loadPage();
     render(<Page />);
+
+    await waitFor(() => {
+      expect(mockApiGet).toHaveBeenCalled();
+    });
+
     fireEvent.click(screen.getByRole("button", { name: /continuar|guardar/i }));
     await waitFor(() => {
       expect(screen.getByText(/seleccion/i)).not.toBeNull();

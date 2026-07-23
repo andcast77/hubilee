@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { authApi } from "@/lib/api/client";
 import { shouldCallMeForLoggedInCheck } from "@/lib/auth-session-probe";
 import {
@@ -19,6 +19,8 @@ export function useRedirectIfAuthenticated(options?: {
   skip?: boolean;
 }): { ready: boolean } {
   const navigate = useNavigate();
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
   const next = options?.next ?? null;
   const skip = options?.skip === true;
   const [ready, setReady] = useState(skip);
@@ -45,12 +47,20 @@ export function useRedirectIfAuthenticated(options?: {
           setReady(true);
           return;
         }
-        void navigate({
+        void navigateRef.current({
           to: authenticatedAppPathFromMe(me, next),
           replace: true,
         });
         // Stay unready while navigation replaces the page.
       } catch {
+        // Stale cookies after DB reset: clear API httpOnly jar once.
+        const apiBase = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
+        void fetch(`${apiBase}/v1/auth/logout`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: "{}",
+        }).catch(() => {});
         if (!cancelled) setReady(true);
       }
     };
@@ -59,7 +69,8 @@ export function useRedirectIfAuthenticated(options?: {
     return () => {
       cancelled = true;
     };
-  }, [navigate, next, skip]);
+    // Intentionally omit `navigate` — use navigateRef (unstable fn identity caused /me↔logout loops).
+  }, [next, skip]);
 
   return { ready };
 }

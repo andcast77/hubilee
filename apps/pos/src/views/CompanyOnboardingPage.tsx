@@ -163,7 +163,6 @@ export function CompanyOnboardingPage() {
       step="empresa"
       title="Completá los datos de tu empresa"
       subtitle="Necesitamos el nombre fiscal y el RFC / CUIT para habilitar el punto de venta."
-      blurb="Completá los datos fiscales para habilitar el punto de venta."
     >
       <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5">
         <div className="space-y-2">
