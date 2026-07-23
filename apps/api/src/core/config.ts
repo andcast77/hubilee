@@ -38,6 +38,12 @@ export type AppConfig = {
   MAIL_FROM: string
   /** Base URL for post-registration email verification links (Hub). */
   HUB_PUBLIC_URL: string
+  /** Google OAuth web client id. Empty disables Google auth routes (503). */
+  GOOGLE_CLIENT_ID: string
+  /** Google OAuth client secret. */
+  GOOGLE_CLIENT_SECRET: string
+  /** Absolute API callback URL registered in Google Cloud Console. */
+  GOOGLE_REDIRECT_URI: string
 }
 
 /**
@@ -82,6 +88,9 @@ export function getConfig(): AppConfig {
     RESEND_API_KEY: (process.env.RESEND_API_KEY ?? '').trim(),
     MAIL_FROM: (process.env.MAIL_FROM ?? '').trim(),
     HUB_PUBLIC_URL: (process.env.HUB_PUBLIC_URL ?? '').trim(),
+    GOOGLE_CLIENT_ID: (process.env.GOOGLE_CLIENT_ID ?? '').trim(),
+    GOOGLE_CLIENT_SECRET: (process.env.GOOGLE_CLIENT_SECRET ?? '').trim(),
+    GOOGLE_REDIRECT_URI: (process.env.GOOGLE_REDIRECT_URI ?? '').trim(),
   }
 }
 

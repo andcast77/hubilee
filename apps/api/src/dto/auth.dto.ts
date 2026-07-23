@@ -147,6 +147,24 @@ export const changePasswordBodySchema = z
 
 export type ChangePasswordBody = z.infer<typeof changePasswordBodySchema>
 
+/** Google OAuth start query. */
+export const googleOAuthStartQuerySchema = z.object({
+  returnOrigin: z.string().min(1),
+  intent: z.enum(['login', 'register']).optional(),
+  next: z.string().optional(),
+})
+
+export type GoogleOAuthStartQuery = z.infer<typeof googleOAuthStartQuerySchema>
+
+/** Google OAuth callback query. */
+export const googleOAuthCallbackQuerySchema = z.object({
+  code: z.string().optional(),
+  state: z.string().optional(),
+  error: z.string().optional(),
+})
+
+export type GoogleOAuthCallbackQuery = z.infer<typeof googleOAuthCallbackQuerySchema>
+
 /** Input DTO: verify token */
 export const verifyTokenSchema = z.object({
   token: z.string().min(1),

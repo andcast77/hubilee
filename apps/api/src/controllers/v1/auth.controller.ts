@@ -22,9 +22,12 @@ import {
   resendVerificationBodySchema,
   changePasswordBodySchema,
   refreshBodySchema,
+  googleOAuthStartQuerySchema,
+  googleOAuthCallbackQuerySchema,
 } from '../../dto/auth.dto.js'
 import { ok } from '../../common/api-response.js'
 import * as authService from '../../services/auth.service.js'
+import * as googleOAuthService from '../../services/google-oauth.service.js'
 import * as registrationOtpService from '../../services/registration-otp.service.js'
 import * as registrationLinkService from '../../services/registration-link.service.js'
 import * as emailVerificationService from '../../services/email-verification.service.js'
@@ -564,6 +567,114 @@ export async function registerMfaAuthRoutes(fastify: FastifyInstance) {
   fastify.post('/v1/auth/mfa/verify-backup', { schema: authSuccessResponseSchema }, (request, reply) =>
     verifyMfaBackup(request, reply)
   )
+}
+
+/** Build Pos redirect after Google callback (exported for unit tests). */
+export function buildGoogleOAuthAppRedirect(params: {
+  returnOrigin: string
+  kind: 'session' | 'mfa' | 'error'
+  next?: string | null
+  tempToken?: string
+  errorCode?: string
+}): string {
+  const origin = params.returnOrigin.replace(/\/$/, '')
+  if (params.kind === 'mfa' && params.tempToken) {
+    const url = new URL('/login', `${origin}/`)
+    url.searchParams.set('mfa', '1')
+    url.searchParams.set('tempToken', params.tempToken)
+    return url.toString()
+  }
+  if (params.kind === 'error') {
+    const url = new URL('/login', `${origin}/`)
+    url.searchParams.set('oauth_error', params.errorCode ?? 'OAUTH_ERROR')
+    return url.toString()
+  }
+  const next = googleOAuthService.safeOAuthNextPath(params.next ?? null) ?? '/dashboard'
+  return `${origin}${next}`
+}
+
+export async function googleStart(request: FastifyRequest, reply: FastifyReply) {
+  const q = validateQuery(googleOAuthStartQuerySchema, request.query)
+  const { authorizeUrl } = await googleOAuthService.startGoogleOAuth({
+    returnOrigin: q.returnOrigin,
+    intent: q.intent,
+    next: q.next,
+  })
+  return reply.redirect(authorizeUrl)
+}
+
+export async function googleCallback(request: FastifyRequest, reply: FastifyReply) {
+  const q = validateQuery(googleOAuthCallbackQuerySchema, request.query)
+  if (q.error) {
+    // Google denied — no session; cannot redirect without state origin.
+    throw new BadRequestError('Google OAuth cancelado', 'GOOGLE_OAUTH_DENIED')
+  }
+
+  const ip = request.ip
+  const ua = (request.headers['user-agent'] as string | undefined) ?? null
+  const outcome = await googleOAuthService.completeGoogleOAuthCallback({
+    code: q.code,
+    state: q.state,
+  })
+
+  if (outcome.kind === 'error') {
+    if (!outcome.returnOrigin) {
+      throw new BadRequestError('OAuth falló', outcome.code)
+    }
+    return reply.redirect(
+      buildGoogleOAuthAppRedirect({
+        returnOrigin: outcome.returnOrigin,
+        kind: 'error',
+        errorCode: outcome.code,
+      }),
+    )
+  }
+
+  if (outcome.kind === 'mfa') {
+    return reply.redirect(
+      buildGoogleOAuthAppRedirect({
+        returnOrigin: outcome.returnOrigin,
+        kind: 'mfa',
+        tempToken: outcome.tempToken,
+      }),
+    )
+  }
+
+  const { login, returnOrigin, next } = outcome
+  if (login.companyId) {
+    writeAuditLog({
+      companyId: login.companyId,
+      userId: login.user.id,
+      action: 'LOGIN_SUCCESS',
+      entityType: 'auth',
+      entityId: login.user.id,
+      ipAddress: ip,
+      userAgent: ua,
+    })
+  }
+  await attachWebAuthCookies(
+    reply,
+    login.token,
+    login.user.id,
+    {
+      companyId: login.companyId,
+      membershipRole: login.membershipRole,
+    },
+    { ip, ua },
+  )
+  return reply.redirect(
+    buildGoogleOAuthAppRedirect({
+      returnOrigin,
+      kind: 'session',
+      next,
+    }),
+  )
+}
+
+/** Google OAuth start + callback — dedicated rate-limit bucket. */
+export async function registerGoogleAuthRoutes(fastify: FastifyInstance) {
+  fastify.get('/v1/auth/google', (request, reply) => googleStart(request, reply))
+  fastify.get('/v1/auth/google/callback', (request, reply) => googleCallback(request, reply))
 }
 
 /** Login, register, verify — own rate-limit bucket (see server.ts). */

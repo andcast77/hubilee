@@ -11,7 +11,10 @@ function pathOnly(url: string): string {
   return url.split('?')[0]
 }
 
-/** Public auth paths that use the dedicated `ms-auth-public` bucket (not the global IP bucket). */
+/** Exported for unit tests — Google OAuth uses dedicated `ms-auth-google` bucket (20/min). */
+export const GOOGLE_OAUTH_RATE_LIMIT_MAX = 20
+
+/** Public auth paths that use a dedicated bucket (not the global IP bucket). */
 export function isAuthPublicPath(url: string): boolean {
   const p = pathOnly(url)
   return (
@@ -26,8 +29,15 @@ export function isAuthPublicPath(url: string): boolean {
     p === '/v1/auth/register/link/send' ||
     p === '/v1/auth/register/link/verify' ||
     p === '/v1/auth/verify-email' ||
-    p === '/v1/auth/resend-verification'
+    p === '/v1/auth/resend-verification' ||
+    p === '/v1/auth/google' ||
+    p === '/v1/auth/google/callback'
   )
+}
+
+export function isGoogleOAuthPath(url: string): boolean {
+  const p = pathOnly(url)
+  return p === '/v1/auth/google' || p === '/v1/auth/google/callback'
 }
 
 /** Vercel Cron → GET /v1/internal/cron/* — do not count toward the global IP bucket. */
@@ -80,6 +90,16 @@ export const rateLimitPlugin: FastifyPluginAsync = async (fastify) => {
     } as Parameters<typeof f.register>[1])
 
     await authController.registerMfaAuthRoutes(f)
+  })
+
+  await fastify.register(async function googleOAuthScope(f) {
+    await f.register(rateLimit, {
+      max: GOOGLE_OAUTH_RATE_LIMIT_MAX,
+      timeWindow: '1 minute',
+      name: 'ms-auth-google',
+    } as Parameters<typeof f.register>[1])
+
+    await authController.registerGoogleAuthRoutes(f)
   })
 }
 

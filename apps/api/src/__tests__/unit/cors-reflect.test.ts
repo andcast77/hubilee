@@ -1,16 +1,36 @@
-import { describe, it, expect } from 'vitest'
+import { beforeEach, describe, it, expect } from 'vitest'
 import {
   applyCorsHeadersToRawResponse,
+  assertAllowlistedOrigin,
   parseCorsOriginList,
   reflectAllowedOrigin,
 } from '../../core/cors-reflect.js'
+import { BadRequestError } from '../../common/errors/app-error.js'
 
 describe('cors-reflect', () => {
+  beforeEach(() => {
+    process.env.CORS_ORIGIN =
+      'http://localhost:3001,http://localhost:3002,http://localhost:3003'
+  })
+
   it('parseCorsOriginList splits and trims', () => {
     expect(parseCorsOriginList('http://localhost:3001, http://localhost:3002')).toEqual([
       'http://localhost:3001',
       'http://localhost:3002',
     ])
+  })
+
+  it('assertAllowlistedOrigin accepts CORS_ORIGIN entry', () => {
+    expect(assertAllowlistedOrigin('http://localhost:3002')).toBe('http://localhost:3002')
+  })
+
+  it('assertAllowlistedOrigin rejects unallowlisted returnOrigin', () => {
+    expect(() => assertAllowlistedOrigin('https://evil.example')).toThrow(BadRequestError)
+    try {
+      assertAllowlistedOrigin('https://evil.example')
+    } catch (e) {
+      expect(e).toMatchObject({ code: 'RETURN_ORIGIN_NOT_ALLOWED' })
+    }
   })
 
   it('reflectAllowedOrigin returns the origin when allowed', () => {

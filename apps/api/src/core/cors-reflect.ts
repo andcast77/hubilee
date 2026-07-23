@@ -1,4 +1,6 @@
 import type { ServerResponse } from 'http'
+import { BadRequestError } from '../common/errors/app-error.js'
+import { getConfig } from './config.js'
 
 /**
  * Mirrors @fastify/cors behavior for hijacked/raw responses: reflect allowed Origin
@@ -9,6 +11,32 @@ export function parseCorsOriginList(corsOrigin: string): string[] {
     .split(',')
     .map((o) => o.trim())
     .filter(Boolean)
+}
+
+/**
+ * Fail-closed origin check for OAuth returnOrigin (and similar redirects).
+ * Reuses CORS_ORIGIN allowlist — same source as registration verification base URL.
+ */
+export function assertAllowlistedOrigin(returnOrigin: string): string {
+  const raw = returnOrigin.trim()
+  let parsed: URL
+  try {
+    parsed = new URL(raw)
+  } catch {
+    throw new BadRequestError('Origen de retorno inválido', 'RETURN_ORIGIN_INVALID')
+  }
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new BadRequestError('Origen de retorno inválido', 'RETURN_ORIGIN_INVALID')
+  }
+  if (parsed.username || parsed.password || parsed.search || parsed.hash) {
+    throw new BadRequestError('Origen de retorno inválido', 'RETURN_ORIGIN_INVALID')
+  }
+  const origin = `${parsed.protocol}//${parsed.host}`.replace(/\/$/, '')
+  const allowed = parseCorsOriginList(getConfig().CORS_ORIGIN)
+  if (!allowed.includes(origin)) {
+    throw new BadRequestError('Origen de retorno no permitido', 'RETURN_ORIGIN_NOT_ALLOWED')
+  }
+  return origin
 }
 
 export function reflectAllowedOrigin(

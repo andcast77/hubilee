@@ -36,6 +36,9 @@ export const envSchema = {
     'MAIL_FROM',
     'HUB_PUBLIC_URL',
     'ENABLE_API_DOCS',
+    'GOOGLE_CLIENT_ID',
+    'GOOGLE_CLIENT_SECRET',
+    'GOOGLE_REDIRECT_URI',
   ],
   properties: {
     PORT: { type: 'string' },
@@ -67,6 +70,10 @@ export const envSchema = {
     MAIL_FROM: { type: 'string' },
     HUB_PUBLIC_URL: { type: 'string' },
     ENABLE_API_DOCS: { type: 'string' },
+    /** Empty string disables Google OAuth (start/callback → 503). */
+    GOOGLE_CLIENT_ID: { type: 'string' },
+    GOOGLE_CLIENT_SECRET: { type: 'string' },
+    GOOGLE_REDIRECT_URI: { type: 'string' },
   },
 } as const
 
