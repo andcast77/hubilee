@@ -92,13 +92,18 @@ export async function createStore(
   ctx: CompanyContext,
   body: { name: string; code: string; address?: string | null; phone?: string | null; email?: string | null; taxId?: string | null }
 ) {
-  return createRepositories(ctx.companyId).stores.create({
-    name: body.name,
-    code: body.code,
-    address: body.address ?? null,
-    phone: body.phone ?? null,
-    email: body.email ?? null,
-    taxId: body.taxId ?? null,
+  return prisma.$transaction(async (tx) => {
+    const repos = createRepositories(ctx.companyId, tx)
+    const store = await repos.stores.create({
+      name: body.name,
+      code: body.code,
+      address: body.address ?? null,
+      phone: body.phone ?? null,
+      email: body.email ?? null,
+      taxId: body.taxId ?? null,
+    })
+    await repos.cash.createRegister({ storeId: store.id, name: 'Caja 1' })
+    return store
   })
 }
 
