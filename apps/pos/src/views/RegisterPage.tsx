@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Link } from "@/lib/next-nav";
+import { Link, useNavigate } from "@/lib/next-nav";
 import { ApiError } from "@hubilee/shared";
 import {
   Button,
@@ -140,6 +140,7 @@ function RegisterVisualPanel() {
 // ============================================================
 
 export function RegisterPage() {
+  const navigate = useNavigate();
   const [form, setForm] = useState<RegisterInput>({
     email: "",
     password: "",
@@ -151,7 +152,28 @@ export function RegisterPage() {
   const [turnstileKey, setTurnstileKey] = useState(0);
 
   function handleGoogleClick() {
-    startGoogleOAuth({ intent: "register" });
+    startGoogleOAuth({
+      intent: "register",
+      onResult: (result) => {
+        if (result.status === "session") {
+          void navigate({
+            to: result.next ?? "/dashboard",
+            replace: true,
+          });
+          return;
+        }
+        if (result.status === "mfa") {
+          // Match page-mode redirect: MFA UI lives on LoginPage.
+          void navigate({
+            to: "/login",
+            search: { mfa: "1", tempToken: result.tempToken },
+            replace: true,
+          });
+          return;
+        }
+        notifyError("No se pudo continuar con Google. Intentá de nuevo.");
+      },
+    });
   }
 
   async function sendLink(e: React.FormEvent) {

@@ -242,7 +242,28 @@ export function LoginPage() {
   }
 
   function handleGoogleClick() {
-    startGoogleOAuth({ intent: "login", next: nextPath });
+    startGoogleOAuth({
+      intent: "login",
+      next: nextPath,
+      onResult: (result) => {
+        if (result.status === "session") {
+          void navigate({
+            to: result.next ?? nextPath ?? "/dashboard",
+            replace: true,
+          });
+          return;
+        }
+        if (result.status === "mfa") {
+          setMfaStep(true);
+          setMfaTempToken(result.tempToken);
+          setMfaCompanyId(undefined);
+          setMfaCode("");
+          setMfaBackup(false);
+          return;
+        }
+        notifyError("No se pudo iniciar sesión con Google. Intentá de nuevo.");
+      },
+    });
   }
 
   async function handleMfaSubmit(e: FormEvent) {
