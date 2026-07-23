@@ -59,6 +59,8 @@ describe("buildPosLegacyAppRedirects", () => {
     expect(sources).not.toContain("/login");
     expect(sources).not.toContain("/register");
     expect(sources).not.toContain("/terms");
+    expect(sources).not.toContain("/forgot-password");
+    expect(sources).not.toContain("/reset-password");
     expect(sources.every((s) => s.startsWith("/") && !s.startsWith(POS_APP_BASE))).toBe(
       true,
     );

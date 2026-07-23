@@ -21,7 +21,14 @@ import {
 } from "react";
 import { toAppPath } from "@/lib/app-paths";
 
-const PUBLIC_PREFIXES = ["/", "/login", "/register", "/terms"] as const;
+const PUBLIC_PREFIXES = [
+  "/",
+  "/login",
+  "/register",
+  "/terms",
+  "/forgot-password",
+  "/reset-password",
+] as const;
 
 function isPublicPath(path: string): boolean {
   const pathname = path.split("?")[0] ?? path;

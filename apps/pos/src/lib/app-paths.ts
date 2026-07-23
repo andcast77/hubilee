@@ -1,6 +1,7 @@
 /**
  * Authenticated Pos webapp lives under `/app/*` (PWA scope / Hub parity).
- * Public marketing + auth stay at `/`, `/login`, `/register`, `/terms`.
+ * Public marketing + auth stay at `/`, `/login`, `/register`, `/terms`,
+ * `/forgot-password`, `/reset-password`.
  */
 
 export const POS_APP_BASE = "/app";
