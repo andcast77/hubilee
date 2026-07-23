@@ -7,6 +7,7 @@ const mockUseUser = vi.fn();
 const mockApiPut = vi.fn();
 const mockApiGet = vi.fn();
 const mockInvalidateQueries = vi.fn();
+const mockSetQueryData = vi.fn();
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: replaceMock }),
@@ -16,7 +17,10 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@tanstack/react-query", () => ({
-  useQueryClient: () => ({ invalidateQueries: mockInvalidateQueries }),
+  useQueryClient: () => ({
+    invalidateQueries: mockInvalidateQueries,
+    setQueryData: mockSetQueryData,
+  }),
 }));
 
 vi.mock("@/hooks/useUser", () => ({
@@ -54,6 +58,7 @@ afterEach(() => {
   mockApiPut.mockClear();
   mockApiGet.mockClear();
   mockInvalidateQueries.mockClear();
+  mockSetQueryData.mockClear();
 });
 
 describe("RubroOnboardingPage", () => {
@@ -66,6 +71,7 @@ describe("RubroOnboardingPage", () => {
   beforeEach(() => {
     mockApiPut.mockResolvedValue({ success: true });
     mockApiGet.mockResolvedValue({ success: true, data: {} });
+    mockInvalidateQueries.mockResolvedValue(undefined);
     mockUseUser.mockReturnValue({ data: OWNER_USER, isLoading: false });
   });
 

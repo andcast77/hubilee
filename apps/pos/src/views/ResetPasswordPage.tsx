@@ -5,6 +5,7 @@ import { Link, useNavigate, useSearch } from "@/lib/next-nav";
 import { ApiError } from "@hubilee/shared";
 import type { ApiResponse } from "@hubilee/contracts";
 import { Button, Input, Label } from "@hubilee/ui";
+import { OtpCodeInput } from "@/components/auth/OtpCodeInput";
 import { authApi } from "@/lib/api/client";
 import { toast } from "sonner";
 
@@ -99,22 +100,21 @@ export function ResetPasswordPage() {
                 ? `Código enviado a ${email}`
                 : "Ingresá el código del correo y tu nueva contraseña."}
             </p>
-            <form className="mt-6 space-y-4" onSubmit={(e) => void onSubmit(e)}>
-              <div className="space-y-2">
+            <form className="mt-10 space-y-6" onSubmit={(e) => void onSubmit(e)}>
+              <div>
                 <Label className={labelClass} htmlFor="reset-otp">
-                  Código
+                  Ingresá el código de 6 dígitos
                 </Label>
-                <Input
-                  id="reset-otp"
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={6}
-                  className={inputClass}
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  placeholder="000000"
-                  autoComplete="one-time-code"
-                />
+                <div className="mt-8">
+                  <OtpCodeInput
+                    id="reset-otp"
+                    value={code}
+                    onChange={setCode}
+                    disabled={isLoading}
+                    autoFocus
+                    aria-label="Código de 6 dígitos"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label className={labelClass} htmlFor="reset-new-password">

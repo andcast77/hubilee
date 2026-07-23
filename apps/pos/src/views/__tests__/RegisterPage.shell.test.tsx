@@ -102,10 +102,12 @@ describe("RegisterPage OTP shell", () => {
     ).toBe(true);
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText("000000")).toBeTruthy();
+      expect(screen.getByRole("group", { name: /código de 6 dígitos/i })).toBeTruthy();
     });
 
-    fireEvent.change(screen.getByPlaceholderText("000000"), { target: { value: "123456" } });
+    fireEvent.change(screen.getByLabelText(/dígito 1 de 6/i), {
+      target: { value: "123456" },
+    });
     fireEvent.click(screen.getByRole("button", { name: /verificar código/i }));
 
     await waitFor(() => {

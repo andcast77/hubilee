@@ -75,6 +75,7 @@ describe('password-reset-otp.service', () => {
     process.env.NODE_ENV = 'test'
     process.env.TURNSTILE_SECRET_KEY = ''
     process.env.OTP_CHALLENGE_TTL_SECONDS = process.env.OTP_CHALLENGE_TTL_SECONDS || '600'
+    process.env.OTP_SEND_MAX = '3'
   })
 
   afterEach(() => {

@@ -17,6 +17,22 @@ import {
 
 type Challenge = { h: string; sc: number; fc: number }
 
+/** Upstash puede devolver string JSON o el objeto ya parseado. */
+function parseChallenge(raw: unknown): Challenge | null {
+  if (raw == null) return null
+  if (typeof raw === 'string') {
+    try {
+      return JSON.parse(raw) as Challenge
+    } catch {
+      return null
+    }
+  }
+  if (typeof raw === 'object' && raw !== null && 'h' in raw) {
+    return raw as Challenge
+  }
+  return null
+}
+
 function challengeKey(email: string): string {
   return `pwreset:ch:${Buffer.from(email.trim().toLowerCase()).toString('base64url')}`
 }
@@ -69,16 +85,8 @@ export async function sendPasswordResetOtp(params: {
   }
 
   const key = challengeKey(email)
-  const raw = await redis.get(key)
-  let prev: Challenge | null = null
-  if (raw && typeof raw === 'string') {
-    try {
-      prev = JSON.parse(raw) as Challenge
-    } catch {
-      prev = null
-    }
-  }
-  if (prev && prev.sc >= 3) {
+  const prev = parseChallenge(await redis.get(key))
+  if (prev && prev.sc >= config.OTP_SEND_MAX) {
     throw new TooManyRequestsError(
       'Límite de envíos de código alcanzado. Espera o vuelve más tarde.',
       undefined,
@@ -115,14 +123,8 @@ export async function verifyPasswordResetOtp(params: {
   }
   const pepper = effectivePepper(config)
   const key = challengeKey(email)
-  const raw = await redis.get(key)
-  if (!raw || typeof raw !== 'string') {
-    throw new BadRequestError('Código inválido o expirado', 'INVALID_OTP')
-  }
-  let ch: Challenge
-  try {
-    ch = JSON.parse(raw) as Challenge
-  } catch {
+  const ch = parseChallenge(await redis.get(key))
+  if (!ch?.h) {
     throw new BadRequestError('Código inválido o expirado', 'INVALID_OTP')
   }
 

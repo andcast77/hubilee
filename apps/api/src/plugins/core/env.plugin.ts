@@ -66,6 +66,7 @@ export const envSchema = {
     REGISTRATION_TICKET_SECRET: { type: 'string' },
     REGISTRATION_TICKET_EXPIRES_IN: { type: 'string' },
     OTP_CHALLENGE_TTL_SECONDS: { type: 'string' },
+    OTP_SEND_MAX: { type: 'string' },
     RESEND_API_KEY: { type: 'string' },
     MAIL_FROM: { type: 'string' },
     HUB_PUBLIC_URL: { type: 'string' },

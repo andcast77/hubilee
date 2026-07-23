@@ -16,6 +16,7 @@ import {
 } from "@hubilee/ui";
 import { accountApi, authApi } from "@/lib/api/client";
 import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
+import { OtpCodeInput } from "@/components/auth/OtpCodeInput";
 import { RegistrationTurnstile } from "@/components/auth/RegistrationTurnstile";
 import { startGoogleOAuth } from "@/lib/auth/googleOAuth";
 import {
@@ -259,6 +260,7 @@ export function RegisterPage() {
         body.captchaToken = captchaToken.trim();
       }
       await authApi.post("/register/otp/send", body);
+      setOtpCode("");
       toast.success("Código reenviado", { duration: TOAST_MS });
     } catch (err) {
       notifyError(err instanceof ApiError ? err.message : "No se pudo reenviar el código.");
@@ -295,7 +297,7 @@ export function RegisterPage() {
             </div>
 
             {step === "otp" ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
                   Verificá tu email
                 </h1>
@@ -304,19 +306,18 @@ export function RegisterPage() {
                   <strong className="text-slate-900">{form.email}</strong>
                 </p>
 
-                <form className="space-y-4 pt-2" onSubmit={(e) => void verifyOtpAndRegister(e)}>
-                  <div className="space-y-2">
-                    <Label className={labelClass}>Código de verificación</Label>
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      autoComplete="one-time-code"
-                      maxLength={6}
-                      className={inputClass}
-                      value={otpCode}
-                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                      placeholder="000000"
-                    />
+                <form className="mt-10 space-y-6" onSubmit={(e) => void verifyOtpAndRegister(e)}>
+                  <div>
+                    <Label className={labelClass}>Ingresá el código de 6 dígitos</Label>
+                    <div className="mt-8">
+                      <OtpCodeInput
+                        value={otpCode}
+                        onChange={setOtpCode}
+                        disabled={isLoading}
+                        autoFocus
+                        aria-label="Código de 6 dígitos"
+                      />
+                    </div>
                   </div>
                   <Button type="submit" className={primaryBtnClass} disabled={isLoading}>
                     {isLoading ? "Verificando…" : "Verificar código"}

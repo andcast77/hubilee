@@ -32,6 +32,8 @@ export type AppConfig = {
   REGISTRATION_TICKET_EXPIRES_IN: string
   /** Redis TTL for OTP challenge (seconds). */
   OTP_CHALLENGE_TTL_SECONDS: number
+  /** Max OTP send attempts per challenge key (default 3). Raise in local via OTP_SEND_MAX. */
+  OTP_SEND_MAX: number
   /** Resend API key (https://resend.com/docs/api-reference/emails/send-email). */
   RESEND_API_KEY: string
   /** Remitente verificado en el proveedor, p. ej. `Hubilee <noreply@tudominio.com>`. */
@@ -85,6 +87,7 @@ export function getConfig(): AppConfig {
     REGISTRATION_TICKET_SECRET: (process.env.REGISTRATION_TICKET_SECRET ?? '').trim(),
     REGISTRATION_TICKET_EXPIRES_IN: (process.env.REGISTRATION_TICKET_EXPIRES_IN ?? '').trim(),
     OTP_CHALLENGE_TTL_SECONDS: parsePositiveInt(process.env.OTP_CHALLENGE_TTL_SECONDS),
+    OTP_SEND_MAX: parsePositiveInt(process.env.OTP_SEND_MAX) || 3,
     RESEND_API_KEY: (process.env.RESEND_API_KEY ?? '').trim(),
     MAIL_FROM: (process.env.MAIL_FROM ?? '').trim(),
     HUB_PUBLIC_URL: (process.env.HUB_PUBLIC_URL ?? '').trim(),

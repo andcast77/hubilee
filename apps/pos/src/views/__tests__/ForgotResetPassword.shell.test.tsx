@@ -81,7 +81,9 @@ describe("Pos password-reset OTP UI", () => {
   it("ResetPasswordPage verifies OTP then sets new password via reset API only", async () => {
     render(<ResetPasswordPage />);
 
-    fireEvent.change(screen.getByPlaceholderText("000000"), { target: { value: "123456" } });
+    fireEvent.change(screen.getByLabelText(/dígito 1 de 6/i), {
+      target: { value: "123456" },
+    });
     fireEvent.change(screen.getByLabelText(/nueva contraseña/i), {
       target: { value: "NewSecure1" },
     });

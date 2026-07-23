@@ -67,6 +67,7 @@ describe('registration-otp.service (PLAN-39)', () => {
     process.env.NODE_ENV = 'test'
     process.env.TURNSTILE_SECRET_KEY = ''
     process.env.OTP_CHALLENGE_TTL_SECONDS = process.env.OTP_CHALLENGE_TTL_SECONDS || '600'
+    process.env.OTP_SEND_MAX = '3'
   })
 
   afterEach(() => {
@@ -121,6 +122,18 @@ describe('registration-otp.service (PLAN-39)', () => {
     const out = await verifyRegistrationOtp({ email, code: lastCode! })
     expect(out.registrationTicket).toBe('mock-registration-ticket-jwt')
     expect(mockIssueRegistrationTicket).toHaveBeenCalledWith(email)
+  })
+
+  it('verifyRegistrationOtp: accepts Upstash auto-parsed object (not only JSON string)', async () => {
+    const email = 'upstash-object@example.com'
+    await sendRegistrationOtp({ email, captchaToken: 'tok' })
+    const key = [...redisBacking.map.keys()].find((k) => k.startsWith('regotp:ch:'))
+    expect(key).toBeTruthy()
+    const asString = redisBacking.map.get(key!)!
+    redisBacking.map.set(key!, JSON.parse(asString) as unknown as string)
+
+    const out = await verifyRegistrationOtp({ email, code: lastCode! })
+    expect(out.registrationTicket).toBe('mock-registration-ticket-jwt')
   })
 
   describe('optional captcha (auth-registration-email-otp)', () => {
