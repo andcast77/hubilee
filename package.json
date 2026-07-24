@@ -26,7 +26,7 @@
     "knip:hr": "pnpm -C apps/hr exec knip --config knip.jsonc --production --include files",
     "knip:all": "pnpm run knip:hub && pnpm run knip:pos && pnpm run knip:tech && pnpm run knip:hr",
     "migrate:dev": "pnpm --filter=@hubilee/api run migrate:dev",
-    "migrate:deploy": "pnpm --filter=@hubilee/api run migrate:deploy",
+    "db:migrate": "pnpm --filter=@hubilee/api run migrate:deploy",
     "db:push": "pnpm --filter=@hubilee/api run db:push",
     "db:push:dev": "pnpm --filter=@hubilee/api run db:push:dev",
     "db:seed": "pnpm --filter=@hubilee/api run db:seed",

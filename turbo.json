@@ -37,14 +37,18 @@
     "UPSTASH_REDIS_REST_URL",
     "VAPID_PRIVATE_KEY",
     "VAPID_PUBLIC_KEY",
-    "VAPID_SUBJECT"
+    "VAPID_SUBJECT",
+    "TURNSTILE_SITE_KEY",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "GOOGLE_REDIRECT_URI",
+    "OTP_SEND_MAX"
   ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**", "src/generated/**"],
       "env": [
-
         "FIELD_ENCRYPTION_KEY",
         "NEXT_PUBLIC_API_URL",
         "NEXT_PUBLIC_HUB_URL",
