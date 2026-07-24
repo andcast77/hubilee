@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
   "buildCommand": "cd ../.. && pnpm exec turbo run build --filter=@hubilee/contracts... && pnpm --filter @hubilee/api run build:vercel",
   "installCommand": "cd ../.. && pnpm install",
   "functions": {
@@ -10,7 +11,11 @@
   },
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/",
+      "destination": "/api"
+    },
+    {
+      "source": "/:path*",
       "destination": "/api"
     }
   ],
