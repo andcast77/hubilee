@@ -3,6 +3,7 @@
  * Rewrite "/(.*)" -> "/api" in vercel.json so this handler receives every request.
  */
 
+import { existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { pathToFileURL } from 'url'
 import { fileURLToPath } from 'url'
@@ -48,6 +49,23 @@ interface FetchRequest {
 
 let appPromise: Promise<import('fastify').FastifyInstance> | null = null
 
+function resolveServerPath(): string {
+  // Prefer paths relative to this handler (apps/api/api → apps/api/dist).
+  // Fallbacks cover Root Directory = apps/api (cwd=…) and monorepo root (cwd=/var/task).
+  const candidates = [
+    join(__dirname, '..', 'dist', 'server.js'),
+    join(process.cwd(), 'dist', 'server.js'),
+    join(process.cwd(), 'apps', 'api', 'dist', 'server.js'),
+  ]
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) return candidate
+  }
+  throw new Error(
+    `API server bundle not found. Tried: ${candidates.join(' | ')}. ` +
+      'Ensure turbo build emits apps/api/dist and vercel.json includeFiles covers dist/**.',
+  )
+}
+
 function loadServer(serverPath: string): Promise<import('fastify').FastifyInstance> {
   return import(pathToFileURL(serverPath).href)
     .then((m: { default: import('fastify').FastifyInstance }) => m.default)
@@ -59,22 +77,9 @@ function loadServer(serverPath: string): Promise<import('fastify').FastifyInstan
 
 function getApp(): Promise<import('fastify').FastifyInstance> {
   if (!appPromise) {
-    const relPath = join(__dirname, '..', 'dist', 'server.js')
-    const cwdPath = join(process.cwd(), 'dist', 'server.js')
-    const monorepoApiPath = join(process.cwd(), 'packages', 'api', 'dist', 'server.js')
-    appPromise = loadServer(relPath).catch((err) => {
-      const msg = err instanceof Error ? err.message : String(err)
-      if (process.env.VERCEL && /ENOENT|MODULE_NOT_FOUND|cannot find/i.test(msg)) {
-        return loadServer(cwdPath).catch((err2) => {
-          const msg2 = err2 instanceof Error ? err2.message : String(err2)
-          if (/ENOENT|MODULE_NOT_FOUND|cannot find/i.test(msg2)) {
-            return loadServer(monorepoApiPath)
-          }
-          throw err2
-        })
-      }
-      throw err
-    })
+    appPromise = Promise.resolve()
+      .then(() => resolveServerPath())
+      .then((serverPath) => loadServer(serverPath))
   }
   return appPromise
 }
