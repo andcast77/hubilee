@@ -96,6 +96,22 @@ function companyNameFromGoogle(info: GoogleUserInfo): string {
   return local || 'Mi empresa'
 }
 
+function rethrowOAuthStoreFailure(err: unknown): never {
+  if (err instanceof ServiceUnavailableError || err instanceof BadRequestError) throw err
+  const msg = err instanceof Error ? err.message : String(err)
+  // Upstash ACL / wrong token often surfaces as NOPERM on SET/GET/DEL.
+  if (/NOPERM|WRONGPASS|NOAUTH|unauthorized/i.test(msg)) {
+    throw new ServiceUnavailableError(
+      'OAuth no disponible. Revisá permisos del token Upstash Redis (SET/GET/DEL).',
+      'OAUTH_STORE_UNAVAILABLE',
+    )
+  }
+  throw new ServiceUnavailableError(
+    'OAuth no disponible. Configura Upstash Redis (UPSTASH_*).',
+    'OAUTH_STORE_UNAVAILABLE',
+  )
+}
+
 export async function createGoogleOAuthState(
   payload: GoogleOAuthStatePayload,
 ): Promise<string> {
@@ -107,9 +123,13 @@ export async function createGoogleOAuthState(
     )
   }
   const state = randomBytes(32).toString('base64url')
-  await redis.set(`${OAUTH_STATE_PREFIX}${state}`, JSON.stringify(payload), {
-    ex: OAUTH_STATE_TTL_SECONDS,
-  })
+  try {
+    await redis.set(`${OAUTH_STATE_PREFIX}${state}`, JSON.stringify(payload), {
+      ex: OAUTH_STATE_TTL_SECONDS,
+    })
+  } catch (err) {
+    rethrowOAuthStoreFailure(err)
+  }
   return state
 }
 
@@ -122,8 +142,13 @@ export async function consumeGoogleOAuthState(state: string): Promise<GoogleOAut
     )
   }
   const key = `${OAUTH_STATE_PREFIX}${state}`
-  const raw = await redis.get(key)
-  await redis.del(key)
+  let raw: unknown
+  try {
+    raw = await redis.get(key)
+    await redis.del(key)
+  } catch (err) {
+    rethrowOAuthStoreFailure(err)
+  }
   // Upstash REST may auto-deserialize JSON → object; mocks usually return string.
   const parsed = parseOAuthStatePayload(raw)
   if (!parsed) {
