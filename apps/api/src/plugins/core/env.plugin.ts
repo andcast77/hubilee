@@ -4,11 +4,13 @@ import type { FastifyInstance, FastifyPluginAsync } from 'fastify'
 import type { AppConfig } from '../../core/config.js'
 import { loadApiEnvFiles } from '../../core/load-api-env.js'
 
-/** Sin defaults: cada key debe existir en el entorno (puede ser string vacío si el feature es opcional). */
+/**
+ * Keys in `required` must exist in the environment (empty string OK for optional features).
+ * PORT / Google OAuth are optional with defaults: serverless may omit PORT; empty Google disables OAuth (503 on those routes).
+ */
 export const envSchema = {
   type: 'object',
   required: [
-    'PORT',
     'CORS_ORIGIN',
     'DATABASE_URL',
     'NODE_ENV',
@@ -36,12 +38,10 @@ export const envSchema = {
     'MAIL_FROM',
     'HUB_PUBLIC_URL',
     'ENABLE_API_DOCS',
-    'GOOGLE_CLIENT_ID',
-    'GOOGLE_CLIENT_SECRET',
-    'GOOGLE_REDIRECT_URI',
   ],
   properties: {
-    PORT: { type: 'string' },
+    /** Listen port for local/long-running Node; unused on Vercel inject. */
+    PORT: { type: 'string', default: '3000' },
     CORS_ORIGIN: { type: 'string' },
     DATABASE_URL: { type: 'string' },
     NODE_ENV: { type: 'string' },
@@ -71,10 +71,10 @@ export const envSchema = {
     MAIL_FROM: { type: 'string' },
     HUB_PUBLIC_URL: { type: 'string' },
     ENABLE_API_DOCS: { type: 'string' },
-    /** Empty string disables Google OAuth (start/callback → 503). */
-    GOOGLE_CLIENT_ID: { type: 'string' },
-    GOOGLE_CLIENT_SECRET: { type: 'string' },
-    GOOGLE_REDIRECT_URI: { type: 'string' },
+    /** Empty / unset disables Google OAuth (start/callback → 503). */
+    GOOGLE_CLIENT_ID: { type: 'string', default: '' },
+    GOOGLE_CLIENT_SECRET: { type: 'string', default: '' },
+    GOOGLE_REDIRECT_URI: { type: 'string', default: '' },
   },
 } as const
 
