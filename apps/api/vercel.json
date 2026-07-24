@@ -1,11 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd ../.. && pnpm exec turbo run build --filter=@hubilee/api...",
+  "buildCommand": "cd ../.. && pnpm exec turbo run build --filter=@hubilee/contracts... && pnpm --filter @hubilee/api run build:vercel",
   "installCommand": "cd ../.. && pnpm install",
   "functions": {
     "api/index.ts": {
       "maxDuration": 60,
-      "includeFiles": "{dist/**,src/generated/prisma/**}"
+      "includeFiles": "{dist/vercel-server.js,dist/vercel-server.js.map,src/generated/prisma/**}"
     }
   },
   "rewrites": [

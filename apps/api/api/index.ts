@@ -50,9 +50,12 @@ interface FetchRequest {
 let appPromise: Promise<import('fastify').FastifyInstance> | null = null
 
 function resolveServerPath(): string {
-  // Prefer paths relative to this handler (apps/api/api → apps/api/dist).
-  // Fallbacks cover Root Directory = apps/api (cwd=…) and monorepo root (cwd=/var/task).
+  // Prefer the esbuild Vercel bundle (single ESM file; no extensionless tsc imports).
+  // Fallbacks cover Root Directory = apps/api and monorepo-root layouts.
   const candidates = [
+    join(__dirname, '..', 'dist', 'vercel-server.js'),
+    join(process.cwd(), 'dist', 'vercel-server.js'),
+    join(process.cwd(), 'apps', 'api', 'dist', 'vercel-server.js'),
     join(__dirname, '..', 'dist', 'server.js'),
     join(process.cwd(), 'dist', 'server.js'),
     join(process.cwd(), 'apps', 'api', 'dist', 'server.js'),
@@ -62,7 +65,7 @@ function resolveServerPath(): string {
   }
   throw new Error(
     `API server bundle not found. Tried: ${candidates.join(' | ')}. ` +
-      'Ensure turbo build emits apps/api/dist and vercel.json includeFiles covers dist/**.',
+      'Ensure `pnpm --filter @hubilee/api run build:vercel` ran and includeFiles covers dist/vercel-server.js.',
   )
 }
 
